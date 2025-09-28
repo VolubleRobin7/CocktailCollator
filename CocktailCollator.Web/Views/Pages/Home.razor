@@ -1,0 +1,26 @@
+﻿@using CocktailCollator.Web.ViewModels
+
+@inject RecipeViewModel ViewModel
+
+@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<button @onclick="this.ViewModel.Command.ExecuteAsync">Execute Test</button>
+
+<span>@this._Count</span>
+
+<button @onclick="Counter">Count</button>
+
+@code {
+    private int _Count = 0;
+
+    private void Counter()
+    {
+        _Count++;
+    }
+}

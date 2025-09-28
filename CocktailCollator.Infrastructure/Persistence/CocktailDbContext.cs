@@ -1,0 +1,34 @@
+﻿using CocktailCollator.Application.Common.Interfaces;
+using CocktailCollator.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace CocktailCollator.Infrastructure.Persistence;
+
+public class CocktailDbContext : DbContext, ICocktailDbContext
+{
+    public CocktailDbContext(DbContextOptions<CocktailDbContext> options) : base(options) { }
+
+    void ICocktailDbContext.Add<TEntity>(TEntity entity)
+        => this.Add(entity);
+
+    IQueryable<TEntity> ICocktailDbContext.GetEntities<TEntity>()
+        => this.Set<TEntity>();
+
+    Task<int> ICocktailDbContext.SaveChangesAsync(CancellationToken cancellationToken)
+        => this.SaveChangesAsync(cancellationToken);
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        AddEntities(modelBuilder);
+        _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(CocktailDbContext).Assembly);
+    }
+
+    private static void AddEntities(ModelBuilder modelBuilder)
+    {
+        _ = modelBuilder.Entity<Recipe>();
+        _ = modelBuilder.Entity<Ingredient>();
+        _ = modelBuilder.Entity<RecipeStep>();
+        _ = modelBuilder.Entity<RecipeIngredient>();
+    }
+}
