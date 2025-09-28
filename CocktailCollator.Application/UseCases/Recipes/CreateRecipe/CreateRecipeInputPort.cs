@@ -2,7 +2,7 @@
 
 public class CreateRecipeInputPort
 {
-    public List<CreateRecipeInputPortIngredient> Ingredients { get; set; } = new();
+    public List<CreateRecipeInputPortIngredient> Ingredients { get; set; } = [];
     public required string Name { get; set; }
 }
 

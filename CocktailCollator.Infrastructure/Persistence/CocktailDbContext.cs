@@ -4,17 +4,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CocktailCollator.Infrastructure.Persistence;
 
-public class CocktailDbContext : DbContext, ICocktailDbContext
+public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : DbContext(options), ICocktailDbContext
 {
-    public CocktailDbContext(DbContextOptions<CocktailDbContext> options) : base(options) { }
-
     void ICocktailDbContext.Add<TEntity>(TEntity entity)
         => this.Add(entity);
 
     IQueryable<TEntity> ICocktailDbContext.GetEntities<TEntity>()
         => this.Set<TEntity>();
 
-    Task<int> ICocktailDbContext.SaveChangesAsync(CancellationToken cancellationToken)
+    Task ICocktailDbContext.SaveChangesAsync(CancellationToken cancellationToken)
         => this.SaveChangesAsync(cancellationToken);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
