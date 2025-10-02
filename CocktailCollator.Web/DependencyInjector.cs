@@ -1,4 +1,4 @@
-﻿using CocktailCollator.Web.ViewModels;
+﻿using CocktailCollator.Web.ViewModels.Recipes;
 
 namespace CocktailCollator.Web;
 
@@ -10,5 +10,5 @@ public static class DependencyInjector
 
     private static IServiceCollection AddViewModels(this IServiceCollection services)
         => services
-            .AddScoped<RecipeViewModel>();
+            .AddScoped<RecipesViewModel>();
 }

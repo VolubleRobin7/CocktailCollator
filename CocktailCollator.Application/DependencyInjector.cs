@@ -1,5 +1,6 @@
 ﻿using CocktailCollator.Application.UseCases.Ingredients.CreateIngredient;
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
+using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CocktailCollator.Application;
@@ -12,5 +13,6 @@ public static class DependencyInjector
     private static IServiceCollection AddUseCaseInteractors(this IServiceCollection services)
         => services
             .AddScoped<CreateRecipeInteractor>()
+            .AddScoped<GetRecipesInteractor>()
             .AddScoped<CreateIngredientInteractor>();
 }

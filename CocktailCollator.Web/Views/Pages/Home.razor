@@ -1,6 +1,7 @@
 ﻿@using CocktailCollator.Web.ViewModels
+@using CocktailCollator.Web.ViewModels.Recipes
 
-@inject RecipeViewModel ViewModel
+@inject RecipesViewModel ViewModel
 
 @page "/"
 
@@ -10,11 +11,51 @@
 
 Welcome to your new app.
 
-<button @onclick="this.ViewModel.Command.ExecuteAsync">Execute Test</button>
+<button @onclick="this.ViewModel.CreateCommand.ExecuteAsync">Create test recipe</button>
+
+<button @onclick="this.ViewModel.GetCommand.ExecuteAsync">Get recipes</button>
 
 <span>@this._Count</span>
 
 <button @onclick="Counter">Count</button>
+
+<table>
+    <thead>
+        <tr>
+            <th>Recipe ID</th>
+            <th>Recipe Name</th>
+            <th>Ingredients</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var recipe in ViewModel.Recipes)
+        {
+            <tr>
+                <td>@recipe.RecipeId</td>
+                <td>@recipe.Name</td>
+                <td>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ingredient ID</th>
+                                <th>Ingredient Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ingredient in recipe.Ingredients ?? [])
+                            {
+                                <tr>
+                                    <td>@ingredient.IngredientId</td>
+                                    <td>@ingredient.Name</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
 
 @code {
     private int _Count = 0;
