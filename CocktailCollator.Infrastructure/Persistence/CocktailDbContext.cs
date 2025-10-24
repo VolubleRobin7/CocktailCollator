@@ -12,6 +12,9 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : Db
     IQueryable<TEntity> ICocktailDbContext.GetEntities<TEntity>()
         => this.Set<TEntity>();
 
+    void ICocktailDbContext.Remove<TEntity>(TEntity entity)
+        => this.Remove(entity);
+
     Task ICocktailDbContext.SaveChangesAsync(CancellationToken cancellationToken)
         => this.SaveChangesAsync(cancellationToken);
 

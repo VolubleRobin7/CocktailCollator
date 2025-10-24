@@ -6,5 +6,7 @@ public interface ICocktailDbContext
 
     IQueryable<TEntity> GetEntities<TEntity>() where TEntity : class;
 
+    void Remove<TEntity>(TEntity entity) where TEntity : class;
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

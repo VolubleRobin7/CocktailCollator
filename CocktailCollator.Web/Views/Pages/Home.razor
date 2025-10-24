@@ -15,10 +15,6 @@ Welcome to your new app.
 
 <button @onclick="this.ViewModel.GetCommand.ExecuteAsync">Get recipes</button>
 
-<span>@this._Count</span>
-
-<button @onclick="Counter">Count</button>
-
 <table>
     <thead>
         <tr>
@@ -52,16 +48,14 @@ Welcome to your new app.
                         </tbody>
                     </table>
                 </td>
+                <td>
+                    <button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(recipe.RecipeId)" />
+                </td>
             </tr>
         }
     </tbody>
 </table>
 
 @code {
-    private int _Count = 0;
 
-    private void Counter()
-    {
-        _Count++;
-    }
 }
