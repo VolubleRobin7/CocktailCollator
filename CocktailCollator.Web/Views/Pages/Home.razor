@@ -1,4 +1,5 @@
-﻿@using CocktailCollator.Web.ViewModels
+﻿@using CocktailCollator.Application.UseCases.Recipes.CreateRecipe
+@using CocktailCollator.Web.ViewModels
 @using CocktailCollator.Web.ViewModels.Recipes
 
 @inject RecipesViewModel ViewModel
@@ -7,11 +8,35 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h2>Create Recipe</h2>
 
-Welcome to your new app.
+<div>
 
-<button @onclick="this.ViewModel.CreateCommand.ExecuteAsync">Create test recipe</button>
+    <div>
+        <label>Recipe Name:</label>
+        <input @bind="_createRecipeInputPort.Name" />
+    </div>
+
+    <h4>Ingredients</h4>
+
+    @foreach (var ingredient in _createRecipeInputPort.Ingredients)
+    {
+        <div>
+            <label>Name:</label>
+            <input @bind="ingredient.Name" />
+
+            <button @onclick="() => _createRecipeInputPort.Ingredients.Remove(ingredient)">Remove</button>
+        </div>
+    }
+
+    <button @onclick="() => _createRecipeInputPort.Ingredients.Add(new() { Name = string.Empty })">Add Ingredient</button>
+
+    <button @onclick="() => this.ViewModel.CreateCommand.ExecuteAsync(this._createRecipeInputPort)">Save Recipe</button>
+</div>
+
+<hr />
+
+<h2>Get Recipes</h2>
 
 <button @onclick="this.ViewModel.GetCommand.ExecuteAsync">Get recipes</button>
 
@@ -49,7 +74,7 @@ Welcome to your new app.
                     </table>
                 </td>
                 <td>
-                    <button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(recipe.RecipeId)" />
+                    <button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(recipe.RecipeId)">Remove</button>
                 </td>
             </tr>
         }
@@ -57,5 +82,5 @@ Welcome to your new app.
 </table>
 
 @code {
-
+    private CreateRecipeInputPort _createRecipeInputPort = new() { Name = "Example Name" };
 }

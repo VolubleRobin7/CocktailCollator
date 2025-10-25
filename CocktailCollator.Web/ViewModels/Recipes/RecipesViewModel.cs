@@ -10,7 +10,7 @@ namespace CocktailCollator.Web.ViewModels.Recipes;
 
 public class RecipesViewModel
 {
-    public IAsyncRelayCommand CreateCommand { get; set; }
+    public IAsyncRelayCommand<CreateRecipeInputPort> CreateCommand { get; set; }
     public IAsyncRelayCommand<Guid> DeleteCommand { get; set; }
     public IAsyncRelayCommand GetCommand { get; set; }
 
@@ -22,9 +22,9 @@ public class RecipesViewModel
         GetRecipesInteractor getRecipesInteractor,
         IMapper mapper)
     {
-        this.CreateCommand = new AsyncRelayCommand(cancellationToken
+        this.CreateCommand = new AsyncRelayCommand<CreateRecipeInputPort>((inputPort, cancellationToken)
             => createRecipeInteractor.Interact(
-                new() { Name = "TestRecipe", Ingredients = [new() { Name = "TestIngredient" }] },
+                inputPort,
                 new CreateRecipePresenter(mapper, this),
                 cancellationToken));
 
@@ -53,7 +53,7 @@ public class RecipesViewModel
     {
         Task IDeleteRecipeOutputPort.Success(Recipe deletedRecipe, CancellationToken cancellationToken)
         {
-            viewModel.Recipes.RemoveAll(recipe => recipe.RecipeId == deletedRecipe.RecipeId);
+            _ = viewModel.Recipes.RemoveAll(recipe => recipe.RecipeId == deletedRecipe.RecipeId);
             return Task.CompletedTask;
         }
     }
