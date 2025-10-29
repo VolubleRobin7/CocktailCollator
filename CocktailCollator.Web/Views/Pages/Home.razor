@@ -81,6 +81,33 @@
     </tbody>
 </table>
 
+<hr />
+
+<h2>Get Ingredients</h2>
+
+<button @onclick="this.ViewModel.GetIngredientsCommand.ExecuteAsync">Get ingredients</button>
+
+<table>
+    <thead>
+        <tr>
+            <th>Ingredient ID</th>
+            <th>Ingredient Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ingredients in ViewModel.Ingredients)
+        {
+            <tr>
+                <td>@ingredients.IngredientId</td>
+                <td>@ingredients.Name</td>
+                <td>
+                    <button>Remove</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
 @code {
     private CreateRecipeInputPort _createRecipeInputPort = new() { Name = "Example Name" };
 }
