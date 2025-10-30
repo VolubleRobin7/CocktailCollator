@@ -95,13 +95,13 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var ingredients in ViewModel.Ingredients)
+        @foreach (var ingredient in ViewModel.Ingredients)
         {
             <tr>
-                <td>@ingredients.IngredientId</td>
-                <td>@ingredients.Name</td>
+                <td>@ingredient.IngredientId</td>
+                <td>@ingredient.Name</td>
                 <td>
-                    <button>Remove</button>
+                    <button @onclick="() => this.ViewModel.DeleteIngredientCommand.ExecuteAsync(ingredient.IngredientId)">Remove</button>
                 </td>
             </tr>
         }

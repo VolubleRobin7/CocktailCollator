@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CocktailCollator.Application.UseCases.Ingredients.CreateIngredient;
+using CocktailCollator.Application.UseCases.Ingredients.DeleteIngredient;
 using CocktailCollator.Application.UseCases.Ingredients.GetIngredients;
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 using CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
@@ -14,6 +15,7 @@ public class RecipesViewModel
 {
     public IAsyncRelayCommand<CreateRecipeInputPort> CreateCommand { get; set; }
     public IAsyncRelayCommand<Guid> DeleteCommand { get; set; }
+    public IAsyncRelayCommand<Guid> DeleteIngredientCommand { get; set; }
     public IAsyncRelayCommand GetCommand { get; set; }
     public IAsyncRelayCommand GetIngredientsCommand { get; set; }
 
@@ -22,6 +24,7 @@ public class RecipesViewModel
 
     public RecipesViewModel(
         CreateRecipeInteractor createRecipeInteractor,
+        DeleteIngredientInteractor deleteIngredientInteractor,
         DeleteRecipeInteractor deleteRecipeInteractor,
         GetIngredientsInteractor getIngredientsInteractor,
         GetRecipesInteractor getRecipesInteractor,
@@ -48,6 +51,12 @@ public class RecipesViewModel
             => getIngredientsInteractor.Interact(
                 new GetIngredientsPresenter(mapper, this),
                 cancellationToken));
+
+        this.DeleteIngredientCommand = new AsyncRelayCommand<Guid>((ingredientId, cancellationToken)
+            => deleteIngredientInteractor.Interact(
+                new() { IngredientId = ingredientId },
+                new DeleteIngredientPresenter(this),
+                cancellationToken));
     }
 
     private class CreateRecipePresenter(IMapper mapper, RecipesViewModel viewModel) : ICreateRecipeOutputPort
@@ -55,6 +64,15 @@ public class RecipesViewModel
         Task ICreateRecipeOutputPort.Success(Recipe recipe, CancellationToken cancellationToken)
         {
             viewModel.Recipes.Add(mapper.Map<RecipeViewModel>(recipe));
+            return Task.CompletedTask;
+        }
+    }
+
+    private class DeleteIngredientPresenter(RecipesViewModel viewModel) : IDeleteIngredientOutputPort
+    {
+        Task IDeleteIngredientOutputPort.Success(Ingredient deletedRecipe, CancellationToken cancellationToken)
+        {
+            _ = viewModel.Ingredients.RemoveAll(recipe => recipe.IngredientId == deletedRecipe.IngredientId);
             return Task.CompletedTask;
         }
     }
