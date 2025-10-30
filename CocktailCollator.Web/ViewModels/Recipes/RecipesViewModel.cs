@@ -22,6 +22,8 @@ public class RecipesViewModel
     public List<IngredientViewModel> Ingredients { get; private set; } = [];
     public List<RecipeViewModel> Recipes { get; private set; } = [];
 
+    public string Error { get; private set; } = string.Empty;
+
     public RecipesViewModel(
         CreateRecipeInteractor createRecipeInteractor,
         DeleteIngredientInteractor deleteIngredientInteractor,
@@ -70,9 +72,15 @@ public class RecipesViewModel
 
     private class DeleteIngredientPresenter(RecipesViewModel viewModel) : IDeleteIngredientOutputPort
     {
-        Task IDeleteIngredientOutputPort.Success(Ingredient deletedRecipe, CancellationToken cancellationToken)
+        Task IDeleteIngredientOutputPort.Failure(string reason, Ingredient? ingredient, CancellationToken cancellationToken)
         {
-            _ = viewModel.Ingredients.RemoveAll(recipe => recipe.IngredientId == deletedRecipe.IngredientId);
+            viewModel.Error = reason;
+            return Task.CompletedTask;
+        }
+
+        Task IDeleteIngredientOutputPort.Success(Ingredient deletedIngredient, CancellationToken cancellationToken)
+        {
+            _ = viewModel.Ingredients.RemoveAll(recipe => recipe.IngredientId == deletedIngredient.IngredientId);
             return Task.CompletedTask;
         }
     }

@@ -9,6 +9,12 @@ public class DeleteIngredientInteractor(ICocktailDbContext dbContext)
     {
         var _Ingredient = dbContext.GetEntities<Ingredient>().First(ingredient => ingredient.IngredientId == inputPort.IngredientId);
 
+        if (dbContext.GetEntities<Recipe>().Any(r => r.Ingredients!.Any(ri => ri.IngredientId == inputPort.IngredientId)))
+        {
+            await outputPort.Failure("Recipes are still using this ingredient.", _Ingredient, cancellationToken);
+            return;
+        }
+
         dbContext.Remove(_Ingredient);
 
         await dbContext.SaveChangesAsync(cancellationToken);
