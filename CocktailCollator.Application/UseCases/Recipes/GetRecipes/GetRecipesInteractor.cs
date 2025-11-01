@@ -19,7 +19,8 @@ public class GetRecipesInteractor(ICocktailDbContext dbContext)
                         IngredientId = ri.IngredientId,
                         Ingredient = ri.Ingredient
                     })
-                    .ToList()
+                    .ToList(),
+                Steps = r.Steps
             });
 
         return outputPort.Success([.. _Recipes], cancellationToken);

@@ -31,6 +31,22 @@
 
     <button @onclick="() => _createRecipeInputPort.Ingredients.Add(new() { Name = string.Empty })">Add Ingredient</button>
 
+    <h4>Steps</h4>
+
+    @foreach (var steps in _createRecipeInputPort.Steps)
+    {
+        <div>
+            <label>Name:</label>
+            <input @bind="steps.Instruction" />
+
+            <button @onclick="() => _createRecipeInputPort.Steps.Remove(steps)">Remove</button>
+        </div>
+    }
+
+    <button @onclick="() => _createRecipeInputPort.Steps.Add(new() { Instruction = string.Empty, Order = 0 })">Add Step</button>
+
+    <br />
+
     <button @onclick="() => this.ViewModel.CreateCommand.ExecuteAsync(this._createRecipeInputPort)">Save Recipe</button>
 </div>
 
@@ -46,6 +62,7 @@
             <th>Recipe ID</th>
             <th>Recipe Name</th>
             <th>Ingredients</th>
+            <th>Steps</th>
         </tr>
     </thead>
     <tbody>
@@ -68,6 +85,25 @@
                                 <tr>
                                     <td>@ingredient.IngredientId</td>
                                     <td>@ingredient.Name</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Step ID</th>
+                                <th>Step Instruction</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var steps in recipe.Steps ?? [])
+                            {
+                                <tr>
+                                    <td>@steps.RecipeStepId</td>
+                                    <td>@steps.Instruction</td>
                                 </tr>
                             }
                         </tbody>
