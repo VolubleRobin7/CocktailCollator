@@ -1,7 +1,7 @@
-﻿@using CocktailCollator.Application.UseCases.Recipes.CreateRecipe
-@using CocktailCollator.Web.ViewModels
+﻿@using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.Recipes
 
+@inject CreateRecipeFormModel CreateRecipeFormModel
 @inject RecipesViewModel ViewModel
 
 @page "/"
@@ -14,40 +14,47 @@
 
     <div>
         <label>Recipe Name:</label>
-        <input @bind="_createRecipeInputPort.Name" />
+        <input @bind="CreateRecipeFormModel.Name.Input" />
+        @if (!this.CreateRecipeFormModel.Name.IsValid())
+        {
+            <p>Name requires a value.</p>
+        }
     </div>
 
     <h4>Ingredients</h4>
 
-    @foreach (var ingredient in _createRecipeInputPort.Ingredients)
+    @foreach (var ingredient in CreateRecipeFormModel.Ingredients.Input)
     {
         <div>
             <label>Name:</label>
-            <input @bind="ingredient.Name" />
+            <input @bind="ingredient.Name.Input" />
 
-            <button @onclick="() => _createRecipeInputPort.Ingredients.Remove(ingredient)">Remove</button>
+            <button @onclick="() => CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)">Remove</button>
         </div>
     }
 
-    <button @onclick="() => _createRecipeInputPort.Ingredients.Add(new() { Name = string.Empty })">Add Ingredient</button>
+    <button @onclick="() => CreateRecipeFormModel.Ingredients.Input.Add(new())">Add Ingredient</button>
 
     <h4>Steps</h4>
 
-    @foreach (var steps in _createRecipeInputPort.Steps)
+    @foreach (var steps in CreateRecipeFormModel.Steps.Input)
     {
         <div>
             <label>Name:</label>
-            <input @bind="steps.Instruction" />
+            <input @bind="steps.Instruction.Input" />
 
-            <button @onclick="() => _createRecipeInputPort.Steps.Remove(steps)">Remove</button>
+            <button @onclick="() => CreateRecipeFormModel.Steps.Input.Remove(steps)">Remove</button>
         </div>
     }
 
-    <button @onclick="() => _createRecipeInputPort.Steps.Add(new() { Instruction = string.Empty, Order = 0 })">Add Step</button>
+    <button @onclick="() => CreateRecipeFormModel.Steps.Input.Add(new())">Add Step</button>
 
     <br />
 
-    <button @onclick="() => this.ViewModel.CreateCommand.ExecuteAsync(this._createRecipeInputPort)">Save Recipe</button>
+    <button @onclick="this.OnClickCreate"
+            disabled="@(!this.CreateRecipeFormModel.IsValid())">
+        Save Recipe
+    </button>
 </div>
 
 <hr />
@@ -149,5 +156,10 @@
 <p>@ViewModel.Error</p>
 
 @code {
-    private CreateRecipeInputPort _createRecipeInputPort = new() { Name = "Example Name" };
+    private async Task OnClickCreate()
+    {
+        await this.ViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
+        this.CreateRecipeFormModel.ResetToDefault();
+        this.StateHasChanged();
+    }
 }
