@@ -8,154 +8,197 @@
 
 <PageTitle>Home</PageTitle>
 
-<h2>Create Recipe</h2>
+<div class="container">
 
-<div>
+    <h1>Cocktail Collator</h1>
 
-    <div>
-        <label>Recipe Name:</label>
-        <input @bind="CreateRecipeFormModel.Name.Input" />
-        @if (!this.CreateRecipeFormModel.Name.IsValid())
+    <hr />
+
+    <button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
+            class="btn btn-secondary">
+        Get Recipes
+    </button>
+
+    <div class="row">
+        @foreach (var recipe in this.ViewModel.Recipes)
         {
-            <p>Name requires a value.</p>
+            <div class="col-md-4 py-2">
+                <div class="card">
+                    <h4 class="card-header">@recipe.Name</h4>
+                    <div class="card-body">
+                        <div class="card-text">
+                            A sentence or two describing the content of the card.
+                            This can be interesting or not, i dont know.
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var ingredient in recipe.Ingredients?.Take(3) ?? [])
+                            {
+                                <li class="list-group-item">@ingredient.Name</li>
+                            }
+                        </ul>
+                        <button @onclick="() => this._selectedRecipe = recipe"
+                                class="btn btn-sm btn-primary">
+                            Select
+                        </button>
+                    </div>
+                </div>
+            </div>
         }
     </div>
 
-    <h4>Ingredients</h4>
-
-    @foreach (var ingredient in CreateRecipeFormModel.Ingredients.Input)
-    {
-        <div>
-            <label>Name:</label>
-            <input @bind="ingredient.Name.Input" />
-
-            <button @onclick="() => CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)">Remove</button>
-        </div>
-    }
-
-    <button @onclick="() => CreateRecipeFormModel.Ingredients.Input.Add(new())">Add Ingredient</button>
-
-    <h4>Steps</h4>
-
-    @foreach (var steps in CreateRecipeFormModel.Steps.Input)
-    {
-        <div>
-            <label>Name:</label>
-            <input @bind="steps.Instruction.Input" />
-
-            <button @onclick="() => CreateRecipeFormModel.Steps.Input.Remove(steps)">Remove</button>
-        </div>
-    }
-
-    <button @onclick="() => CreateRecipeFormModel.Steps.Input.Add(new())">Add Step</button>
-
-    <br />
-
-    <button @onclick="this.OnClickCreate"
-            disabled="@(!this.CreateRecipeFormModel.IsValid())">
-        Save Recipe
-    </button>
 </div>
 
 <hr />
 
-<h2>Get Recipes</h2>
+<div class="container">
 
-<button @onclick="this.ViewModel.GetCommand.ExecuteAsync">Get recipes</button>
+    @if (_selectedRecipe is not null)
+    {
+        <h2>@_selectedRecipe.Name</h2>
 
-<table>
-    <thead>
-        <tr>
-            <th>Recipe ID</th>
-            <th>Recipe Name</th>
-            <th>Ingredients</th>
-            <th>Steps</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var recipe in ViewModel.Recipes)
-        {
-            <tr>
-                <td>@recipe.RecipeId</td>
-                <td>@recipe.Name</td>
-                <td>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Ingredient ID</th>
-                                <th>Ingredient Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var ingredient in recipe.Ingredients ?? [])
-                            {
-                                <tr>
-                                    <td>@ingredient.IngredientId</td>
-                                    <td>@ingredient.Name</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </td>
-                <td>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Step ID</th>
-                                <th>Step Instruction</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var steps in recipe.Steps ?? [])
-                            {
-                                <tr>
-                                    <td>@steps.RecipeStepId</td>
-                                    <td>@steps.Instruction</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </td>
-                <td>
-                    <button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(recipe.RecipeId)">Remove</button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+        <h4>Ingredients</h4>
+
+        <ul class="list-group">
+            @foreach (var ingredient in _selectedRecipe.Ingredients ?? [])
+            {
+                <li class="list-group-item">@ingredient.Name</li>
+            }
+        </ul>
+
+        <h4>Steps</h4>
+
+        <ul class="list-group">
+            @foreach (var step in _selectedRecipe.Steps ?? [])
+            {
+                <li class="list-group-item">@step.Instruction</li>
+            }
+        </ul>
+    }
+
+</div>
 
 <hr />
 
-<h2>Get Ingredients</h2>
+<div class="container">
 
-<button @onclick="this.ViewModel.GetIngredientsCommand.ExecuteAsync">Get ingredients</button>
+    <button @onclick="this.ViewModel.GetIngredientsCommand.ExecuteAsync"
+            class="btn btn-secondary">
+        Get Ingredients
+    </button>
 
-<table>
-    <thead>
-        <tr>
-            <th>Ingredient ID</th>
-            <th>Ingredient Name</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var ingredient in ViewModel.Ingredients)
+    <ul class="list-group list-group-flush">
+        @foreach (var ingredient in this.ViewModel.Ingredients)
         {
-            <tr>
-                <td>@ingredient.IngredientId</td>
-                <td>@ingredient.Name</td>
-                <td>
-                    <button @onclick="() => this.ViewModel.DeleteIngredientCommand.ExecuteAsync(ingredient.IngredientId)">Remove</button>
-                </td>
-            </tr>
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <span class="align-content-center">
+                        @ingredient.Name
+                    </span>
+                    <button @onclick="() => this.ViewModel.DeleteIngredientCommand.ExecuteAsync(ingredient.IngredientId)"
+                            class="btn btn-sm btn-danger">
+                        Remove
+                    </button>
+                </div>
+            </li>
         }
-    </tbody>
-</table>
+    </ul>
+
+</div>
+
+<p>@this.ViewModel.Error</p>
 
 <hr />
 
-<p>@ViewModel.Error</p>
+<div class="container">
+    <form>
+        <h3>New Recipe</h3>
+
+        <div>
+            <label class="form-label">Recipe Name</label>
+            <input @bind-value="this.CreateRecipeFormModel.Name.Input"
+                   class="form-control @(this.CreateRecipeFormModel.Name.IsValid() ? "is-valid" : "is-invalid")"
+                   type="text" />
+            <div class="invalid-feedback">
+                Name requires a value.
+            </div>
+        </div>
+
+        <h4>Ingredients</h4>
+
+        <button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
+                class="btn btn-primary"
+                type="button">
+            Add Ingredient
+        </button>
+
+        <div>
+            <ul class="list-group">
+                @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients.Input)
+                {
+                    <li class="list-group-item">
+                        <div>
+                            <label class="form-label">Ingredient Name</label>
+                            <input @bind-value="ingredient.Name.Input"
+                                   class="form-control @(ingredient.Name.IsValid() ? "is-valid" : "is-invalid")"
+                                   type="text" />
+                            <div class="invalid-feedback">
+                                Name requires a value.
+                            </div>
+                        </div>
+                        <button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
+                                class="btn btn-sm btn-danger"
+                                type="button">
+                            Remove
+                        </button>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        <h4>Steps</h4>
+
+        <button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Add(new())"
+                class="btn btn-primary"
+                type="button">
+            Add Step
+        </button>
+
+        <div>
+            <ul class="list-group">
+                @foreach (var step in this.CreateRecipeFormModel.Steps.Input)
+                {
+                    <li class="list-group-item">
+                        <div>
+                            <label class="form-label">Step Instruction</label>
+                            <input @bind-value="step.Instruction.Input"
+                                   class="form-control @(step.Instruction.IsValid() ? "is-valid" : "is-invalid")"
+                                   type="text" />
+                            <div class="invalid-feedback">
+                                Instruction requires a value.
+                            </div>
+                        </div>
+                        <button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Remove(step)"
+                                class="btn btn-sm btn-danger"
+                                type="button">
+                            Remove
+                        </button>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        <button @onclick="this.OnClickCreate"
+                class="btn btn-success mt-2"
+                disabled="@(!this.CreateRecipeFormModel.IsValid())"
+                type="button">
+            Save Recipe
+        </button>
+    </form>
+</div>
 
 @code {
+    private RecipeViewModel? _selectedRecipe;
+
     private async Task OnClickCreate()
     {
         await this.ViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
