@@ -1,5 +1,7 @@
 ﻿@using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.Recipes
+@using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Inputs
 
 @inject CreateRecipeFormModel CreateRecipeFormModel
 @inject RecipesViewModel ViewModel
@@ -14,10 +16,9 @@
 
     <hr />
 
-    <button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
-            class="btn btn-secondary">
-        Get Recipes
-    </button>
+    <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
+            Theme="ButtonTheme.Secondary"
+            Text="Get Recipes" />
 
     <div class="row">
         @foreach (var recipe in this.ViewModel.Recipes)
@@ -36,10 +37,10 @@
                                 <li class="list-group-item">@ingredient.Name</li>
                             }
                         </ul>
-                        <button @onclick="() => this._selectedRecipe = recipe"
-                                class="btn btn-sm btn-primary">
-                            Select
-                        </button>
+                        <Button @onclick="() => this._selectedRecipe = recipe"
+                                Size="ButtonSize.Small"
+                                Theme="ButtonTheme.Primary"
+                                Text="Select" />
                     </div>
                 </div>
             </div>
@@ -81,10 +82,9 @@
 
 <div class="container">
 
-    <button @onclick="this.ViewModel.GetIngredientsCommand.ExecuteAsync"
-            class="btn btn-secondary">
-        Get Ingredients
-    </button>
+    <Button @onclick="this.ViewModel.GetIngredientsCommand.ExecuteAsync"
+            Theme="ButtonTheme.Secondary"
+            Text="Get Ingredients" />
 
     <ul class="list-group list-group-flush">
         @foreach (var ingredient in this.ViewModel.Ingredients)
@@ -94,10 +94,10 @@
                     <span class="align-content-center">
                         @ingredient.Name
                     </span>
-                    <button @onclick="() => this.ViewModel.DeleteIngredientCommand.ExecuteAsync(ingredient.IngredientId)"
-                            class="btn btn-sm btn-danger">
-                        Remove
-                    </button>
+                    <Button @onclick="() => this.ViewModel.DeleteIngredientCommand.ExecuteAsync(ingredient.IngredientId)"
+                            Size="ButtonSize.Small"
+                            Theme="ButtonTheme.Danger"
+                            Text="Remove" />
                 </div>
             </li>
         }
@@ -113,43 +113,29 @@
     <form>
         <h3>New Recipe</h3>
 
-        <div>
-            <label class="form-label">Recipe Name</label>
-            <input @bind-value="this.CreateRecipeFormModel.Name.Input"
-                   class="form-control @(this.CreateRecipeFormModel.Name.IsValid() ? "is-valid" : "is-invalid")"
-                   type="text" />
-            <div class="invalid-feedback">
-                Name requires a value.
-            </div>
-        </div>
+        <InputField Input="this.CreateRecipeFormModel.Name"
+                    InvalidMessage="Name requires a value."
+                    Title="Recipe Name" />
 
         <h4>Ingredients</h4>
 
-        <button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
-                class="btn btn-primary"
-                type="button">
-            Add Ingredient
-        </button>
+        <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
+                Theme="ButtonTheme.Primary"
+                Text="Add Ingredient" />
 
         <div>
             <ul class="list-group">
                 @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients.Input)
                 {
                     <li class="list-group-item">
-                        <div>
-                            <label class="form-label">Ingredient Name</label>
-                            <input @bind-value="ingredient.Name.Input"
-                                   class="form-control @(ingredient.Name.IsValid() ? "is-valid" : "is-invalid")"
-                                   type="text" />
-                            <div class="invalid-feedback">
-                                Name requires a value.
-                            </div>
-                        </div>
-                        <button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
-                                class="btn btn-sm btn-danger"
-                                type="button">
-                            Remove
-                        </button>
+                        <InputField Input="ingredient.Name"
+                                    InvalidMessage="Name requires a value."
+                                    Title="Ingredient Name" />
+
+                        <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
+                                Size="ButtonSize.Small"
+                                Theme="ButtonTheme.Danger"
+                                Text="Remove" />
                     </li>
                 }
             </ul>
@@ -157,42 +143,34 @@
 
         <h4>Steps</h4>
 
-        <button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Add(new())"
-                class="btn btn-primary"
-                type="button">
-            Add Step
-        </button>
+        <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Add(new())"
+                Theme="ButtonTheme.Primary"
+                Text="Add Step" />
 
         <div>
             <ul class="list-group">
                 @foreach (var step in this.CreateRecipeFormModel.Steps.Input)
                 {
                     <li class="list-group-item">
-                        <div>
-                            <label class="form-label">Step Instruction</label>
-                            <input @bind-value="step.Instruction.Input"
-                                   class="form-control @(step.Instruction.IsValid() ? "is-valid" : "is-invalid")"
-                                   type="text" />
-                            <div class="invalid-feedback">
-                                Instruction requires a value.
-                            </div>
-                        </div>
-                        <button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Remove(step)"
-                                class="btn btn-sm btn-danger"
-                                type="button">
-                            Remove
-                        </button>
+                        <InputField Input="step.Instruction"
+                                    InvalidMessage="Instruction requires a value."
+                                    Title="Step Instruction" />
+
+                        <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Remove(step)"
+                                Size="ButtonSize.Small"
+                                Theme="ButtonTheme.Danger"
+                                Text="Remove" />
                     </li>
                 }
             </ul>
         </div>
 
-        <button @onclick="this.OnClickCreate"
-                class="btn btn-success mt-2"
-                disabled="@(!this.CreateRecipeFormModel.IsValid())"
-                type="button">
-            Save Recipe
-        </button>
+        <Button @onclick="this.OnClickCreate"
+                Size="ButtonSize.Large"
+                Theme="ButtonTheme.Success"
+                Text="Save Recipe"
+                class="mt-2"
+                disabled="@(!this.CreateRecipeFormModel.IsValid())" />
     </form>
 </div>
 

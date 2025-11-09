@@ -1,0 +1,33 @@
+﻿<button @attributes="this.AdditionalAttributes"
+        class="btn @this.Theme.CssClass @this.Size.CssClass @this._additionalCssClasses"
+        type="button">
+    @this.Text
+</button>
+
+@code {
+    private string _additionalCssClasses = "";
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    [Parameter]
+    public ButtonSize Size { get; set; } = ButtonSize.Medium;
+
+    [Parameter]
+    public ButtonTheme Theme { get; set; } = ButtonTheme.None;
+
+    [EditorRequired]
+    [Parameter]
+    public string Text { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (this.AdditionalAttributes?.ContainsKey("class") ?? false)
+        {
+            this._additionalCssClasses = (string)this.AdditionalAttributes["class"];
+            this.AdditionalAttributes.Remove("class");
+        }
+
+        base.OnParametersSet();
+    }
+}

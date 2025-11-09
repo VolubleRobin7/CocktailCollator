@@ -1,0 +1,36 @@
+﻿@using CocktailCollator.Web.Common.Generics
+
+<div @attributes="this.AdditionalAttributes">
+    <label class="form-label">@this.Title</label>
+    <input @bind-value="this.Input.Input"
+           class="form-control @(this.Input.IsValid() ? "is-valid" : "is-invalid")"
+           type="text" />
+    <div class="form-text">@this.Subtext</div>
+    @if (this.ValidMessage is not null)
+    {
+        <div class="valid-feedback">@this.ValidMessage</div>
+    }
+    <div class="invalid-feedback">@this.InvalidMessage</div>
+</div>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public InputProperty<string> Input { get; set; }
+
+    [Parameter]
+    public string InvalidMessage { get; set; } = "Field is invalid";
+
+    [Parameter]
+    public string Subtext { get; set; } = "";
+
+    [EditorRequired]
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string? ValidMessage { get; set; } = null;
+}
