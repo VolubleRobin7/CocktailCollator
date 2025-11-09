@@ -2,6 +2,7 @@
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
+@using CocktailCollator.Web.Views.Components.Modals
 
 @inject CreateRecipeFormModel CreateRecipeFormModel
 @inject RecipesViewModel ViewModel
@@ -40,41 +41,14 @@
                         <Button @onclick="() => this._selectedRecipe = recipe"
                                 Size="ButtonSize.Small"
                                 Theme="ButtonTheme.Primary"
-                                Text="Select" />
+                                Text="Select"
+                                data-bs-target="@this._recipeModal.Id"
+                                data-bs-toggle="modal" />
                     </div>
                 </div>
             </div>
         }
     </div>
-
-</div>
-
-<hr />
-
-<div class="container">
-
-    @if (_selectedRecipe is not null)
-    {
-        <h2>@_selectedRecipe.Name</h2>
-
-        <h4>Ingredients</h4>
-
-        <ul class="list-group">
-            @foreach (var ingredient in _selectedRecipe.Ingredients ?? [])
-            {
-                <li class="list-group-item">@ingredient.Name</li>
-            }
-        </ul>
-
-        <h4>Steps</h4>
-
-        <ul class="list-group">
-            @foreach (var step in _selectedRecipe.Steps ?? [])
-            {
-                <li class="list-group-item">@step.Instruction</li>
-            }
-        </ul>
-    }
 
 </div>
 
@@ -174,7 +148,37 @@
     </form>
 </div>
 
+<Modal @ref=this._recipeModal
+       Size="ModalSize.Large"
+       Title="@(this._selectedRecipe?.Name ?? "Loading...")">
+
+    <Body>
+        @if (this._selectedRecipe is not null)
+        {
+            <h4>Ingredients</h4>
+
+            <ul class="list-group">
+                @foreach (var ingredient in _selectedRecipe.Ingredients ?? [])
+                {
+                    <li class="list-group-item">@ingredient.Name</li>
+                }
+            </ul>
+
+            <h4>Steps</h4>
+
+            <ol class="list-group list-group-flush list-group-numbered">
+                @foreach (var step in _selectedRecipe.Steps ?? [])
+                {
+                    <li class="list-group-item">@step.Instruction</li>
+                }
+            </ol>
+        }
+    </Body>
+
+</Modal>
+
 @code {
+    private Modal _recipeModal = default!;
     private RecipeViewModel? _selectedRecipe;
 
     private async Task OnClickCreate()

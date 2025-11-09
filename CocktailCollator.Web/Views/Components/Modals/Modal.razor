@@ -1,0 +1,65 @@
+﻿<div aria-hidden="true"
+     aria-labelledby="@this.labelId"
+     class="modal fade" 
+     data-bs-backdrop="@(this.IsLocked ? "static" : " ")"
+     data-bs-keyboard="@(this.IsLocked ? "false" : "true")"
+     id="@this.modalId"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered @this.Size.CssClass">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                <h3 class="modal-title"
+                    id="@this.labelId">
+                    @this.Title
+                </h3>
+
+                <button aria-label="Close"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        type="button" />
+
+            </div>
+
+            <div class="modal-body">
+                @this.Body
+            </div>
+
+            @if (this.Footer is not null)
+            {
+                <div class="modal-footer">
+                    @this.Footer
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private readonly string labelId = $"modalLabel_{Guid.NewGuid()}";
+    private readonly string modalId = $"modal_{Guid.NewGuid()}";
+
+    public string Id
+    {
+        get => $"#{this.modalId}";
+    }
+
+    [EditorRequired]
+    [Parameter]
+    public RenderFragment Body { get; set; }
+
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    [Parameter]
+    public bool IsLocked { get; set; }
+
+    [Parameter]
+    public ModalSize Size { get; set; } = ModalSize.Medium;
+
+    [EditorRequired]
+    [Parameter]
+    public string Title { get; set; }
+}
