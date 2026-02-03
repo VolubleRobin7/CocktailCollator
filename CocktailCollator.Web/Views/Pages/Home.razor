@@ -21,6 +21,11 @@
             Theme="ButtonTheme.Secondary"
             Text="Get Recipes" />
 
+    <Button Theme="ButtonTheme.Secondary"
+            Text="Create Recipe"
+            data-bs-target="@this.CreateRecipeModalId"
+            data-bs-toggle="modal" />
+
     <div class="row">
         @foreach (var recipe in this.ViewModel.Recipes)
         {
@@ -81,73 +86,6 @@
 
 <p>@this.ViewModel.Error</p>
 
-<hr />
-
-<div class="container">
-    <form>
-        <h3>New Recipe</h3>
-
-        <InputField Input="this.CreateRecipeFormModel.Name"
-                    InvalidMessage="Name requires a value."
-                    Title="Recipe Name" />
-
-        <h4>Ingredients</h4>
-
-        <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
-                Theme="ButtonTheme.Primary"
-                Text="Add Ingredient" />
-
-        <div>
-            <ul class="list-group">
-                @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients.Input)
-                {
-                    <li class="list-group-item">
-                        <InputField Input="ingredient.Name"
-                                    InvalidMessage="Name requires a value."
-                                    Title="Ingredient Name" />
-
-                        <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
-                                Size="ButtonSize.Small"
-                                Theme="ButtonTheme.Danger"
-                                Text="Remove" />
-                    </li>
-                }
-            </ul>
-        </div>
-
-        <h4>Steps</h4>
-
-        <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Add(new())"
-                Theme="ButtonTheme.Primary"
-                Text="Add Step" />
-
-        <div>
-            <ul class="list-group">
-                @foreach (var step in this.CreateRecipeFormModel.Steps.Input)
-                {
-                    <li class="list-group-item">
-                        <InputField Input="step.Instruction"
-                                    InvalidMessage="Instruction requires a value."
-                                    Title="Step Instruction" />
-
-                        <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Remove(step)"
-                                Size="ButtonSize.Small"
-                                Theme="ButtonTheme.Danger"
-                                Text="Remove" />
-                    </li>
-                }
-            </ul>
-        </div>
-
-        <Button @onclick="this.OnClickCreate"
-                Size="ButtonSize.Large"
-                Theme="ButtonTheme.Success"
-                Text="Save Recipe"
-                class="mt-2"
-                disabled="@(!this.CreateRecipeFormModel.IsValid())" />
-    </form>
-</div>
-
 <Modal @ref=this._recipeModal
        Size="ModalSize.Large"
        Title="@(this._selectedRecipe?.Name ?? "Loading...")">
@@ -177,9 +115,87 @@
 
 </Modal>
 
+<Modal @ref=this._createRecipeModal
+       Size="ModalSize.Large"
+       Title="Create Recipe">
+
+    <Body>
+        <form>
+            <h3>New Recipe</h3>
+
+            <InputField Input="this.CreateRecipeFormModel.Name"
+                        InvalidMessage="Name requires a value."
+                        Title="Recipe Name" />
+
+            <h4>Ingredients</h4>
+
+            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
+                    Theme="ButtonTheme.Primary"
+                    Text="Add Ingredient" />
+
+            <div>
+                <ul class="list-group">
+                    @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients.Input)
+                    {
+                        <li class="list-group-item">
+                            <InputField Input="ingredient.Name"
+                                        InvalidMessage="Name requires a value."
+                                        Title="Ingredient Name" />
+
+                            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
+                                    Size="ButtonSize.Small"
+                                    Theme="ButtonTheme.Danger"
+                                    Text="Remove" />
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <h4>Steps</h4>
+
+            <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Add(new())"
+                    Theme="ButtonTheme.Primary"
+                    Text="Add Step" />
+
+            <div>
+                <ul class="list-group">
+                    @foreach (var step in this.CreateRecipeFormModel.Steps.Input)
+                    {
+                        <li class="list-group-item">
+                            <InputField Input="step.Instruction"
+                                        InvalidMessage="Instruction requires a value."
+                                        Title="Step Instruction" />
+
+                            <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Remove(step)"
+                                    Size="ButtonSize.Small"
+                                    Theme="ButtonTheme.Danger"
+                                    Text="Remove" />
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <Button @onclick="this.OnClickCreate"
+                    Size="ButtonSize.Large"
+                    Theme="ButtonTheme.Success"
+                    Text="Save Recipe"
+                    class="mt-2"
+                    data-bs-dismiss="modal"
+                    disabled="@(!this.CreateRecipeFormModel.IsValid())" />
+        </form>
+    </Body>
+
+</Modal>
+
 @code {
+    private Modal _createRecipeModal = default!;
     private Modal _recipeModal = default!;
     private RecipeViewModel? _selectedRecipe;
+
+    private string CreateRecipeModalId
+    {
+        get => this._createRecipeModal?.Id ?? "";
+    }
 
     private async Task OnClickCreate()
     {
