@@ -1,0 +1,94 @@
+﻿@using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.ViewModels.Recipes
+@using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Inputs
+@using CocktailCollator.Web.Views.Components.Modals
+
+@inject CreateRecipeFormModel CreateRecipeFormModel
+@inject RecipesViewModel RecipesViewModel
+
+<Modal @ref=this.Modal
+       Size="ModalSize.Large"
+       Title="Create Recipe">
+
+    <Body>
+        <form>
+            <h3>New Recipe</h3>
+
+            <InputField Input="this.CreateRecipeFormModel.Name"
+                        InvalidMessage="Name requires a value."
+                        Title="Recipe Name" />
+
+            <h4>Ingredients</h4>
+
+            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
+                    Theme="ButtonTheme.Primary"
+                    Text="Add Ingredient" />
+
+            <div>
+                <ul class="list-group">
+                    @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients.Input)
+                    {
+                        <li class="list-group-item">
+                            <InputField Input="ingredient.Name"
+                                        InvalidMessage="Name requires a value."
+                                        Title="Ingredient Name" />
+
+                            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
+                                    Size="ButtonSize.Small"
+                                    Theme="ButtonTheme.Danger"
+                                    Text="Remove" />
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <h4>Steps</h4>
+
+            <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Add(new())"
+                    Theme="ButtonTheme.Primary"
+                    Text="Add Step" />
+
+            <div>
+                <ul class="list-group">
+                    @foreach (var step in this.CreateRecipeFormModel.Steps.Input)
+                    {
+                        <li class="list-group-item">
+                            <InputField Input="step.Instruction"
+                                        InvalidMessage="Instruction requires a value."
+                                        Title="Step Instruction" />
+
+                            <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Remove(step)"
+                                    Size="ButtonSize.Small"
+                                    Theme="ButtonTheme.Danger"
+                                    Text="Remove" />
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <Button @onclick="this.OnClickCreate"
+                    Size="ButtonSize.Large"
+                    Theme="ButtonTheme.Success"
+                    Text="Save Recipe"
+                    class="mt-2"
+                    data-bs-dismiss="modal"
+                    disabled="@(!this.CreateRecipeFormModel.IsValid())" />
+        </form>
+    </Body>
+
+</Modal>
+
+@code {
+    public Modal Modal { get; private set; } = default!;
+
+    [Parameter]
+    public EventCallback OnAfterCreation { get; set; }
+
+    private async Task OnClickCreate()
+    {
+        await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
+        this.CreateRecipeFormModel.ResetToDefault();
+        await this.OnAfterCreation.InvokeAsync();
+    }
+}
