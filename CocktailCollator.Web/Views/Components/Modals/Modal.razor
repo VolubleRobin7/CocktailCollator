@@ -46,8 +46,7 @@
         get => $"#{this.modalId}";
     }
 
-    [EditorRequired]
-    [Parameter]
+    [EditorRequired, Parameter]
     public RenderFragment Body { get; set; }
 
     [Parameter]
@@ -59,7 +58,6 @@
     [Parameter]
     public ModalSize Size { get; set; } = ModalSize.Medium;
 
-    [EditorRequired]
-    [Parameter]
+    [EditorRequired, Parameter]
     public string Title { get; set; }
 }

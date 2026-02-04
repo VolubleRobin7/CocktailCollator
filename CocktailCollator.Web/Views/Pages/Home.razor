@@ -3,6 +3,7 @@
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
+@using CocktailCollator.Web.Views.Components.Navbars
 @using CocktailCollator.Web.Views.Modals
 
 @inject CreateRecipeFormModel CreateRecipeFormModel
@@ -12,11 +13,9 @@
 
 <PageTitle>Home</PageTitle>
 
-<div class="container">
+<Navbar CurrentPage="recipe" />
 
-    <h1>Cocktail Collator</h1>
-
-    <hr />
+<div class="container pt-2">
 
     <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
             Theme="ButtonTheme.Secondary"
@@ -48,7 +47,7 @@
                                 Size="ButtonSize.Small"
                                 Theme="ButtonTheme.Primary"
                                 Text="Select"
-                                data-bs-target="@this._recipeModal.Id"
+                                data-bs-target="@this.RecipeModalId"
                                 data-bs-toggle="modal" />
                     </div>
                 </div>
@@ -127,5 +126,10 @@
     private string CreateRecipeModalId
     {
         get => this._createRecipeModal?.Modal.Id ?? "";
+    }
+
+    private string RecipeModalId
+    {
+        get => this._recipeModal?.Id ?? "";
     }
 }
