@@ -18,11 +18,11 @@
 <div class="container pt-2">
 
     <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
-            Theme="ButtonTheme.Secondary"
-            Text="Get Recipes" />
+            Text="Get Recipes"
+            Theme="ButtonTheme.Secondary" />
 
-    <Button Theme="ButtonTheme.Secondary"
-            Text="Create Recipe"
+    <Button Text="Create Recipe" 
+            Theme="ButtonTheme.Secondary"
             data-bs-target="@this.CreateRecipeModalId"
             data-bs-toggle="modal" />
 
@@ -45,8 +45,8 @@
                         </ul>
                         <Button @onclick="() => this._selectedRecipe = recipe"
                                 Size="ButtonSize.Small"
-                                Theme="ButtonTheme.Primary"
                                 Text="Select"
+                                Theme="ButtonTheme.Primary"
                                 data-bs-target="@this.RecipeModalId"
                                 data-bs-toggle="modal" />
                     </div>
@@ -85,6 +85,13 @@
             </ol>
         }
     </Body>
+
+    <Footer>
+        <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(this._selectedRecipe!.RecipeId)"
+                Text="Delete"
+                Theme="ButtonTheme.Danger"
+                data-bs-dismiss="modal" />
+    </Footer>
 
 </Modal>
 
