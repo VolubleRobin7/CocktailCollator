@@ -1,4 +1,5 @@
 ﻿@using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
@@ -6,6 +7,7 @@
 
 @inject CreateRecipeFormModel CreateRecipeFormModel
 @inject RecipesViewModel RecipesViewModel
+@inject IngredientsViewModel IngredientsViewModel
 
 <Modal @ref=this.Modal
        Size="ModalSize.Large"
@@ -19,7 +21,7 @@
                         InvalidMessage="Name requires a value."
                         Title="Recipe Name" />
 
-            <h4>Ingredients</h4>
+            @* <h4>Ingredients</h4>
 
             <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
                     Theme="ButtonTheme.Primary"
@@ -41,6 +43,114 @@
                         </li>
                     }
                 </ul>
+            </div> *@
+
+            <h4>Ingredients (Custom)</h4>
+
+            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
+                    Theme="ButtonTheme.Primary"
+                    Text="Add Ingredient" />
+
+            <div class="accordion"
+                 id="createRecipeIngredientAccordion">
+
+                <div class="accordion-item">
+                    @for (var ingredientIndex = 0; ingredientIndex < this.CreateRecipeFormModel.Ingredients.Input.Count; ingredientIndex++)
+                    {
+                        <h2 class="accordion-header">
+                            <button aria-expanded="true"
+                                    aria-controls="@($"collapseIngredient{ingredientIndex}")"
+                                    class="accordion-button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="@($"#collapseIngredient{ingredientIndex}")"
+                                    type="button">
+                                @this.CreateRecipeFormModel.Ingredients.Input[ingredientIndex].Name.Input
+                            </button>
+                        </h2>
+
+                        <div class="accordion-collapse collapse"
+                             data-bs-parent="#createRecipeIngredientAccordion"
+                             id="@($"collapseIngredient{ingredientIndex}")">
+
+                            <div class="accordion-body">
+                                @* This now needs to be made into a searchable downdown *@
+                                @* I originally changed this to an accordion because i thought that would work better but now I am not sure *@
+                                <div class="row">
+                                    <div class="col-2">
+                                        <label class="form-label">Amount</label>
+                                        <input class="form-control"
+                                               disabled
+                                               type="text">
+                                    </div>
+
+                                    <div class="col-2">
+                                        <label class="form-label">Type</label>
+                                        <input class="form-control"
+                                               disabled
+                                               type="text">
+                                    </div>
+
+
+                                    <div class="col-8">
+                                        <label class="form-label">Name</label>
+                                        <div class="input-group flex-nowrap">
+                                            <input @bind-value="this.CreateRecipeFormModel.Ingredients.Input[ingredientIndex].Name.Input"
+                                                   class="form-control flex-grow-1 @(this.CreateRecipeFormModel.Ingredients.Input[ingredientIndex].Name.IsValid() ? "is-valid" : "is-invalid")"
+                                                   placeholder="Placeholder"
+                                                   type="text" />
+
+                                            <button aria-expanded="false"
+                                                    class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                                                    data-bs-toggle="dropdown"
+                                                    type="button">
+                                                <span class="visually-hidden">Toggle Dropdown</span>
+                                            </button>
+
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <input @bind-value:event="oninput"
+                                                           @bind-value:get="this._searchString"
+                                                           @bind-value:set="this.SetSearchValue"
+                                                           class="form-control mb-2"
+                                                           placeholder="Type to search..."
+                                                           type="text" />
+                                                </li>
+
+                                                @if (this._searchString.Length > 0)
+                                                {
+                                                    foreach (var ingredient in this._searchResults)
+                                                    {
+                                                        <li>
+                                                            <span @onclick="@(() => this.CreateRecipeFormModel.Ingredients.Input[ingredientIndex - 1].Name.Input = ingredient.Name ?? "")"
+                                                                  class="dropdown-item">
+                                                                @ingredient.Name
+                                                            </span>
+                                                        </li>
+                                                    }
+                                                }
+
+                                                <li>
+                                                    <hr class="dropdown-divider" />
+                                                </li>
+
+                                                <li>
+                                                    <span class="dropdown-item">Create new ingredient...</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(this.CreateRecipeFormModel.Ingredients.Input[ingredientIndex - 1])"
+                                        Size="ButtonSize.Small"
+                                        Theme="ButtonTheme.Danger"
+                                        Text="Remove" />
+                            </div>
+
+                        </div>
+                    }
+                </div>
+
             </div>
 
             <h4>Steps</h4>
@@ -90,5 +200,23 @@
         await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
         this.CreateRecipeFormModel.ResetToDefault();
         await this.OnAfterCreation.InvokeAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // This actually is problematic, I think it actually waits on this
+        await this.IngredientsViewModel.GetCommand.ExecuteAsync(default);
+    }
+
+    private string _searchString = "";
+    private List<IngredientViewModel> _searchResults = [];
+
+    private void SetSearchValue(string? value)
+    {
+        this._searchString = value ?? "";
+        this._searchResults = this.IngredientsViewModel.Ingredients
+            .Where(ingredient => ingredient.Name is not null && ingredient.Name.Contains(this._searchString, StringComparison.OrdinalIgnoreCase))
+            .Take(3)
+            .ToList();
     }
 }
