@@ -1,0 +1,92 @@
+﻿@using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.ViewModels.Ingredients
+
+@inject IngredientsViewModel IngredientsViewModel
+
+<div class="row">
+    <div class="col-2">
+        <label class="form-label">Amount</label>
+        <input class="form-control"
+               disabled
+               type="text">
+    </div>
+
+    <div class="col-2">
+        <label class="form-label">Type</label>
+        <input class="form-control"
+               disabled
+               type="text">
+    </div>
+
+    <div class="col-8">
+        <label class="form-label">Name</label>
+        <div class="input-group flex-nowrap">
+            <input @bind-value="this.Ingredient.Name.Input"
+                   class="form-control flex-grow-1 @(this.Ingredient.Name.IsValid() ? "is-valid" : "is-invalid")"
+                   placeholder="Select an ingredient..."
+                   type="text" />
+
+            <button aria-expanded="false"
+                    class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                    data-bs-toggle="dropdown"
+                    type="button">
+                <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+
+            <ul class="dropdown-menu">
+                <li>
+                    <input @bind-value:event="oninput"
+                           @bind-value:get="this._searchString"
+                           @bind-value:set="this.SetSearchValue"
+                           class="form-control mb-2"
+                           placeholder="Type to search..."
+                           type="text" />
+                </li>
+
+                @if (this._searchString.Length > 0)
+                {
+                    foreach (var ingredientSearchResult in this._searchResults)
+                    {
+                        <li>
+                            <span @onclick="@(() => this.Ingredient.Name.Input = ingredientSearchResult.Name ?? "")"
+                                  class="dropdown-item">
+                                @ingredientSearchResult.Name
+                            </span>
+                        </li>
+                    }
+                }
+
+                <li>
+                    <hr class="dropdown-divider" />
+                </li>
+
+                <li>
+                    <span class="dropdown-item">Create new ingredient...</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _searchString = "";
+    private List<IngredientViewModel> _searchResults = [];
+
+    [EditorRequired, Parameter]
+    public CreateRecipeFormModelIngredient Ingredient { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // This actually is problematic, I think it actually waits on this
+        await this.IngredientsViewModel.GetCommand.ExecuteAsync(default);
+    }
+
+    private void SetSearchValue(string? value)
+    {
+        this._searchString = value ?? "";
+        this._searchResults = this.IngredientsViewModel.Ingredients
+            .Where(ingredient => ingredient.Name is not null && ingredient.Name.Contains(this._searchString, StringComparison.OrdinalIgnoreCase))
+            .Take(3)
+            .ToList();
+    }
+}
