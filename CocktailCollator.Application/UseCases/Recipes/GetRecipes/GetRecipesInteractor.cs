@@ -17,7 +17,8 @@ public class GetRecipesInteractor(ICocktailDbContext dbContext)
                     {
                         RecipeId = ri.RecipeId,
                         IngredientId = ri.IngredientId,
-                        Ingredient = ri.Ingredient
+                        Ingredient = ri.Ingredient,
+                        Amount = ri.Amount
                     })
                     .ToList(),
                 Steps = r.Steps

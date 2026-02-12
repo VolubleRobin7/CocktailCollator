@@ -25,11 +25,23 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : Db
         _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(CocktailDbContext).Assembly);
     }
 
+    // Create Migration Command
+    // dotnet ef migrations add NAME --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
+    //
+    // Remove Previous Migration Command (Can only do before being applied I think)
+    // dotnet ef migrations remove --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
+    //
+    // Apply Migration Command
+    // dotnet ef database update --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
+
     private static void AddEntities(ModelBuilder modelBuilder)
     {
         _ = modelBuilder.Entity<Recipe>();
         _ = modelBuilder.Entity<Ingredient>();
         _ = modelBuilder.Entity<RecipeStep>();
         _ = modelBuilder.Entity<RecipeIngredient>();
+        _ = modelBuilder.Entity<Measurement>();
+        _ = modelBuilder.Entity<IngredientMeasurement>();
+        _ = modelBuilder.Entity<IngredientCategory>();
     }
 }

@@ -1,13 +1,10 @@
 ﻿namespace CocktailCollator.Domain.Entities;
 
-public class RecipeIngredient
+public class IngredientMeasurement
 {
-    public Guid RecipeId { get; set; }
     public Guid IngredientId { get; set; }
-    public required decimal Amount { get; set; }
     public Guid MeasurementId { get; set; }
 
-    public Recipe? Recipe { get; set; }
     public Ingredient? Ingredient { get; set; }
     public Measurement? Measurement { get; set; }
 }

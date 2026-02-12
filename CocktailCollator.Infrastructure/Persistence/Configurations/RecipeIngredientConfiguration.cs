@@ -17,5 +17,13 @@ public class RecipeIngredientConfiguration : IEntityTypeConfiguration<RecipeIngr
         _ = builder.HasOne(ri => ri.Ingredient)
                .WithMany(i => i.Recipes)
                .HasForeignKey(ri => ri.IngredientId);
+
+        _ = builder.Property(ri => ri.Amount)
+            .HasPrecision(9, 4);
+
+        _ = builder.HasOne(ri => ri.Measurement)
+            .WithMany(m => m.RecipeIngredients)
+            .HasForeignKey(ri => ri.MeasurementId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
