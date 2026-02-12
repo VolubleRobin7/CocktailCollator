@@ -8,7 +8,7 @@ namespace CocktailCollator.Web.FormModels.Recipes;
 public class CreateRecipeFormModel(IMapper mapper) : IFormModel<CreateRecipeInputPort>
 {
     public InputProperty<List<CreateRecipeFormModelIngredient>> Ingredients { get; set; }
-        = new(() => [], (inputList) => inputList.All(ingredient => ingredient.Name.IsValid()));
+        = new(() => [], ValidateIngredients);
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputProperty<List<CreateRecipeFormModelStep>> Steps { get; set; }
@@ -26,12 +26,29 @@ public class CreateRecipeFormModel(IMapper mapper) : IFormModel<CreateRecipeInpu
         this.Steps.ResetToDefault();
         this.Ingredients.ResetToDefault();
     }
+
+    private static bool ValidateIngredients(List<CreateRecipeFormModelIngredient> ingredients)
+    {
+        return ingredients.All(ingredient => ingredient.Name.IsValid()
+            && ingredient.Amount.IsValid()
+            && ingredient.Measurement.IsValid());
+    }
 }
 
 public class CreateRecipeFormModelIngredient
 {
+    public InputProperty<decimal> Amount { get; set; }
+        = new(() => 0m, (input) => true);
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
+    public InputProperty<CreateRecipeFormModelMeasurement> Measurement { get; set; }
+        = new(() => new(), (input) => input.Name.IsValid());
+}
+
+public class CreateRecipeFormModelMeasurement
+{
+    public InputProperty<string> Name { get; set; }
+        = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input) && input.Length <= 20);
 }
 
 public class CreateRecipeFormModelStep

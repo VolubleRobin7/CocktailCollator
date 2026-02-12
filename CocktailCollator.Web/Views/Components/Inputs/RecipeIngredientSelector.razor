@@ -13,8 +13,8 @@
 
     <div class="col-2">
         <label class="form-label">Type</label>
-        <input class="form-control"
-               disabled
+        <input @bind-value="this.Ingredient.Measurement.Input.Name.Input"
+               class="form-control"
                type="text">
     </div>
 

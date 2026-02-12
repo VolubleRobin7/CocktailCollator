@@ -9,6 +9,13 @@ public class CreateRecipeInputPort
 
 public class CreateRecipeInputPortIngredient
 {
+    public decimal Amount { get; set; } = 1m;
+    public required CreateRecipeInputPortMeasurement Measurement { get; set; }
+    public required string Name { get; set; }
+}
+
+public class CreateRecipeInputPortMeasurement
+{
     public required string Name { get; set; }
 }
 

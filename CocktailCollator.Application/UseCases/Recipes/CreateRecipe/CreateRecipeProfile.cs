@@ -15,5 +15,7 @@ public class CreateRecipeProfile : Profile
             .ForMember(d => d.Ingredient, o => o.MapFrom(src => src));
 
         _ = this.CreateMap<CreateRecipeInputPortStep, RecipeStep>();
+
+        _ = this.CreateMap<CreateRecipeInputPortMeasurement, Measurement>();
     }
 }

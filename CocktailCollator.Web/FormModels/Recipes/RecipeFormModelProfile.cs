@@ -14,6 +14,11 @@ public class RecipeFormModelProfile : Profile
             .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients.Input));
 
         _ = this.CreateMap<CreateRecipeFormModelIngredient, CreateRecipeInputPortIngredient>()
+            .ForMember(d => d.Amount, o => o.MapFrom(s => s.Amount.Input))
+            .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input))
+            .ForMember(d => d.Measurement, o => o.MapFrom(s => s.Measurement.Input));
+
+        _ = this.CreateMap<CreateRecipeFormModelMeasurement, CreateRecipeInputPortMeasurement>()
             .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input));
 
         _ = this.CreateMap<CreateRecipeFormModelStep, CreateRecipeInputPortStep>()
