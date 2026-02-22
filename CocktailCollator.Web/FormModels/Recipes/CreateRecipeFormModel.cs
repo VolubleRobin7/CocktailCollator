@@ -38,7 +38,7 @@ public class CreateRecipeFormModel(IMapper mapper) : IFormModel<CreateRecipeInpu
 public class CreateRecipeFormModelIngredient
 {
     public InputProperty<decimal> Amount { get; set; }
-        = new(() => 0m, (input) => true);
+        = new(() => 1m, (input) => true);
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputProperty<CreateRecipeFormModelMeasurement> Measurement { get; set; }

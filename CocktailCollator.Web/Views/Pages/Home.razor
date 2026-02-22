@@ -40,7 +40,7 @@
                         <ul class="list-group list-group-flush">
                             @foreach (var ingredient in recipe.Ingredients?.Take(3) ?? [])
                             {
-                                <li class="list-group-item">@ingredient.Name</li>
+                                <li class="list-group-item">@ingredient.Ingredient.Name</li>
                             }
                         </ul>
                         <Button @onclick="() => this._selectedRecipe = recipe"
@@ -71,7 +71,7 @@
             <ul class="list-group">
                 @foreach (var ingredient in _selectedRecipe.Ingredients ?? [])
                 {
-                    <li class="list-group-item">@ingredient.Name</li>
+                    <li class="list-group-item">@($"{ingredient.Amount} {ingredient.Measurement.Name}: {ingredient.Ingredient.Name}")</li>
                 }
             </ul>
 

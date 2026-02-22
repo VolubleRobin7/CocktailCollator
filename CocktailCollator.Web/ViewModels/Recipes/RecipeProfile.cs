@@ -7,7 +7,6 @@ public class RecipeProfile : Profile
 {
     public RecipeProfile()
     {
-        _ = this.CreateMap<Recipe, RecipeViewModel>()
-            .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients!.Select(ri => ri.Ingredient)));
+        _ = this.CreateMap<Recipe, RecipeViewModel>();
     }
 }

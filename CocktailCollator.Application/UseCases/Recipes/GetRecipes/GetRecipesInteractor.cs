@@ -15,10 +15,12 @@ public class GetRecipesInteractor(ICocktailDbContext dbContext)
                 Ingredients = r.Ingredients!
                     .Select(ri => new RecipeIngredient
                     {
-                        RecipeId = ri.RecipeId,
-                        IngredientId = ri.IngredientId,
+                        Amount = ri.Amount,
                         Ingredient = ri.Ingredient,
-                        Amount = ri.Amount
+                        IngredientId = ri.IngredientId,
+                        Measurement = ri.Measurement,
+                        MeasurementId = ri.MeasurementId,
+                        RecipeId = ri.RecipeId,
                     })
                     .ToList(),
                 Steps = r.Steps
