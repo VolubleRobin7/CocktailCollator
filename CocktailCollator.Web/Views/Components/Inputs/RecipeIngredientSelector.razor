@@ -24,6 +24,7 @@
 
             <button aria-expanded="false"
                     class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                    disabled="@(this.Ingredient.Name.Input == "")"
                     data-bs-toggle="dropdown"
                     type="button">
                 <span class="visually-hidden">Toggle Dropdown</span>
@@ -136,12 +137,17 @@
             this.Ingredient.ExistingIngredientId = ingredient.IngredientId;
         }
 
+        this.SelectMeasurement(ingredient?.Measurements?.Count == 1 ? ingredient.Measurements.First() : null);
         this.SetMeasurementSearchValue("");
     }
 
-    private void SelectMeasurement(MeasurementViewModel measurement)
+    private void SelectMeasurement(MeasurementViewModel? measurement)
     {
-        this.Ingredient.Measurement.Input = measurement.MeasurementId;
+        if (measurement is null)
+            this.Ingredient.Measurement.ResetToDefault();
+        else
+            this.Ingredient.Measurement.Input = measurement.MeasurementId;
+
         this.Ingredient.MeasurementModel = measurement;
     }
 
