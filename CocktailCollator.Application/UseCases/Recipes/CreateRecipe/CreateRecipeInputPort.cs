@@ -2,19 +2,20 @@
 
 public class CreateRecipeInputPort
 {
-    public List<CreateRecipeInputPortIngredient> Ingredients { get; set; } = [];
+    public List<CreateRecipeInputPortRecipeIngredient> Ingredients { get; set; } = [];
     public required string Name { get; set; }
     public List<CreateRecipeInputPortStep> Steps { get; set; } = [];
 }
 
-public class CreateRecipeInputPortIngredient
+public class CreateRecipeInputPortRecipeIngredient
 {
     public decimal Amount { get; set; } = 1m;
-    public required CreateRecipeInputPortMeasurement Measurement { get; set; }
-    public required string Name { get; set; }
+    public CreateRecipeInputPortIngredient? Ingredient { get; set; }
+    public Guid IngredientId { get; set; }
+    public required Guid MeasurementId { get; set; }
 }
 
-public class CreateRecipeInputPortMeasurement
+public class CreateRecipeInputPortIngredient
 {
     public required string Name { get; set; }
 }

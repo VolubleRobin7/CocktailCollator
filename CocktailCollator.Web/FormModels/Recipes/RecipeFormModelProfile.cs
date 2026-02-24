@@ -13,12 +13,13 @@ public class RecipeFormModelProfile : Profile
             .ForMember(d => d.Steps, o => o.MapFrom(s => s.Steps.Input))
             .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients.Input));
 
-        _ = this.CreateMap<CreateRecipeFormModelIngredient, CreateRecipeInputPortIngredient>()
+        _ = this.CreateMap<CreateRecipeFormModelIngredient, CreateRecipeInputPortRecipeIngredient>()
             .ForMember(d => d.Amount, o => o.MapFrom(s => s.Amount.Input))
-            .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input))
-            .ForMember(d => d.Measurement, o => o.MapFrom(s => s.Measurement.Input));
+            .ForMember(d => d.Ingredient, o => o.MapFrom(s => s.UsingExistingIngredient.Input ? null : s))
+            .ForMember(d => d.IngredientId, o => o.MapFrom(s => s.UsingExistingIngredient.Input ? s.ExistingIngredientId : Guid.Empty))
+            .ForMember(d => d.MeasurementId, o => o.MapFrom(s => s.Measurement.Input));
 
-        _ = this.CreateMap<CreateRecipeFormModelMeasurement, CreateRecipeInputPortMeasurement>()
+        _ = this.CreateMap<CreateRecipeFormModelIngredient, CreateRecipeInputPortIngredient>()
             .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input));
 
         _ = this.CreateMap<CreateRecipeFormModelStep, CreateRecipeInputPortStep>()

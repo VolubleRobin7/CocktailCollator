@@ -2,11 +2,14 @@
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 using CocktailCollator.Web.Common.Generics;
 using CocktailCollator.Web.Common.Interfaces;
+using CocktailCollator.Web.ViewModels.Measurements;
 
 namespace CocktailCollator.Web.FormModels.Recipes;
 
 public class CreateRecipeFormModel(IMapper mapper) : IFormModel<CreateRecipeInputPort>
 {
+    // I'm now more thinking that these should be more like List<InputProp<object...
+    // That would allow more precise control, could set better validation, and reset per item
     public InputProperty<List<CreateRecipeFormModelIngredient>> Ingredients { get; set; }
         = new(() => [], ValidateIngredients);
     public InputProperty<string> Name { get; set; }
@@ -41,14 +44,12 @@ public class CreateRecipeFormModelIngredient
         = new(() => 1m, (input) => true);
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
-    public InputProperty<CreateRecipeFormModelMeasurement> Measurement { get; set; }
-        = new(() => new(), (input) => input.Name.IsValid());
-}
-
-public class CreateRecipeFormModelMeasurement
-{
-    public InputProperty<string> Name { get; set; }
-        = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input) && input.Length <= 20);
+    public InputProperty<Guid> Measurement { get; set; }
+        = new(() => Guid.Empty, (input) => input != Guid.Empty);
+    public MeasurementViewModel? MeasurementModel { get; set; }
+    public InputProperty<bool> UsingExistingIngredient { get; set; }
+        = new(() => true, (_) => true);
+    public Guid ExistingIngredientId { get; set; }
 }
 
 public class CreateRecipeFormModelStep

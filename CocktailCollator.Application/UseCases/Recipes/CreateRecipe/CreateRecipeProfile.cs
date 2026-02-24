@@ -11,11 +11,13 @@ public class CreateRecipeProfile : Profile
 
         _ = this.CreateMap<CreateRecipeInputPortIngredient, Ingredient>();
 
-        _ = this.CreateMap<CreateRecipeInputPortIngredient, RecipeIngredient>()
-            .ForMember(d => d.Ingredient, o => o.MapFrom(src => src));
+        _ = this.CreateMap<CreateRecipeInputPortRecipeIngredient, RecipeIngredient>()
+            .AfterMap((src, dest) =>
+            {
+                if (dest.Ingredient is not null)
+                    dest.Ingredient.Measurements = [new() { MeasurementId = dest.MeasurementId }];
+            });
 
         _ = this.CreateMap<CreateRecipeInputPortStep, RecipeStep>();
-
-        _ = this.CreateMap<CreateRecipeInputPortMeasurement, Measurement>();
     }
 }
