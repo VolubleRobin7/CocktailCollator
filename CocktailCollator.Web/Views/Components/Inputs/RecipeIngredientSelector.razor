@@ -3,6 +3,7 @@
 @using CocktailCollator.Web.ViewModels.Measurements
 
 @inject IngredientsViewModel IngredientsViewModel
+@inject MeasurementsViewModel MeasurementsViewModel
 
 <div class="row">
     <div class="col-2">
@@ -116,8 +117,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // This actually is problematic, I think it actually waits on this
+        // This actually is problematic, I think it actually waits on these
         await this.IngredientsViewModel.GetCommand.ExecuteAsync(default);
+        await this.MeasurementsViewModel.GetCommand.ExecuteAsync(default);
     }
 
     private void SelectIngredient(IngredientViewModel? ingredient)
@@ -133,6 +135,8 @@
             this.Ingredient.Name.Input = ingredient.Name ?? "";
             this.Ingredient.ExistingIngredientId = ingredient.IngredientId;
         }
+
+        this.SetMeasurementSearchValue("");
     }
 
     private void SelectMeasurement(MeasurementViewModel measurement)
@@ -157,16 +161,14 @@
         if (this.Ingredient.UsingExistingIngredient.Input)
         {
             var _SelectedIngredient = this.IngredientsViewModel.Ingredients.First(i => i.IngredientId == this.Ingredient.ExistingIngredientId);
-            this._measurementSearchResults = _SelectedIngredient.Measurements
+            this._measurementSearchResults = _SelectedIngredient.Measurements?
                 .Where(measurement => measurement.Name is not null && measurement.Name.Contains(this._measurementSearchString, StringComparison.OrdinalIgnoreCase))
                 .Take(3)
-                .ToList();
+                .ToList() ?? [];
         }
         else
         {
-            // just for testing, make a use case and view model
-            var _Measurements = this.IngredientsViewModel.Ingredients.SelectMany(i => i.Measurements);
-            this._measurementSearchResults = _Measurements
+            this._measurementSearchResults = this.MeasurementsViewModel.Measurements
                 .Where(measurement => measurement.Name is not null && measurement.Name.Contains(this._measurementSearchString, StringComparison.OrdinalIgnoreCase))
                 .Take(3)
                 .ToList();
