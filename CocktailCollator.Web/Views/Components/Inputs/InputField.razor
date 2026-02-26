@@ -3,6 +3,7 @@
 <div @attributes="this.AdditionalAttributes">
     <label class="form-label">@this.Title</label>
     <input @bind-value="this.Input.Input"
+           @bind-value:event="@(this.UpdateOnlyOnFocusLoss ? "onchange" : "oninput")"
            class="form-control @(this.Input.IsValid() ? "is-valid" : "is-invalid")"
            type="text" />
     <div class="form-text">@this.Subtext</div>
@@ -30,6 +31,9 @@
     [EditorRequired]
     [Parameter]
     public string Title { get; set; }
+
+    [Parameter]
+    public bool UpdateOnlyOnFocusLoss { get; set; }
 
     [Parameter]
     public string? ValidMessage { get; set; } = null;

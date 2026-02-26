@@ -57,6 +57,7 @@
         <label class="form-label">Name</label>
         <div class="input-group flex-nowrap">
             <input @bind-value="this.Ingredient.Name.Input"
+                   @bind-value:event="oninput"
                    class="form-control flex-grow-1 @(this.Ingredient.Name.IsValid() ? "is-valid" : "is-invalid")"
                    disabled="@this.Ingredient.UsingExistingIngredient.Input"
                    placeholder="Select an ingredient..."
