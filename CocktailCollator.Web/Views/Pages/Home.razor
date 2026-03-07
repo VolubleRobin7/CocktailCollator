@@ -21,10 +21,9 @@
             Text="Get Recipes"
             Theme="ButtonTheme.Secondary" />
 
-    <Button Text="Create Recipe" 
-            Theme="ButtonTheme.Secondary"
-            data-bs-target="@this.CreateRecipeModalId"
-            data-bs-toggle="modal" />
+    <Button @onclick="() => this._createRecipeModal.OpenModalAsync()"
+            Text="Create Recipe"
+            Theme="ButtonTheme.Secondary" />
 
     <div class="row">
         @foreach (var recipe in this.ViewModel.Recipes)
@@ -102,11 +101,6 @@
     private CreateRecipeModal _createRecipeModal = default!;
     private Modal _recipeModal = default!;
     private RecipeViewModel? _selectedRecipe;
-
-    private string CreateRecipeModalId
-    {
-        get => this._createRecipeModal?.Modal.Id ?? "";
-    }
 
     private string RecipeModalId
     {

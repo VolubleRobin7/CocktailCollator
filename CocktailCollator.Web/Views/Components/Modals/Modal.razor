@@ -1,9 +1,11 @@
-﻿<div aria-hidden="true"
-     aria-labelledby="@this.labelId"
+﻿@inject IJSRuntime JsRuntime
+
+<div aria-hidden="true"
+     aria-labelledby="@this._LabelId"
      class="modal fade" 
      data-bs-backdrop="@(this.IsLocked ? "static" : " ")"
      data-bs-keyboard="@(this.IsLocked ? "false" : "true")"
-     id="@this.modalId"
+     id="@this._ModalId"
      tabindex="-1">
 
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered @this.Size.CssClass">
@@ -11,7 +13,7 @@
             <div class="modal-header">
 
                 <h3 class="modal-title"
-                    id="@this.labelId">
+                    id="@this._LabelId">
                     @this.Title
                 </h3>
 
@@ -38,13 +40,11 @@
 </div>
 
 @code {
-    private readonly string labelId = $"modalLabel_{Guid.NewGuid()}";
-    private readonly string modalId = $"modal_{Guid.NewGuid()}";
+    private IJSObjectReference _JsModule = default!;
+    private readonly string _LabelId = $"modalLabel_{Guid.NewGuid()}";
+    private readonly string _ModalId = $"modal_{Guid.NewGuid()}";
 
-    public string Id
-    {
-        get => $"#{this.modalId}";
-    }
+    public string Id => $"#{this._ModalId}";
 
     [EditorRequired, Parameter]
     public RenderFragment Body { get; set; }
@@ -60,4 +60,18 @@
 
     [EditorRequired, Parameter]
     public string Title { get; set; }
+
+    public async Task CloseModalAsync()
+        => await this._JsModule.InvokeVoidAsync("closeModal", this._ModalId);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+            this._JsModule = await this.JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Views/Components/Modals/Modal.razor.js");
+    }
+
+    public async Task OpenModalAsync()
+        => await this._JsModule.InvokeVoidAsync("openModal", this._ModalId);
 }

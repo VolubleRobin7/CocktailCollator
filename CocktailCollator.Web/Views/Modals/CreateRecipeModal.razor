@@ -90,4 +90,7 @@
         this.CreateRecipeFormModel.ResetToDefault();
         await this.OnAfterCreation.InvokeAsync();
     }
+
+    public Task OpenModalAsync()
+        => this.Modal.OpenModalAsync();
 }
