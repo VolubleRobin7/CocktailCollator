@@ -5,10 +5,11 @@ namespace CocktailCollator.Application.UseCases.Measurements.CreateMeasurement;
 
 public class CreateMeasurementInteractor(ICocktailDbContext dbContext)
 {
-    public Task Interact(CreateMeasurementInputPort inputPort, ICreateMeasurementOutputPort outputPort, CancellationToken cancellationToken)
+    public async Task Interact(CreateMeasurementInputPort inputPort, ICreateMeasurementOutputPort outputPort, CancellationToken cancellationToken)
     {
         Measurement _Measurement = new() { Name = inputPort.Name };
         dbContext.Add(_Measurement);
-        return outputPort.Success(_Measurement, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await outputPort.Success(_Measurement, cancellationToken);
     }
 }

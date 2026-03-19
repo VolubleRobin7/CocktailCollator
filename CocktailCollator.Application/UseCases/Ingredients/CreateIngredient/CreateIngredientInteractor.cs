@@ -5,10 +5,11 @@ namespace CocktailCollator.Application.UseCases.Ingredients.CreateIngredient;
 
 public class CreateIngredientInteractor(ICocktailDbContext dbContext)
 {
-    public Task Interact(CreateIngredientInputPort inputPort, ICreateIngredientOutputPort outputPort, CancellationToken cancellationToken)
+    public async Task Interact(CreateIngredientInputPort inputPort, ICreateIngredientOutputPort outputPort, CancellationToken cancellationToken)
     {
         Ingredient _Ingredient = new() { Name = inputPort.Name };
         dbContext.Add(_Ingredient);
-        return outputPort.Success(_Ingredient, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await outputPort.Success(_Ingredient, cancellationToken);
     }
 }
