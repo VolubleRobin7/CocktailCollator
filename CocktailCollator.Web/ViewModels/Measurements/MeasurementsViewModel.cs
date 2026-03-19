@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CocktailCollator.Application.UseCases.Measurements.CreateMeasurement;
 using CocktailCollator.Application.UseCases.Measurements.DeleteMeasurement;
 using CocktailCollator.Application.UseCases.Measurements.GetMeasurements;
 using CocktailCollator.Domain.Entities;
@@ -8,7 +9,8 @@ namespace CocktailCollator.Web.ViewModels.Measurements;
 
 public class MeasurementsViewModel
 {
-    public IAsyncRelayCommand<Guid> DeleteCommand { get; set; }
+    public IAsyncRelayCommand<CreateMeasurementInputPort> CreateCommand { get; }
+    public IAsyncRelayCommand<Guid> DeleteCommand { get; }
     public IAsyncRelayCommand GetCommand { get; }
 
     public List<MeasurementViewModel> Measurements { get; private set; } = [];
@@ -16,10 +18,16 @@ public class MeasurementsViewModel
     public string Error { get; private set; } = string.Empty;
 
     public MeasurementsViewModel(
+        CreateMeasurementInteractor createMeasurementInteractor,
         DeleteMeasurementInteractor deleteMeasurementInteractor,
         GetMeasurementsInteractor getMeasurementsInteractor,
         IMapper mapper)
     {
+        this.CreateCommand = new AsyncRelayCommand<CreateMeasurementInputPort>((inputPort, cancellationToken)
+            => createMeasurementInteractor.Interact(
+                inputPort,
+                new CreateMeasurementPresenter(mapper, this),
+                cancellationToken));
         this.DeleteCommand = new AsyncRelayCommand<Guid>((measurementId, cancellationToken)
             => deleteMeasurementInteractor.Interact(
                 new() { MeasurementId = measurementId },
@@ -30,6 +38,15 @@ public class MeasurementsViewModel
             => getMeasurementsInteractor.Interact(
                 new GetMeasurementsPresenter(mapper, this),
                 cancellationToken));
+    }
+
+    private class CreateMeasurementPresenter(IMapper mapper, MeasurementsViewModel viewModel) : ICreateMeasurementOutputPort
+    {
+        Task ICreateMeasurementOutputPort.Success(Measurement measurement, CancellationToken cancellationToken)
+        {
+            viewModel.Measurements.Add(mapper.Map<MeasurementViewModel>(measurement));
+            return Task.CompletedTask;
+        }
     }
 
     private class DeleteMeasurementPresenter(MeasurementsViewModel viewModel) : IDeleteMeasurementOutputPort
