@@ -1,8 +1,10 @@
-﻿@using CocktailCollator.Web.ViewModels.Ingredients
+﻿@using CocktailCollator.Web.ViewModels.IngredientCategories
+@using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Navbars
 
 @inject IngredientsViewModel ViewModel
+@inject IngredientCategoriesViewModel IngredientCategoriesViewModel
 
 @page "/ingredients"
 
@@ -15,6 +17,10 @@
     <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
             Theme="ButtonTheme.Secondary"
             Text="Get Ingredients" />
+            
+    <Button @onclick="@(() => this.IngredientCategoriesViewModel.CreateCommand.ExecuteAsync(new() { Name = "Test Category" }))"
+            Text="Create Ingredient Category"
+            Theme="ButtonTheme.Warning" />
 
     <ul class="list-group list-group-flush">
         @foreach (var ingredient in this.ViewModel.Ingredients)
