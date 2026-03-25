@@ -2,6 +2,7 @@
 @using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Navbars
+@using CocktailCollator.Web.Views.Modals
 
 @inject IngredientsViewModel ViewModel
 @inject IngredientCategoriesViewModel IngredientCategoriesViewModel
@@ -45,9 +46,9 @@
             Theme="ButtonTheme.Secondary"
             Text="Get Ingredient Categories" />
             
-    <Button @onclick="@(() => this.IngredientCategoriesViewModel.CreateCommand.ExecuteAsync(new() { Name = "Test Category" }))"
+    <Button @onclick="() => this._createIngredientCategoryModal.OpenModalAsync()"
             Text="Create Ingredient Category"
-            Theme="ButtonTheme.Warning" />
+            Theme="ButtonTheme.Secondary" />
 
     <ul class="list-group list-group-flush">
         @foreach (var ingredientCategory in this.IngredientCategoriesViewModel.IngredientCategories)
@@ -70,6 +71,9 @@
 
 <p>@this.IngredientCategoriesViewModel.Error</p>
 
-@code {
+<CreateIngredientCategoryModal @ref="this._createIngredientCategoryModal"
+                               OnAfterCreation="this.StateHasChanged" />
 
+@code {
+    private CreateIngredientCategoryModal _createIngredientCategoryModal = default!;
 }
