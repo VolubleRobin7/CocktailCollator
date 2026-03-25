@@ -1,4 +1,6 @@
 ﻿using CocktailCollator.Application.UseCases.IngredientCategories.CreateIngredientCategory;
+using CocktailCollator.Application.UseCases.IngredientCategories.DeleteIngredientCategory;
+using CocktailCollator.Application.UseCases.IngredientCategories.GetIngredientCategories;
 using CocktailCollator.Application.UseCases.Ingredients.CreateIngredient;
 using CocktailCollator.Application.UseCases.Ingredients.DeleteIngredient;
 using CocktailCollator.Application.UseCases.Ingredients.GetIngredients;
@@ -29,5 +31,7 @@ public static class DependencyInjector
             .AddScoped<CreateMeasurementInteractor>()
             .AddScoped<GetMeasurementsInteractor>()
             .AddScoped<DeleteMeasurementInteractor>()
-            .AddScoped<CreateIngredientCategoryInteractor>();
+            .AddScoped<CreateIngredientCategoryInteractor>()
+            .AddScoped<GetIngredientCategoriesInteractor>()
+            .AddScoped<DeleteIngredientCategoryInteractor>();
 }

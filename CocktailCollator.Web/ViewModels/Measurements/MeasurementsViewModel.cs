@@ -28,6 +28,7 @@ public class MeasurementsViewModel
                 inputPort,
                 new CreateMeasurementPresenter(mapper, this),
                 cancellationToken));
+
         this.DeleteCommand = new AsyncRelayCommand<Guid>((measurementId, cancellationToken)
             => deleteMeasurementInteractor.Interact(
                 new() { MeasurementId = measurementId },

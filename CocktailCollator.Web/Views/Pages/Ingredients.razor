@@ -17,10 +17,6 @@
     <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
             Theme="ButtonTheme.Secondary"
             Text="Get Ingredients" />
-            
-    <Button @onclick="@(() => this.IngredientCategoriesViewModel.CreateCommand.ExecuteAsync(new() { Name = "Test Category" }))"
-            Text="Create Ingredient Category"
-            Theme="ButtonTheme.Warning" />
 
     <ul class="list-group list-group-flush">
         @foreach (var ingredient in this.ViewModel.Ingredients)
@@ -42,6 +38,37 @@
 </div>
 
 <p>@this.ViewModel.Error</p>
+
+<div class="container pt-2">
+
+    <Button @onclick="this.IngredientCategoriesViewModel.GetCommand.ExecuteAsync"
+            Theme="ButtonTheme.Secondary"
+            Text="Get Ingredient Categories" />
+            
+    <Button @onclick="@(() => this.IngredientCategoriesViewModel.CreateCommand.ExecuteAsync(new() { Name = "Test Category" }))"
+            Text="Create Ingredient Category"
+            Theme="ButtonTheme.Warning" />
+
+    <ul class="list-group list-group-flush">
+        @foreach (var ingredientCategory in this.IngredientCategoriesViewModel.IngredientCategories)
+        {
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <span class="align-content-center">
+                        @ingredientCategory.Name
+                    </span>
+                    <Button @onclick="() => this.IngredientCategoriesViewModel.DeleteCommand.ExecuteAsync(ingredientCategory.IngredientCategoryId)"
+                            Size="ButtonSize.Small"
+                            Theme="ButtonTheme.Danger"
+                            Text="Remove" />
+                </div>
+            </li>
+        }
+    </ul>
+
+</div>
+
+<p>@this.IngredientCategoriesViewModel.Error</p>
 
 @code {
 
