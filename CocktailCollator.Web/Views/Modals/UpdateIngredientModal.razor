@@ -1,0 +1,106 @@
+@using CocktailCollator.Web.FormModels.Ingredients
+@using CocktailCollator.Web.ViewModels.IngredientCategories
+@using CocktailCollator.Web.ViewModels.Ingredients
+@using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Inputs
+@using CocktailCollator.Web.Views.Components.Modals
+
+@inject UpdateIngredientFormModel UpdateIngredientFormModel
+@inject IngredientsViewModel IngredientsViewModel
+@inject IngredientCategoriesViewModel IngredientCategoriesViewModel
+
+<Modal @ref="this._modal"
+       Title="Update Ingredient">
+
+    <Body>
+        <form>
+            <h3>Update Ingredient</h3>
+
+            <InputField Input="this.UpdateIngredientFormModel.Name"
+                        InvalidMessage="Name requires a value."
+                        Title="Ingredient Name" />
+
+            <label class="form-label">Category</label>
+            <div class="input-group flex-nowrap">
+                <input class="form-control flex-grow-1"
+                       disabled
+                       placeholder="Select a category..."
+                       type="text"
+                       value="@(this.UpdateIngredientFormModel.IngredientCategory.Input?.Name ?? "")" />
+
+                <button aria-expanded="false"
+                        class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                        data-bs-toggle="dropdown"
+                        type="button">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+
+                <ul class="dropdown-menu">
+                    <li>
+                        <input @bind-value:event="oninput"
+                               @bind-value:get="this._categorySearchString"
+                               @bind-value:set="this.SetCategorySearchValue"
+                               class="form-control mb-2"
+                               placeholder="Type to search..."
+                               type="text" />
+                    </li>
+
+                    @foreach (var category in this._categorySearchResults)
+                    {
+                        <li>
+                            <span @onclick="() => this.UpdateIngredientFormModel.IngredientCategory.Input = category"
+                                  class="dropdown-item">@category.Name</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <Button @onclick="this.OnClickUpdate"
+                    Size="ButtonSize.Large"
+                    Theme="ButtonTheme.Success"
+                    Text="Save"
+                    class="mt-2"
+                    data-bs-dismiss="modal"
+                    disabled="@(!this.UpdateIngredientFormModel.IsValid())" />
+        </form>
+    </Body>
+
+</Modal>
+
+@code {
+    private List<IngredientCategoryViewModel> _categorySearchResults = [];
+    private string _categorySearchString = "";
+    private Modal _modal = default!;
+
+    [Parameter]
+    public EventCallback OnAfterUpdate { get; set; }
+
+    public async Task OpenModalAsync(Guid ingredientId)
+    {
+        var ingredient = this.IngredientsViewModel.Ingredients.First(i => i.IngredientId == ingredientId);
+
+        this.UpdateIngredientFormModel.IngredientId.Input = ingredient.IngredientId;
+        this.UpdateIngredientFormModel.Name.Input = ingredient.Name ?? string.Empty;
+        this.UpdateIngredientFormModel.IngredientCategory.Input = ingredient.Category;
+
+        await this.IngredientCategoriesViewModel.GetCommand.ExecuteAsync(default);
+
+        await this._modal.OpenModalAsync();
+    }
+
+    private async Task OnClickUpdate()
+    {
+        await this.IngredientsViewModel.UpdateCommand.ExecuteAsync(this.UpdateIngredientFormModel.ExtractToInputPort());
+        this.UpdateIngredientFormModel.ResetToDefault();
+        await this.OnAfterUpdate.InvokeAsync();
+    }
+
+    private void SetCategorySearchValue(string? value)
+    {
+        this._categorySearchString = value ?? "";
+        this._categorySearchResults = this.IngredientCategoriesViewModel.IngredientCategories
+            .Where(category => category.Name is not null && category.Name.Contains(this._categorySearchString, StringComparison.OrdinalIgnoreCase))
+            .Take(5)
+            .ToList();
+    }
+}

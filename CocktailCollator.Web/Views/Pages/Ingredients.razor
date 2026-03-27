@@ -27,10 +27,17 @@
                     <span class="align-content-center">
                         @ingredient.Name
                     </span>
-                    <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(ingredient.IngredientId)"
-                            Size="ButtonSize.Small"
-                            Theme="ButtonTheme.Danger"
-                            Text="Remove" />
+                    <div>
+                        <Button @onclick="() => this._updateIngredientModal.OpenModalAsync(ingredient.IngredientId)"
+                                Size="ButtonSize.Small"
+                                Theme="ButtonTheme.Secondary"
+                                Text="Edit" />
+
+                        <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(ingredient.IngredientId)"
+                                Size="ButtonSize.Small"
+                                Theme="ButtonTheme.Danger"
+                                Text="Remove" />
+                    </div>
                 </div>
             </li>
         }
@@ -74,6 +81,10 @@
 <CreateIngredientCategoryModal @ref="this._createIngredientCategoryModal"
                                OnAfterCreation="this.StateHasChanged" />
 
+<UpdateIngredientModal @ref="this._updateIngredientModal"
+                       OnAfterUpdate="this.StateHasChanged" />
+
 @code {
     private CreateIngredientCategoryModal _createIngredientCategoryModal = default!;
+    private UpdateIngredientModal _updateIngredientModal = default!;
 }

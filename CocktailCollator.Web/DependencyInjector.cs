@@ -1,4 +1,5 @@
 ﻿using CocktailCollator.Web.FormModels.IngredientCategories;
+using CocktailCollator.Web.FormModels.Ingredients;
 using CocktailCollator.Web.FormModels.Measurements;
 using CocktailCollator.Web.FormModels.Recipes;
 using CocktailCollator.Web.ViewModels.IngredientCategories;
@@ -19,7 +20,8 @@ public static class DependencyInjector
         => services
             .AddScoped<CreateIngredientCategoryFormModel>()
             .AddScoped<CreateMeasurementFormModel>()
-            .AddScoped<CreateRecipeFormModel>();
+            .AddScoped<CreateRecipeFormModel>()
+            .AddScoped<UpdateIngredientFormModel>();
 
     private static IServiceCollection AddViewModels(this IServiceCollection services)
         => services
