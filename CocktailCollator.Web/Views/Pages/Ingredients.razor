@@ -26,6 +26,11 @@
                 <div class="d-flex justify-content-between">
                     <span class="align-content-center">
                         @ingredient.Name
+
+                        @if (ingredient.Category is not null)
+                        {
+                            <span class="ms-1 badge text-bg-info">@ingredient.Category.Name</span>
+                        }
                     </span>
                     <div>
                         <Button @onclick="() => this._updateIngredientModal.OpenModalAsync(ingredient.IngredientId)"

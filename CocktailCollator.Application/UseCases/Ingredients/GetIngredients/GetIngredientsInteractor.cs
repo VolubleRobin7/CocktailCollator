@@ -21,6 +21,8 @@ public class GetIngredientsInteractor(ICocktailDbContext dbContext)
                         MeasurementId = im.MeasurementId,
                     })
                     .ToList(),
+                IngredientCategoryId = i.IngredientCategoryId,
+                Category = i.Category,
             });
 
         return outputPort.Success([.. _Ingredients], cancellationToken);
