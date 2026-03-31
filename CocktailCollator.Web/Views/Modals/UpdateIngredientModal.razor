@@ -28,6 +28,12 @@
                        type="text"
                        value="@(this.UpdateIngredientFormModel.IngredientCategory.Input?.Name ?? "")" />
 
+                <button @onclick="() => this.UpdateIngredientFormModel.IngredientCategory.Input = null"
+                        class="btn btn-outline-danger"
+                        type="button">
+                    Clear
+                </button>
+                
                 <button aria-expanded="false"
                         class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split flex-shrink-0"
                         data-bs-toggle="dropdown"
