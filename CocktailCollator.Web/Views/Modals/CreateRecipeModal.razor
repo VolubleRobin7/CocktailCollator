@@ -44,7 +44,7 @@
 
             <h4>Steps</h4>
 
-            <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Add(new())"
+            <Button @onclick="this.AddStep"
                     Theme="ButtonTheme.Primary"
                     Text="Add Step" />
 
@@ -57,7 +57,7 @@
                                         InvalidMessage="Instruction requires a value."
                                         Title="Step Instruction" />
 
-                            <Button @onclick="() => this.CreateRecipeFormModel.Steps.Input.Remove(step)"
+                            <Button @onclick="() => this.RemoveStep(step)"
                                     Size="ButtonSize.Small"
                                     Theme="ButtonTheme.Danger"
                                     Text="Remove" />
@@ -84,6 +84,13 @@
     [Parameter]
     public EventCallback OnAfterCreation { get; set; }
 
+    private void AddStep()
+    {
+        var step = new CreateRecipeFormModelStep();
+        step.Order.Input = this.CreateRecipeFormModel.Steps.Input.Count;
+        this.CreateRecipeFormModel.Steps.Input.Add(step);
+    }
+
     private async Task OnClickCreate()
     {
         await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
@@ -93,4 +100,11 @@
 
     public Task OpenModalAsync()
         => this.Modal.OpenModalAsync();
+
+    private void RemoveStep(CreateRecipeFormModelStep step)
+    {
+        _ = this.CreateRecipeFormModel.Steps.Input.Remove(step);
+        for (int i = 0; i < this.CreateRecipeFormModel.Steps.Input.Count; i++)
+            this.CreateRecipeFormModel.Steps.Input[i].Order.Input = i;
+    }
 }
