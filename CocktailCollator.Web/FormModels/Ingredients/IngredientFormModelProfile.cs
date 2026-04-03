@@ -3,9 +3,9 @@ using CocktailCollator.Application.UseCases.Ingredients.UpdateIngredient;
 
 namespace CocktailCollator.Web.FormModels.Ingredients;
 
-public class UpdateIngredientFormModelProfile : Profile
+public class IngredientFormModelProfile : Profile
 {
-    public UpdateIngredientFormModelProfile()
+    public IngredientFormModelProfile()
     {
         _ = this.CreateMap<UpdateIngredientFormModel, UpdateIngredientInputPort>()
             .ForMember(d => d.IngredientId, o => o.MapFrom(s => s.IngredientId.Input))

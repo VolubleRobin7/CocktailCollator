@@ -42,14 +42,14 @@ public class CreateRecipeFormModelIngredient
 {
     public InputProperty<decimal> Amount { get; set; }
         = new(() => 1m, (input) => true);
-    public InputProperty<string> Name { get; set; }
-        = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
+    public Guid ExistingIngredientId { get; set; }
     public InputProperty<Guid> Measurement { get; set; }
         = new(() => Guid.Empty, (input) => input != Guid.Empty);
     public MeasurementViewModel? MeasurementModel { get; set; }
+    public InputProperty<string> Name { get; set; }
+        = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputProperty<bool> UsingExistingIngredient { get; set; }
         = new(() => true, (_) => true);
-    public Guid ExistingIngredientId { get; set; }
 }
 
 public class CreateRecipeFormModelStep

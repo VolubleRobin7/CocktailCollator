@@ -8,12 +8,12 @@ namespace CocktailCollator.Web.FormModels.Ingredients;
 
 public class UpdateIngredientFormModel(IMapper mapper) : IFormModel<UpdateIngredientInputPort>
 {
+    public InputProperty<IngredientCategoryViewModel?> IngredientCategory { get; set; } 
+        = new(() => null, (input) => true);
     public InputProperty<Guid> IngredientId { get; set; } 
         = new(() => Guid.Empty, (input) => input != Guid.Empty);
     public InputProperty<string> Name { get; set; } 
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
-    public InputProperty<IngredientCategoryViewModel?> IngredientCategory { get; set; } 
-        = new(() => null, (input) => true);
 
     public UpdateIngredientInputPort ExtractToInputPort()
     {

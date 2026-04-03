@@ -31,7 +31,7 @@
                     @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients.Input)
                     {
                         <li class="list-group-item">
-                            <RecipeIngredientSelector Ingredient="ingredient" />
+                            <CreateRecipeIngredientSelector Ingredient="ingredient" />
                             <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
                                     Size="ButtonSize.Small"
                                     Theme="ButtonTheme.Danger"
