@@ -1,0 +1,184 @@
+﻿@using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.ViewModels.Ingredients
+@using CocktailCollator.Web.ViewModels.Measurements
+
+@inject IngredientsViewModel IngredientsViewModel
+@inject MeasurementsViewModel MeasurementsViewModel
+
+<div class="row">
+    <div class="col-2">
+        <label class="form-label">Amount</label>
+        <input @bind-value="this.Ingredient.Amount.Input"
+               class="form-control"
+               type="number">
+    </div>
+
+    <div class="col-2">
+        <label class="form-label">Type</label>
+        <div class="input-group flex-nowrap">
+            <input class="form-control flex-grow-1"
+                   disabled
+                   placeholder="Select a measurement..."
+                   type="text"
+                   value="@(this.Ingredient.MeasurementModel?.Name ?? "")" />
+
+            <button aria-expanded="false"
+                    class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                    disabled="@(this.Ingredient.Name.Input == "")"
+                    data-bs-toggle="dropdown"
+                    type="button">
+                <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+
+            <ul class="dropdown-menu">
+                <li>
+                    <input @bind-value:event="oninput"
+                           @bind-value:get="this._measurementSearchString"
+                           @bind-value:set="this.SetMeasurementSearchValue"
+                           class="form-control mb-2"
+                           placeholder="Type to search..."
+                           type="text" />
+                </li>
+
+                @foreach (var measurementSearchResult in this._measurementSearchResults)
+                {
+                    <li>
+                        <span @onclick="@(() => this.SelectMeasurement(measurementSearchResult))"
+                              class="dropdown-item">
+                            @measurementSearchResult.Name
+                        </span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-8">
+        <label class="form-label">Name</label>
+        <div class="input-group flex-nowrap">
+            <input @bind-value="this.Ingredient.Name.Input"
+                   @bind-value:event="oninput"
+                   class="form-control flex-grow-1 @(this.Ingredient.Name.IsValid() ? "is-valid" : "is-invalid")"
+                   disabled="@this.Ingredient.UsingExistingIngredient.Input"
+                   placeholder="Select an ingredient..."
+                   type="text" />
+
+            <button aria-expanded="false"
+                    class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                    data-bs-toggle="dropdown"
+                    type="button">
+                <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+
+            <ul class="dropdown-menu">
+                <li>
+                    <input @bind-value:event="oninput"
+                           @bind-value:get="this._ingredientSearchString"
+                           @bind-value:set="this.SetIngredientSearchValue"
+                           class="form-control mb-2"
+                           placeholder="Type to search..."
+                           type="text" />
+                </li>
+
+                @if (this._ingredientSearchString.Length > 0)
+                {
+                    foreach (var ingredientSearchResult in this._ingredientSearchResults)
+                    {
+                        <li>
+                            <span @onclick="@(() => this.SelectIngredient(ingredientSearchResult))"
+                                  class="dropdown-item">
+                                @ingredientSearchResult.Name
+                            </span>
+                        </li>
+                    }
+                }
+
+                <li>
+                    <hr class="dropdown-divider" />
+                </li>
+
+                <li>
+                    <span @onclick="@(() => this.SelectIngredient(null))"
+                          class="dropdown-item">
+                        Create new ingredient...
+                    </span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _ingredientSearchString = "";
+    private List<IngredientViewModel> _ingredientSearchResults = [];
+    private string _measurementSearchString = "";
+    private List<MeasurementViewModel> _measurementSearchResults = [];
+
+    [EditorRequired, Parameter]
+    public UpdateRecipeFormModelIngredient Ingredient { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // This actually is problematic, I think it actually waits on these
+        await this.IngredientsViewModel.GetCommand.ExecuteAsync(default);
+        await this.MeasurementsViewModel.GetCommand.ExecuteAsync(default);
+    }
+
+    private void SelectIngredient(IngredientViewModel? ingredient)
+    {
+        if (ingredient is null)
+        {
+            this.Ingredient.UsingExistingIngredient.Input = false;
+            this.Ingredient.Name.Input = "";
+        }
+        else
+        {
+            this.Ingredient.UsingExistingIngredient.Input = true;
+            this.Ingredient.Name.Input = ingredient.Name ?? "";
+            this.Ingredient.ExistingIngredientId = ingredient.IngredientId;
+        }
+
+        this.SelectMeasurement(ingredient?.Measurements?.Count == 1 ? ingredient.Measurements.First() : null);
+        this.SetMeasurementSearchValue("");
+    }
+
+    private void SelectMeasurement(MeasurementViewModel? measurement)
+    {
+        if (measurement is null)
+            this.Ingredient.Measurement.ResetToDefault();
+        else
+            this.Ingredient.Measurement.Input = measurement.MeasurementId;
+
+        this.Ingredient.MeasurementModel = measurement;
+    }
+
+    private void SetIngredientSearchValue(string? value)
+    {
+        this._ingredientSearchString = value ?? "";
+        this._ingredientSearchResults = this.IngredientsViewModel.Ingredients
+            .Where(ingredient => ingredient.Name is not null && ingredient.Name.Contains(this._ingredientSearchString, StringComparison.OrdinalIgnoreCase))
+            .Take(3)
+            .ToList();
+    }
+
+    private void SetMeasurementSearchValue(string? value)
+    {
+        this._measurementSearchString = value ?? "";
+
+        if (this.Ingredient.UsingExistingIngredient.Input)
+        {
+            var _SelectedIngredient = this.IngredientsViewModel.Ingredients.First(i => i.IngredientId == this.Ingredient.ExistingIngredientId);
+            this._measurementSearchResults = _SelectedIngredient.Measurements?
+                .Where(measurement => measurement.Name is not null && measurement.Name.Contains(this._measurementSearchString, StringComparison.OrdinalIgnoreCase))
+                .Take(3)
+                .ToList() ?? [];
+        }
+        else
+        {
+            this._measurementSearchResults = this.MeasurementsViewModel.Measurements
+                .Where(measurement => measurement.Name is not null && measurement.Name.Contains(this._measurementSearchString, StringComparison.OrdinalIgnoreCase))
+                .Take(3)
+                .ToList();
+        }
+    }
+}

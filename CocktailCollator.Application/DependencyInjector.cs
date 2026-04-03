@@ -11,6 +11,7 @@ using CocktailCollator.Application.UseCases.Measurements.GetMeasurements;
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 using CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
+using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CocktailCollator.Application;
@@ -26,6 +27,7 @@ public static class DependencyInjector
             .AddScoped<CreateRecipeInteractor>()
             .AddScoped<GetRecipesInteractor>()
             .AddScoped<DeleteRecipeInteractor>()
+            .AddScoped<UpdateRecipeInteractor>()
             .AddScoped<CreateIngredientInteractor>()
             .AddScoped<GetIngredientsInteractor>()
             .AddScoped<DeleteIngredientInteractor>()

@@ -48,6 +48,11 @@
                                 Theme="ButtonTheme.Primary"
                                 data-bs-target="@this.RecipeModalId"
                                 data-bs-toggle="modal" />
+
+                        <Button @onclick="() => this.OpenUpdateRecipeModal(recipe)"
+                                Size="ButtonSize.Small"
+                                Text="Edit"
+                                Theme="ButtonTheme.Info" />
                     </div>
                 </div>
             </div>
@@ -97,13 +102,22 @@
 <CreateRecipeModal @ref="this._createRecipeModal"
                    OnAfterCreation="this.StateHasChanged" />
 
+<UpdateRecipeModal @ref="this._updateRecipeModal"
+                   OnAfterUpdate="this.StateHasChanged" />
+
 @code {
     private CreateRecipeModal _createRecipeModal = default!;
     private Modal _recipeModal = default!;
     private RecipeViewModel? _selectedRecipe;
+    private UpdateRecipeModal _updateRecipeModal = default!;
 
     private string RecipeModalId
     {
         get => this._recipeModal?.Id ?? "";
+    }
+
+    private async Task OpenUpdateRecipeModal(RecipeViewModel recipe)
+    {
+        await this._updateRecipeModal.OpenModalAsync(recipe);
     }
 }

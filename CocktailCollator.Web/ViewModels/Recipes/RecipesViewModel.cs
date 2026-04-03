@@ -2,6 +2,7 @@
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 using CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
+using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using CocktailCollator.Domain.Entities;
 using CommunityToolkit.Mvvm.Input;
 
@@ -12,6 +13,7 @@ public class RecipesViewModel
     public IAsyncRelayCommand<CreateRecipeInputPort> CreateCommand { get; set; }
     public IAsyncRelayCommand<Guid> DeleteCommand { get; set; }
     public IAsyncRelayCommand GetCommand { get; set; }
+    public IAsyncRelayCommand<UpdateRecipeInputPort> UpdateCommand { get; set; }
 
     public List<RecipeViewModel> Recipes { get; private set; } = [];
 
@@ -21,6 +23,7 @@ public class RecipesViewModel
         CreateRecipeInteractor createRecipeInteractor,
         DeleteRecipeInteractor deleteRecipeInteractor,
         GetRecipesInteractor getRecipesInteractor,
+        UpdateRecipeInteractor updateRecipeInteractor,
         IMapper mapper)
     {
         this.CreateCommand = new AsyncRelayCommand<CreateRecipeInputPort>((inputPort, cancellationToken)
@@ -38,6 +41,12 @@ public class RecipesViewModel
         this.GetCommand = new AsyncRelayCommand(cancellationToken
             => getRecipesInteractor.Interact(
                 new GetRecipesPresenter(mapper, this),
+                cancellationToken));
+
+        this.UpdateCommand = new AsyncRelayCommand<UpdateRecipeInputPort>((inputPort, cancellationToken)
+            => updateRecipeInteractor.InteractAsync(
+                inputPort,
+                new UpdateRecipePresenter(mapper, this),
                 cancellationToken));
     }
 
@@ -64,6 +73,26 @@ public class RecipesViewModel
         Task IGetRecipesOutputPort.Success(List<Recipe> recipes, CancellationToken cancellationToken)
         {
             viewModel.Recipes = mapper.Map<List<RecipeViewModel>>(recipes);
+            return Task.CompletedTask;
+        }
+    }
+
+    private class UpdateRecipePresenter(IMapper mapper, RecipesViewModel viewModel) : IUpdateRecipeOutputPort
+    {
+        Task IUpdateRecipeOutputPort.Failure(string failureReason, Recipe? recipe, CancellationToken cancellationToken) 
+            => throw new NotImplementedException();
+
+        Task IUpdateRecipeOutputPort.Success(Recipe recipe, CancellationToken cancellationToken)
+        {
+            var _Existing = viewModel.Recipes.FirstOrDefault(r => r.RecipeId == recipe.RecipeId);
+            if (_Existing is not null)
+            {
+                var _Updated = mapper.Map<RecipeViewModel>(recipe);
+                _Existing.Name = _Updated.Name;
+                _Existing.Ingredients = _Updated.Ingredients;
+                _Existing.Steps = _Updated.Steps;
+            }
+
             return Task.CompletedTask;
         }
     }
