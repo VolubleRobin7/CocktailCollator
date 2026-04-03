@@ -57,6 +57,20 @@
                                         InvalidMessage="Instruction requires a value."
                                         Title="Step Instruction" />
 
+                            <div class="btn-group">
+                                <Button @onclick="() => this.MoveStepUp(step)" 
+                                        Size="ButtonSize.Small"
+                                        Text="Up"
+                                        Theme="ButtonTheme.Secondary"
+                                        disabled="@(step.Order.Input <= 0)" />
+
+                                <Button @onclick="() => this.MoveStepDown(step)"
+                                        Size="ButtonSize.Small"
+                                        Text="Down"
+                                        Theme="ButtonTheme.Secondary"
+                                        disabled="@(step.Order.Input >= this.CreateRecipeFormModel.Steps.Input.Count - 1)" />
+                            </div>
+
                             <Button @onclick="() => this.RemoveStep(step)"
                                     Size="ButtonSize.Small"
                                     Theme="ButtonTheme.Danger"
@@ -66,7 +80,7 @@
                 </ul>
             </div>
 
-            <Button @onclick="this.OnClickCreate"
+            <Button @onclick="this.OnClickCreateAsync"
                     Size="ButtonSize.Large"
                     Theme="ButtonTheme.Success"
                     Text="Save Recipe"
@@ -91,20 +105,47 @@
         this.CreateRecipeFormModel.Steps.Input.Add(step);
     }
 
-    private async Task OnClickCreate()
+    private async Task OnClickCreateAsync()
     {
         await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
         this.CreateRecipeFormModel.ResetToDefault();
         await this.OnAfterCreation.InvokeAsync();
     }
 
+    private void MoveStepDown(CreateRecipeFormModelStep step)
+    {
+        if (step.Order.Input >= this.CreateRecipeFormModel.Steps.Input.Count - 1)
+            return;
+
+        var stepIndex = this.CreateRecipeFormModel.Steps.Input.IndexOf(step);
+        this.CreateRecipeFormModel.Steps.Input.RemoveAt(stepIndex);
+        this.CreateRecipeFormModel.Steps.Input.Insert(stepIndex + 1, step);
+        this.RecalculateSteps();
+    }
+
+    private void MoveStepUp(CreateRecipeFormModelStep step)
+    {
+        if (step.Order.Input <= 0)
+            return;
+
+        var stepIndex = this.CreateRecipeFormModel.Steps.Input.IndexOf(step);
+        this.CreateRecipeFormModel.Steps.Input.Insert(stepIndex - 1, step);
+        this.CreateRecipeFormModel.Steps.Input.RemoveAt(stepIndex + 1);
+        this.RecalculateSteps();
+    }
+
     public Task OpenModalAsync()
         => this.Modal.OpenModalAsync();
 
-    private void RemoveStep(CreateRecipeFormModelStep step)
+    private void RecalculateSteps()
     {
-        _ = this.CreateRecipeFormModel.Steps.Input.Remove(step);
         for (int i = 0; i < this.CreateRecipeFormModel.Steps.Input.Count; i++)
             this.CreateRecipeFormModel.Steps.Input[i].Order.Input = i;
+    }
+
+    private void RemoveStep(CreateRecipeFormModelStep stepIndex)
+    {
+        _ = this.CreateRecipeFormModel.Steps.Input.Remove(stepIndex);
+        this.RecalculateSteps();
     }
 }

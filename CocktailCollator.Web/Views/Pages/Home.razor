@@ -77,7 +77,7 @@
             <h4>Steps</h4>
 
             <ol class="list-group list-group-flush list-group-numbered">
-                @foreach (var step in _selectedRecipe.Steps ?? [])
+                @foreach (var step in _selectedRecipe.Steps?.OrderBy(step => step.Order).ToList() ?? [])
                 {
                     <li class="list-group-item">@step.Instruction</li>
                 }
