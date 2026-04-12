@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36518.9
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11626.88 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CocktailCollator.Web", "CocktailCollator.Web\CocktailCollator.Web.csproj", "{BABC4589-41D8-4782-89F9-2B30C8C66F5C}"
 EndProject
@@ -10,6 +10,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CocktailCollator.Infrastructure", "CocktailCollator.Infrastructure\CocktailCollator.Infrastructure.csproj", "{EA91C7FA-C529-4227-A5B5-115B2A37468E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CocktailCollator.Application", "CocktailCollator.Application\CocktailCollator.Application.csproj", "{41504D70-454A-4704-BEA3-A5BACE1AFA99}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2A9CA377-50E7-4874-A159-38BD69E0D38D}"
+	ProjectSection(SolutionItems) = preProject
+		Dockerfile = Dockerfile
+		entrypoint.sh = entrypoint.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
