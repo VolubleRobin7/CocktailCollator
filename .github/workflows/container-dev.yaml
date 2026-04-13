@@ -1,6 +1,10 @@
 name: Upload Dev Docker Container
 
-run-name: New container build by @${{ github.triggering_actor }}
+run-name: Container build by @${{ github.triggering_actor }}
+
+permissions:
+  packages: write
+  contents: read
 
 on:
   push:
@@ -10,10 +14,6 @@ on:
 jobs:
   build:
     name: Upload Dev Container
-
-    permissions:
-      packages: write
-      contents: read
 
     runs-on: ubuntu-latest
 
