@@ -1,9 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-LABEL org.opencontainers.image.authors="VolubleRobin7"
-LABEL org.opencontainers.image.source="https://github.com/VolubleRobin7/CocktailCollator"
-
 # Copy everything and build
 COPY . .
 RUN dotnet restore
@@ -11,6 +8,10 @@ RUN dotnet publish CocktailCollator.Web/CocktailCollator.Web.csproj -c Release -
 
 # Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
+
+LABEL org.opencontainers.image.authors="VolubleRobin7"
+LABEL org.opencontainers.image.description="Container package for the Cocktail Collator Blazor Server application, including SQL Server for data storage."
+LABEL org.opencontainers.image.source="https://github.com/VolubleRobin7/CocktailCollator"
 
 # Install SQL Server
 RUN apt-get update && apt-get install -y curl apt-transport-https gnupg && \
