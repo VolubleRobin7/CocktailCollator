@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 LABEL org.opencontainers.image.authors="VolubleRobin7"
+LABEL org.opencontainers.image.source="https://github.com/VolubleRobin7/CocktailCollator"
 
 # Copy everything and build
 COPY . .
