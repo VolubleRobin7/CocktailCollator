@@ -38,7 +38,7 @@ jobs:
         run: echo "The branch is ${{ github.ref }}"
 
   test:
-    if: ${{ github.ref }} == 'refs/heads/development'
+    if: github.ref == 'refs/heads/development'
 
     name: Test Job
 
@@ -47,3 +47,6 @@ jobs:
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v5
+
+      - name: Print
+        run: echo "The branch is ${{ github.ref }}"
