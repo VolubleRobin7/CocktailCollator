@@ -1,6 +1,6 @@
-name: Upload Dev Docker Container
+name: Upload Development Docker Container
 
-run-name: Container build by @${{ github.triggering_actor }}
+run-name: Development Container build by @${{ github.triggering_actor }}
 
 permissions:
   packages: write
@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    name: Upload Dev Container
+    name: Upload Container
 
     runs-on: ubuntu-latest
 
@@ -33,3 +33,13 @@ jobs:
 
       - name: Push
         run: docker push ghcr.io/volublerobin7/cocktailcollator:dev
+
+      - name: Print
+        run: echo "The branch is ${{ github.ref }}"
+
+  test:
+    if: ${{ github.ref }} == 'refs/heads/development'
+
+    name: Test Job
+
+    runs-on: ubuntu-latest
