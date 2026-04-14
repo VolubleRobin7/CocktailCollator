@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Development Branch
+      - name: Checkout Branch
         uses: actions/checkout@v5
 
       - name: Login to GHCR
@@ -43,3 +43,7 @@ jobs:
     name: Test Job
 
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v5
