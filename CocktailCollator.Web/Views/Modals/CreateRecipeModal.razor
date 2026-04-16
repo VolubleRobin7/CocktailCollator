@@ -98,6 +98,11 @@
     [Parameter]
     public EventCallback OnAfterCreation { get; set; }
 
+    protected override void OnInitialized()
+    {
+        this.CreateRecipeFormModel.OnChange = this.StateHasChanged;
+    }
+
     private void AddStep()
     {
         var step = new CreateRecipeFormModelStep();
