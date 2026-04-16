@@ -104,6 +104,37 @@
         this.UpdateRecipeFormModel.Steps.Input.Add(step);
     }
 
+    private void MoveStepDown(UpdateRecipeFormModelStep step)
+    {
+        if (step.Order.Input >= this.UpdateRecipeFormModel.Steps.Input.Count - 1)
+            return;
+
+        var stepIndex = this.UpdateRecipeFormModel.Steps.Input.IndexOf(step);
+        this.UpdateRecipeFormModel.Steps.Input.RemoveAt(stepIndex);
+        this.UpdateRecipeFormModel.Steps.Input.Insert(stepIndex + 1, step);
+        this.RecalculateSteps();
+    }
+
+    private void MoveStepUp(UpdateRecipeFormModelStep step)
+    {
+        if (step.Order.Input <= 0)
+            return;
+
+        var stepIndex = this.UpdateRecipeFormModel.Steps.Input.IndexOf(step);
+        this.UpdateRecipeFormModel.Steps.Input.Insert(stepIndex - 1, step);
+        this.UpdateRecipeFormModel.Steps.Input.RemoveAt(stepIndex + 1);
+        this.RecalculateSteps();
+    }
+
+    private async Task OnClickUpdateAsync()
+    {
+        await this.RecipesViewModel.UpdateCommand.ExecuteAsync(this.UpdateRecipeFormModel.ExtractToInputPort());
+        await this.OnAfterUpdate.InvokeAsync();
+    }
+
+    protected override void OnInitialized()
+        => this.UpdateRecipeFormModel.OnChange = this.StateHasChanged;
+
     // The situation with nullables needs to be improved
     public Task OpenModalAsync(RecipeViewModel recipe)
     {
@@ -132,34 +163,6 @@
         }
 
         return this._modal.OpenModalAsync();
-    }
-
-    private void MoveStepDown(UpdateRecipeFormModelStep step)
-    {
-        if (step.Order.Input >= this.UpdateRecipeFormModel.Steps.Input.Count - 1)
-            return;
-
-        var stepIndex = this.UpdateRecipeFormModel.Steps.Input.IndexOf(step);
-        this.UpdateRecipeFormModel.Steps.Input.RemoveAt(stepIndex);
-        this.UpdateRecipeFormModel.Steps.Input.Insert(stepIndex + 1, step);
-        this.RecalculateSteps();
-    }
-
-    private void MoveStepUp(UpdateRecipeFormModelStep step)
-    {
-        if (step.Order.Input <= 0)
-            return;
-
-        var stepIndex = this.UpdateRecipeFormModel.Steps.Input.IndexOf(step);
-        this.UpdateRecipeFormModel.Steps.Input.Insert(stepIndex - 1, step);
-        this.UpdateRecipeFormModel.Steps.Input.RemoveAt(stepIndex + 1);
-        this.RecalculateSteps();
-    }
-
-    private async Task OnClickUpdateAsync()
-    {
-        await this.RecipesViewModel.UpdateCommand.ExecuteAsync(this.UpdateRecipeFormModel.ExtractToInputPort());
-        await this.OnAfterUpdate.InvokeAsync();
     }
 
     private void RecalculateSteps()

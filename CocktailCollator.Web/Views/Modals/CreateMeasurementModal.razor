@@ -43,6 +43,9 @@
         await this.OnAfterCreation.InvokeAsync();
     }
 
+    protected override void OnInitialized()
+        => this.CreateMeasurementFormModel.OnChange = this.StateHasChanged;
+
     public Task OpenModalAsync()
         => this._modal.OpenModalAsync();
 }

@@ -101,6 +101,9 @@
         await this.OnAfterUpdate.InvokeAsync();
     }
 
+    protected override void OnInitialized()
+        => this.UpdateIngredientFormModel.OnChange = this.StateHasChanged;
+
     private void SetCategorySearchValue(string? value)
     {
         this._categorySearchString = value ?? "";
