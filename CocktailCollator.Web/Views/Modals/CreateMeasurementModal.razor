@@ -3,6 +3,7 @@
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
+@using CocktailCollator.Web.Views.Components.Helpers
 
 @inject CreateMeasurementFormModel CreateMeasurementFormModel
 @inject MeasurementsViewModel ViewModel
@@ -18,13 +19,15 @@
                         InvalidMessage="Name requires a value."
                         Title="Measurement Name" />
 
-            <Button @onclick="this.OnClickCreate"
-                    Size="ButtonSize.Large"
-                    Theme="ButtonTheme.Success"
-                    Text="Save Measurement"
-                    class="mt-2"
-                    data-bs-dismiss="modal"
-                    disabled="@(!this.CreateMeasurementFormModel.IsValid())" />
+            <FormChangeWrapper FormModel="this.CreateMeasurementFormModel">
+                <Button @onclick="this.OnClickCreate"
+                        Size="ButtonSize.Large"
+                        Theme="ButtonTheme.Success"
+                        Text="Save Measurement"
+                        class="mt-2"
+                        data-bs-dismiss="modal"
+                        disabled="@(!this.CreateMeasurementFormModel.IsValid())" />
+            </FormChangeWrapper>
         </form>
     </Body>
 
@@ -42,9 +45,6 @@
         this.CreateMeasurementFormModel.ResetToDefault();
         await this.OnAfterCreation.InvokeAsync();
     }
-
-    protected override void OnInitialized()
-        => this.CreateMeasurementFormModel.OnChange = this.StateHasChanged;
 
     public Task OpenModalAsync()
         => this._modal.OpenModalAsync();

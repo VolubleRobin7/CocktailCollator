@@ -3,6 +3,7 @@
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
+@using CocktailCollator.Web.Views.Components.Helpers
 
 @inject UpdateRecipeFormModel UpdateRecipeFormModel
 @inject RecipesViewModel RecipesViewModel
@@ -79,13 +80,15 @@
                 </ul>
             </div>
 
-            <Button @onclick="this.OnClickUpdateAsync"
-                    Size="ButtonSize.Large"
-                    Theme="ButtonTheme.Success"
-                    Text="Save Recipe"
-                    class="mt-2"
-                    data-bs-dismiss="modal"
-                    disabled="@(!this.UpdateRecipeFormModel.IsValid())" />
+            <FormChangeWrapper FormModel="this.UpdateRecipeFormModel">
+                <Button @onclick="this.OnClickUpdateAsync"
+                        Size="ButtonSize.Large"
+                        Theme="ButtonTheme.Success"
+                        Text="Save Recipe"
+                        class="mt-2"
+                        data-bs-dismiss="modal"
+                        disabled="@(!this.UpdateRecipeFormModel.IsValid())" />
+            </FormChangeWrapper>
         </form>
     </Body>
 
@@ -131,9 +134,6 @@
         await this.RecipesViewModel.UpdateCommand.ExecuteAsync(this.UpdateRecipeFormModel.ExtractToInputPort());
         await this.OnAfterUpdate.InvokeAsync();
     }
-
-    protected override void OnInitialized()
-        => this.UpdateRecipeFormModel.OnChange = this.StateHasChanged;
 
     // The situation with nullables needs to be improved
     public Task OpenModalAsync(RecipeViewModel recipe)

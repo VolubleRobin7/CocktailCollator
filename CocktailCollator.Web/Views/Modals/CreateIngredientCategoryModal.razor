@@ -3,6 +3,7 @@
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
+@using CocktailCollator.Web.Views.Components.Helpers
 
 @inject CreateIngredientCategoryFormModel CreateIngredientCategoryFormModel
 @inject IngredientCategoriesViewModel ViewModel
@@ -18,13 +19,15 @@
                         InvalidMessage="Name requires a value."
                         Title="Category Name" />
 
-            <Button @onclick="this.OnClickCreate"
-                    Size="ButtonSize.Large"
-                    Theme="ButtonTheme.Success"
-                    Text="Save"
-                    class="mt-2"
-                    data-bs-dismiss="modal"
-                    disabled="@(!this.CreateIngredientCategoryFormModel.IsValid())" />
+            <FormChangeWrapper FormModel="this.CreateIngredientCategoryFormModel">
+                <Button @onclick="this.OnClickCreate"
+                        Size="ButtonSize.Large"
+                        Theme="ButtonTheme.Success"
+                        Text="Save"
+                        class="mt-2"
+                        data-bs-dismiss="modal"
+                        disabled="@(!this.CreateIngredientCategoryFormModel.IsValid())" />
+            </FormChangeWrapper>
         </form>
     </Body>
 
@@ -42,9 +45,6 @@
         this.CreateIngredientCategoryFormModel.ResetToDefault();
         await this.OnAfterCreation.InvokeAsync();
     }
-
-    protected override void OnInitialized()
-        => this.CreateIngredientCategoryFormModel.OnChange = this.StateHasChanged;
 
     public Task OpenModalAsync()
         => this._modal.OpenModalAsync();
