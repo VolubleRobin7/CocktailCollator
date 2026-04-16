@@ -8,7 +8,7 @@
 @inject CreateRecipeFormModel CreateRecipeFormModel
 @inject RecipesViewModel RecipesViewModel
 
-<Modal @ref=this.Modal
+<Modal @ref=this._modal
        Size="ModalSize.Large"
        Title="Create Recipe">
 
@@ -93,7 +93,7 @@
 </Modal>
 
 @code {
-    public Modal Modal { get; private set; } = default!;
+    private Modal _modal = default!;
 
     [Parameter]
     public EventCallback OnAfterCreation { get; set; }
@@ -138,7 +138,7 @@
         => this.CreateRecipeFormModel.OnChange = this.StateHasChanged;
 
     public Task OpenModalAsync()
-        => this.Modal.OpenModalAsync();
+        => this._modal.OpenModalAsync();
 
     private void RecalculateSteps()
     {
