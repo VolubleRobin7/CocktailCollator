@@ -6,8 +6,10 @@ using CocktailCollator.Web.ViewModels.IngredientCategories;
 
 namespace CocktailCollator.Web.FormModels.Ingredients;
 
-public class UpdateIngredientFormModel(IMapper mapper) : IFormModel<UpdateIngredientInputPort>
+public class UpdateIngredientFormModel : IFormModel<UpdateIngredientInputPort>
 {
+    private readonly IMapper _mapper;
+
     public InputProperty<IngredientCategoryViewModel?> IngredientCategory { get; set; } 
         = new(() => null, (input) => true);
     public InputProperty<Guid> IngredientId { get; set; } 
@@ -15,9 +17,20 @@ public class UpdateIngredientFormModel(IMapper mapper) : IFormModel<UpdateIngred
     public InputProperty<string> Name { get; set; } 
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
 
+    public Action? OnChange { get; set; }
+
+    public UpdateIngredientFormModel(IMapper mapper)
+    {
+        this._mapper = mapper;
+
+        this.IngredientCategory.OnChange = () => OnChange?.Invoke();
+        this.IngredientId.OnChange = () => OnChange?.Invoke();
+        this.Name.OnChange = () => OnChange?.Invoke();
+    }
+
     public UpdateIngredientInputPort ExtractToInputPort()
     {
-        var _InputPort = mapper.Map<UpdateIngredientInputPort>(this);
+        var _InputPort = this._mapper.Map<UpdateIngredientInputPort>(this);
         _InputPort.IngredientCategoryId = this.IngredientCategory.Input?.IngredientCategoryId;
         return _InputPort;
     }

@@ -5,13 +5,24 @@ using CocktailCollator.Web.Common.Interfaces;
 
 namespace CocktailCollator.Web.FormModels.Measurements;
 
-public class CreateMeasurementFormModel(IMapper mapper) : IFormModel<CreateMeasurementInputPort>
+public class CreateMeasurementFormModel : IFormModel<CreateMeasurementInputPort>
 {
+    private readonly IMapper _mapper;
+
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
 
+    public Action? OnChange { get; set; }
+
+    public CreateMeasurementFormModel(IMapper mapper)
+    {
+        this._mapper = mapper;
+
+        this.Name.OnChange = () => OnChange?.Invoke();
+    }
+
     public CreateMeasurementInputPort ExtractToInputPort()
-        => mapper.Map<CreateMeasurementInputPort>(this);
+        => this._mapper.Map<CreateMeasurementInputPort>(this);
 
     public bool IsValid()
         => this.Name.IsValid();

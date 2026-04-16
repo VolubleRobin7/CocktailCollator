@@ -98,23 +98,11 @@
     [Parameter]
     public EventCallback OnAfterCreation { get; set; }
 
-    protected override void OnInitialized()
-    {
-        this.CreateRecipeFormModel.OnChange = this.StateHasChanged;
-    }
-
     private void AddStep()
     {
         var step = new CreateRecipeFormModelStep();
         step.Order.Input = this.CreateRecipeFormModel.Steps.Input.Count;
         this.CreateRecipeFormModel.Steps.Input.Add(step);
-    }
-
-    private async Task OnClickCreateAsync()
-    {
-        await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
-        this.CreateRecipeFormModel.ResetToDefault();
-        await this.OnAfterCreation.InvokeAsync();
     }
 
     private void MoveStepDown(CreateRecipeFormModelStep step)
@@ -138,6 +126,16 @@
         this.CreateRecipeFormModel.Steps.Input.RemoveAt(stepIndex + 1);
         this.RecalculateSteps();
     }
+
+    private async Task OnClickCreateAsync()
+    {
+        await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
+        this.CreateRecipeFormModel.ResetToDefault();
+        await this.OnAfterCreation.InvokeAsync();
+    }
+
+    protected override void OnInitialized()
+        => this.CreateRecipeFormModel.OnChange = this.StateHasChanged;
 
     public Task OpenModalAsync()
         => this.Modal.OpenModalAsync();

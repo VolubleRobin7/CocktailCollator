@@ -2,7 +2,7 @@
 
 public interface IFormModel<TInputPort> where TInputPort : class
 {
-    //Action? OnFormChange { get; set; }
+    Action? OnChange { get; set; }
 
     TInputPort ExtractToInputPort();
     bool IsValid();

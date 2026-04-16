@@ -9,7 +9,7 @@ namespace CocktailCollator.Web.FormModels.Recipes;
 
 public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
 {
-    private IMapper _mapper;
+    private readonly IMapper _mapper;
 
     // I'm now more thinking that these should be more like List<InputProp<object...
     // That would allow more precise control, could set better validation, and reset per item

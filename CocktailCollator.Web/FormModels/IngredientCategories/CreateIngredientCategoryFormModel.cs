@@ -5,13 +5,24 @@ using CocktailCollator.Web.Common.Interfaces;
 
 namespace CocktailCollator.Web.FormModels.IngredientCategories;
 
-public class CreateIngredientCategoryFormModel(IMapper mapper) : IFormModel<CreateIngredientCategoryInputPort>
+public class CreateIngredientCategoryFormModel : IFormModel<CreateIngredientCategoryInputPort>
 {
+    private readonly IMapper _mapper;
+
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
 
+    public Action? OnChange { get; set; }
+
+    public CreateIngredientCategoryFormModel(IMapper mapper)
+    {
+        this._mapper = mapper;
+
+        this.Name.OnChange = () => OnChange?.Invoke();
+    }
+
     public CreateIngredientCategoryInputPort ExtractToInputPort()
-        => mapper.Map<CreateIngredientCategoryInputPort>(this);
+        => this._mapper.Map<CreateIngredientCategoryInputPort>(this);
 
     public bool IsValid()
         => this.Name.IsValid();
