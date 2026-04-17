@@ -12,8 +12,17 @@ public class InputProperty<TEntity>
     public TEntity Input
     {
         get { return this._entity; }
-        set { this._entity = value; }
+        set 
+        { 
+            this._entity = value; 
+            this.OnChange?.Invoke();
+        }
     }
+
+    /// <summary>
+    /// An Action that is invoked whenever <see cref="Input"/> is changed.
+    /// </summary>
+    public Action? OnChange { get; set; }
 
     /// <summary>
     /// Create a new input, with an initial value and the function required to check its validity.
@@ -38,5 +47,8 @@ public class InputProperty<TEntity>
     /// Resets the Input to the original value defined during construction.
     /// </summary>
     public void ResetToDefault()
-        => this._entity = this._defaultEntityFunc.Invoke();
+    {
+        this._entity = this._defaultEntityFunc.Invoke();
+        this.OnChange?.Invoke();
+    }
 }

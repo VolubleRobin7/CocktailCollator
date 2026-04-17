@@ -4,6 +4,7 @@
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
+@using CocktailCollator.Web.Views.Components.Helpers
 
 @inject UpdateIngredientFormModel UpdateIngredientFormModel
 @inject IngredientsViewModel IngredientsViewModel
@@ -61,13 +62,15 @@
                 </ul>
             </div>
 
-            <Button @onclick="this.OnClickUpdate"
-                    Size="ButtonSize.Large"
-                    Theme="ButtonTheme.Success"
-                    Text="Save"
-                    class="mt-2"
-                    data-bs-dismiss="modal"
-                    disabled="@(!this.UpdateIngredientFormModel.IsValid())" />
+            <FormChangeWrapper FormModel="this.UpdateIngredientFormModel">
+                <Button @onclick="this.OnClickUpdate"
+                        Size="ButtonSize.Large"
+                        Theme="ButtonTheme.Success"
+                        Text="Save"
+                        class="mt-2"
+                        data-bs-dismiss="modal"
+                        disabled="@(!this.UpdateIngredientFormModel.IsValid())" />
+            </FormChangeWrapper>
         </form>
     </Body>
 
