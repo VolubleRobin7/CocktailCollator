@@ -24,7 +24,6 @@ public class UpdateIngredientFormModel : IFormModel<UpdateIngredientInputPort>
         this._mapper = mapper;
 
         this.IngredientCategory.OnChange = () => OnChange?.Invoke();
-        this.IngredientId.OnChange = () => OnChange?.Invoke();
         this.Name.OnChange = () => OnChange?.Invoke();
     }
 

@@ -38,9 +38,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
                 }
             }
         };
-
         this.Name.OnChange = () => OnChange?.Invoke();
-
         this.Steps.Input.CollectionChanged += (_, args) =>
         {
             if (args.NewItems is not null)
