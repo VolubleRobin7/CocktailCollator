@@ -1,4 +1,6 @@
-﻿<nav class="navbar navbar-expand-lg bg-body-secondary">
+﻿@inject NavigationManager NavigationManager
+
+<nav class="navbar navbar-expand-lg bg-body-secondary">
     <div class="container">
         <a class="navbar-brand"
            href="/">
@@ -21,26 +23,15 @@
              id="navbarLinks">
 
             <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link @(this.IsPageActive("recipe") ? "active" : "")"
-                       href="/">
-                        Recipes
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link @(this.IsPageActive("ingredients") ? "active" : "")"
-                       href="/ingredients">
-                        Ingredients
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link @(this.IsPageActive("measurements") ? "active" : "")"
-                       href="/measurements">
-                        Measurements
-                    </a>
-                </li>
+                @foreach (var _Page in this.Pages)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @(this.IsPageActive(_Page) ? "active" : "")"
+                           href="@_Page.RelativeUri">
+                            @_Page.DisplayName
+                        </a>
+                    </li>
+                }
             </ul>
 
         </div>
@@ -48,11 +39,41 @@
 </nav>
 
 @code {
+    private NavbarAddress _currentPage = NavbarAddress.Recipes;
 
     [Parameter]
-    public string CurrentPage { get; set; } = "";
+    public NavbarAddress[] Pages { get; set; } = [];
 
-    private bool IsPageActive(string page)
-        => page == this.CurrentPage;
+    private bool IsPageActive(NavbarAddress page)
+        => page.RelativeUri == this._currentPage.RelativeUri;
 
+    private void LocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        this._currentPage = this.UriStringToAddress(args.Location);
+        this.StateHasChanged();
+    }
+
+    public void NavigateTo(NavbarAddress address)
+        => this.NavigationManager.NavigateTo(address.RelativeUri);
+
+    protected override void OnInitialized()
+    {
+        this._currentPage = this.UriStringToAddress(this.NavigationManager.Uri);
+        this.NavigationManager.LocationChanged += this.LocationChanged;
+    }
+
+    private NavbarAddress UriStringToAddress(string uri)
+    {
+        var _RelativeUri = this.NavigationManager.ToBaseRelativePath(uri);
+        var _PageUri = _RelativeUri.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+
+        if (_PageUri == NavbarAddress.Recipes.RelativeUri)
+            return NavbarAddress.Recipes;
+        else if (_PageUri == NavbarAddress.Ingredients.RelativeUri)
+            return NavbarAddress.Ingredients;
+        else if (_PageUri == NavbarAddress.Measurements.RelativeUri)
+            return NavbarAddress.Measurements;
+
+        return NavbarAddress.Recipes;
+    }
 }
