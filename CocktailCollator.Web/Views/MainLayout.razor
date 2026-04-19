@@ -2,7 +2,7 @@
 
 @inherits LayoutComponentBase
 
-<Navbar />
+<Navbar Pages="_pages" />
 
 @Body
 
@@ -11,3 +11,12 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private static readonly NavbarAddress[] _pages = new[]
+    {
+        NavbarAddress.Recipes,
+        NavbarAddress.Ingredients,
+        NavbarAddress.Measurements
+    };
+}
