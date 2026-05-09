@@ -33,7 +33,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : Id
     // Remove Previous Migration Command (Can only do before being applied I think)
     // dotnet ef migrations remove --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
     //
-    // Apply Migration Command
+    // Apply Migration Command (May not be needed, based on RunMigrationsOnStartup in appsettings)
     // dotnet ef database update --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
 
     private static void AddEntities(ModelBuilder modelBuilder)
