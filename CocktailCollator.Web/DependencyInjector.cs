@@ -1,11 +1,16 @@
-﻿using CocktailCollator.Web.FormModels.IngredientCategories;
+﻿using CocktailCollator.Infrastructure.Persistence;
+using CocktailCollator.Infrastructure.Persistence.Models;
+using CocktailCollator.Web.FormModels.IngredientCategories;
 using CocktailCollator.Web.FormModels.Ingredients;
 using CocktailCollator.Web.FormModels.Measurements;
 using CocktailCollator.Web.FormModels.Recipes;
+using CocktailCollator.Web.Infrastructure.Authentication;
 using CocktailCollator.Web.ViewModels.IngredientCategories;
 using CocktailCollator.Web.ViewModels.Ingredients;
 using CocktailCollator.Web.ViewModels.Measurements;
 using CocktailCollator.Web.ViewModels.Recipes;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace CocktailCollator.Web;
 
@@ -13,8 +18,28 @@ public static class DependencyInjector
 {
     public static IServiceCollection InjectWeb(this IServiceCollection services)
         => services
+            .AddAuth()
             .AddFormModels()
             .AddViewModels();
+
+    private static IServiceCollection AddAuth(this IServiceCollection services)
+    {
+        _ = services.AddIdentity<CocktailUser, CocktailRole>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = false;
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 0;
+                options.Password.RequireUppercase = false;
+            })
+            .AddEntityFrameworkStores<CocktailDbContext>()
+            .AddDefaultTokenProviders();
+
+        return services
+            .AddCascadingAuthenticationState()
+            .AddScoped<AuthenticationStateProvider, CocktailAuthenticationStateProvider>()
+            .AddAuthorization();
+    }
 
     private static IServiceCollection AddFormModels(this IServiceCollection services)
         => services

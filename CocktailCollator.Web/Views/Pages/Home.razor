@@ -5,6 +5,7 @@
 @using CocktailCollator.Web.Views.Components.Modals
 @using CocktailCollator.Web.Views.Components.Navbars
 @using CocktailCollator.Web.Views.Modals
+@using Microsoft.AspNetCore.Components.Authorization
 
 @inject CreateRecipeFormModel CreateRecipeFormModel
 @inject RecipesViewModel ViewModel
@@ -14,6 +15,10 @@
 <PageTitle>Home</PageTitle>
 
 <div class="container pt-2">
+
+    <AuthorizeView>
+        <p>Only cool people can see this! Hello @context.User.Identity?.Name!</p>
+    </AuthorizeView>
 
     <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
             Text="Get Recipes"

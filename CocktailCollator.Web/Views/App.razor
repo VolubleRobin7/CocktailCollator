@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using Pages.Static
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -12,9 +14,19 @@
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="this.PageRenderMode()" />
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private IComponentRenderMode? PageRenderMode()
+        => StaticPages.Routes.Any(route => HttpContext.Request.Path.StartsWithSegments(route))
+            ? null
+            : InteractiveServer;
+}

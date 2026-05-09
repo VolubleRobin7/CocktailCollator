@@ -1,10 +1,12 @@
 ﻿using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.Infrastructure.Persistence.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CocktailCollator.Infrastructure.Persistence;
 
-public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : DbContext(options), ICocktailDbContext
+public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : IdentityDbContext<CocktailUser, CocktailRole, Guid>(options), ICocktailDbContext
 {
     void ICocktailDbContext.Add<TEntity>(TEntity entity)
         => this.Add(entity);

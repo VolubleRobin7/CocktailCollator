@@ -1,0 +1,41 @@
+﻿@using CocktailCollator.Infrastructure.Persistence.Models
+@using Microsoft.AspNetCore.Identity
+
+@inject NavigationManager NavigationManager
+@inject SignInManager<CocktailUser> SignInManager
+@inject UserManager<CocktailUser> UserManager
+
+@page "/register"
+
+<h3>Register</h3>
+
+<EditForm Model="this.RegisterInput" method="post" OnSubmit="this.RegisterAsync" FormName="register">
+    <InputText @bind-Value="RegisterInput.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+    <InputText @bind-Value="RegisterInput.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Password" />
+    <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+</EditForm>
+
+@code {
+    // this entire file is currently in a proof-of-concept stage
+
+    private async Task RegisterAsync()
+    {
+        var _User = new CocktailUser
+        {
+            UserName = RegisterInput.Email,
+        };
+        var _Result = await UserManager.CreateAsync(_User, RegisterInput.Password);
+    }
+
+    [SupplyParameterFromForm]
+    private InputModel RegisterInput { get; set; } = new();
+
+    private sealed class InputModel
+    {
+        public string Email { get; set; } = "";
+
+        public string Password { get; set; } = "";
+
+        public bool RememberMe { get; set; }
+    }
+}
