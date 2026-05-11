@@ -6,6 +6,7 @@ public static class StaticPages
         => [
             "/login",
             "/register",
+            "/logout",
             "/forgot-password"
         ];
 }
