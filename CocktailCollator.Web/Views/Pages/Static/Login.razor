@@ -106,6 +106,12 @@
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
 
+    protected override void OnInitialized()
+    {
+        if (HttpContext?.User?.Identity?.IsAuthenticated == true)
+            this.HttpContext.Response.Redirect("/");
+    }
+
     private async Task LoginAsync()
     {
         try
