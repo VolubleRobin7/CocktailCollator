@@ -31,10 +31,11 @@
                     @if (!_Page.AuthRequired || this._isUserAuthenticated)
                     {
                         <li class="nav-item">
-                            <a class="nav-link @(this.IsPageActive(_Page) ? "active" : "")"
-                               href="@_Page.RelativeUri">
+                            <NavLink Match="NavLinkMatch.All" 
+                                     class="nav-link"
+                                     href="@_Page.RelativeUri">
                                 @_Page.DisplayName
-                            </a>
+                            </NavLink>
                         </li>
                     }
                 }
@@ -95,9 +96,6 @@
 
     [Parameter]
     public NavbarAddress[] Pages { get; set; } = [];
-
-    private bool IsPageActive(NavbarAddress page)
-        => page.RelativeUri == this._currentPage.RelativeUri;
 
     private void LocationChanged(object? sender, LocationChangedEventArgs args)
     {
