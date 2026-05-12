@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
 <nav class="navbar navbar-expand-lg bg-body-secondary">
@@ -27,12 +28,15 @@
             <ul class="navbar-nav me-auto">
                 @foreach (var _Page in this.Pages)
                 {
-                    <li class="nav-item">
-                        <a class="nav-link @(this.IsPageActive(_Page) ? "active" : "")"
+                    @if (!_Page.AuthRequired || this._isUserAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(this.IsPageActive(_Page) ? "active" : "")"
                                href="@_Page.RelativeUri">
-                            @_Page.DisplayName
-                        </a>
-                    </li>
+                                @_Page.DisplayName
+                            </a>
+                        </li>
+                    }
                 }
             </ul>
 
@@ -87,6 +91,7 @@
 
 @code {
     private NavbarAddress _currentPage = NavbarAddress.Recipes;
+    private bool _isUserAuthenticated = false;
 
     [Parameter]
     public NavbarAddress[] Pages { get; set; } = [];
@@ -103,10 +108,14 @@
     public void NavigateTo(NavbarAddress address)
         => this.NavigationManager.NavigateTo(address.RelativeUri);
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         this._currentPage = this.UriStringToAddress(this.NavigationManager.Uri);
         this.NavigationManager.LocationChanged += this.LocationChanged;
+
+        // surely theres a nicer way to do this
+        var authState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
+        this._isUserAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
     }
 
     private NavbarAddress UriStringToAddress(string uri)

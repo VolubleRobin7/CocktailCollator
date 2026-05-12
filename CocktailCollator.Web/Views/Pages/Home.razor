@@ -24,9 +24,11 @@
             Text="Get Recipes"
             Theme="ButtonTheme.Secondary" />
 
-    <Button @onclick="() => this._createRecipeModal.OpenModalAsync()"
-            Text="Create Recipe"
-            Theme="ButtonTheme.Secondary" />
+    <AuthorizeView>
+        <Button @onclick="() => this._createRecipeModal.OpenModalAsync()"
+                Text="Create Recipe"
+                Theme="ButtonTheme.Secondary" />
+    </AuthorizeView>
 
     <div class="row">
         @foreach (var recipe in this.ViewModel.Recipes)
@@ -52,10 +54,12 @@
                                 data-bs-target="@this.RecipeModalId"
                                 data-bs-toggle="modal" />
 
-                        <Button @onclick="() => this.OpenUpdateRecipeModal(recipe)"
-                                Size="ButtonSize.Small"
-                                Text="Edit"
-                                Theme="ButtonTheme.Info" />
+                        <AuthorizeView>
+                            <Button @onclick="() => this.OpenUpdateRecipeModal(recipe)"
+                                    Size="ButtonSize.Small"
+                                    Text="Edit"
+                                    Theme="ButtonTheme.Info" />
+                        </AuthorizeView>
                     </div>
                 </div>
             </div>
@@ -94,10 +98,12 @@
     </Body>
 
     <Footer>
-        <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(this._selectedRecipe!.RecipeId)"
-                Text="Delete"
-                Theme="ButtonTheme.Danger"
-                data-bs-dismiss="modal" />
+        <AuthorizeView>
+            <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(this._selectedRecipe!.RecipeId)"
+                    Text="Delete"
+                    Theme="ButtonTheme.Danger"
+                    data-bs-dismiss="modal" />
+        </AuthorizeView>
     </Footer>
 
 </Modal>
