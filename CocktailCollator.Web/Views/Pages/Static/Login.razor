@@ -103,6 +103,9 @@
     [SupplyParameterFromForm]
     private LoginFormModel LoginForm { get; set; } = new();
 
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
     private async Task LoginAsync()
     {
         try
@@ -122,7 +125,13 @@
                 false);
 
             if (_Result.Succeeded)
-                this.HttpContext?.Response.Redirect("/");
+            {
+
+                var redirectUrl = Uri.IsWellFormedUriString(this.ReturnUrl, UriKind.Relative)
+                    ? this.ReturnUrl
+                    : "/";
+                this.HttpContext?.Response.Redirect(redirectUrl);
+            }
             else
                 this._errorMessage = "Invalid username or password.";
         }

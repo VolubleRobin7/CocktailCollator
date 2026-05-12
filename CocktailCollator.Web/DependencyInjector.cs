@@ -36,6 +36,12 @@ public static class DependencyInjector
             .AddDefaultTokenProviders();
 
         return services
+            .ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/login";
+                options.LogoutPath = "/logout";
+                options.AccessDeniedPath = "/access-denied";
+            })
             .AddCascadingAuthenticationState()
             .AddScoped<AuthenticationStateProvider, CocktailAuthenticationStateProvider>()
             .AddAuthorization();
