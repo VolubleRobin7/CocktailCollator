@@ -1,17 +1,30 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+﻿using CocktailCollator.Infrastructure.Persistence.Models;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Identity;
 
 namespace CocktailCollator.Web.Infrastructure.Authentication;
 
 public class CocktailAuthenticationStateProvider(
-    ILoggerFactory loggerFactory)
+    ILoggerFactory loggerFactory,
+    IServiceScopeFactory scopeFactory)
     : RevalidatingServerAuthenticationStateProvider(loggerFactory)
 {
-    protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(3);
+    protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(1);
 
-    protected override Task<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState, CancellationToken cancellationToken)
+    // this check needs to be confirmed, just forcing it to return false is not good enough, needs to be a true false result
+    protected override async Task<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState, CancellationToken cancellationToken)
     {
-        // this needs to be dealt with
-        return Task.FromResult(true);
+        var user = authenticationState.User;
+
+        if (user is null || user.Identity is null || !user.Identity.IsAuthenticated)
+            return false;
+
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var signInManager = scope.ServiceProvider
+            .GetRequiredService<SignInManager<CocktailUser>>();
+
+        var validatedUser = await signInManager.ValidateSecurityStampAsync(user);
+        return validatedUser is not null;
     }
 }

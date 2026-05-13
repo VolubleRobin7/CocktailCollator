@@ -114,6 +114,11 @@
         // surely theres a nicer way to do this
         var authState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
         this._isUserAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+        this.AuthenticationStateProvider.AuthenticationStateChanged += async (authState) => 
+        {
+            this._isUserAuthenticated = (await authState).User.Identity?.IsAuthenticated ?? false;
+            await this.InvokeAsync(this.StateHasChanged);
+        };
     }
 
     private NavbarAddress UriStringToAddress(string uri)
