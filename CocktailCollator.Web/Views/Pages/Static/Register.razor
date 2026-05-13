@@ -29,97 +29,74 @@
                     </div>
                 }
 
-                @if (this._successMessage)
-                {
-                    <div class="alert alert-success alert-dismissible fade show"
-                         role="alert">
-                        Account created successfully! Redirecting to login...
-                        <button type="button" 
-                                class="btn-close" 
-                                disabled />
+                <EditForm FormName="register"
+                          Model="this.RegisterForm"
+                          OnValidSubmit="this.RegisterAsync"
+                          method="post">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label"
+                               for="username">
+                            Username
+                        </label>
+
+                        <InputText @bind-Value="this.RegisterForm.Username"
+                                   aria-required="true"
+                                   autocomplete="username"
+                                   class="form-control"
+                                   id="username"
+                                   placeholder="johnDoe" />
+
+                        <ValidationMessage For="@(() => this.RegisterForm.Username)"
+                                           class="text-danger d-block mt-1" />
                     </div>
-                }
 
-                @if (!this._successMessage)
-                {
-                    <EditForm FormName="register"
-                              Model="this.RegisterForm"
-                              OnValidSubmit="this.RegisterAsync"
-                              method="post">
-                        <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label class="form-label"
+                               for="password">
+                            Password
+                        </label>
 
-                        <div class="mb-3">
-                            <label class="form-label"
-                                   for="email">
-                                Email Address
-                            </label>
+                        <InputText @bind-Value="this.RegisterForm.Password"
+                                   type="password"
+                                   aria-required="true"
+                                   autocomplete="new-password"
+                                   class="form-control"
+                                   id="password"
+                                   placeholder="Password" />
 
-                            <InputText @bind-Value="RegisterForm.Username"
-                                       aria-required="true"
-                                       autocomplete="username"
-                                       class="form-control"
-                                       id="email"
-                                       placeholder="name@example.com" />
+                        <ValidationMessage For="@(() => this.RegisterForm.Password)"
+                                           class="text-danger d-block mt-1" />
 
-                            <ValidationMessage For="@(() => RegisterForm.Username)"
-                                               class="text-danger d-block mt-1" />
-                        </div>
+                        <small class="form-text text-muted d-block mt-1">
+                            Password must be at least 6 characters long. TEMP
+                        </small>
+                    </div>
 
-                        <div class="mb-3">
-                            <label class="form-label"
-                                   for="password">
-                                Password
-                            </label>
+                    <div class="mb-3">
+                        <label class="form-label"
+                               for="confirmPassword">
+                            Confirm Password
+                        </label>
 
-                            <InputText @bind-Value="RegisterForm.Password"
-                                       type="password"
-                                       aria-required="true"
-                                       autocomplete="new-password"
-                                       class="form-control"
-                                       id="password"
-                                       placeholder="Password" />
+                        <InputText @bind-Value="this.RegisterForm.ConfirmPassword"
+                                   type="password"
+                                   aria-required="true"
+                                   autocomplete="new-password"
+                                   class="form-control"
+                                   id="confirmPassword"
+                                   placeholder="Confirm Password" />
 
-                            <ValidationMessage For="@(() => RegisterForm.Password)"
-                                               class="text-danger d-block mt-1" />
+                        <ValidationMessage For="@(() => this.RegisterForm.ConfirmPassword)"
+                                           class="text-danger d-block mt-1" />
+                    </div>
 
-                            <small class="form-text text-muted d-block mt-1">
-                                Password must be at least 6 characters long. TEMP
-                            </small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label"
-                                   for="confirmPassword">
-                                Confirm Password
-                            </label>
-
-                            <InputText @bind-Value="RegisterForm.ConfirmPassword"
-                                       type="password"
-                                       aria-required="true"
-                                       autocomplete="new-password"
-                                       class="form-control"
-                                       id="confirmPassword"
-                                       placeholder="Confirm Password" />
-
-                            <ValidationMessage For="@(() => RegisterForm.ConfirmPassword)"
-                                               class="text-danger d-block mt-1" />
-                        </div>
-
-                        <button type="submit" 
-                                class="w-100 btn btn-primary mb-3" 
-                                disabled="@this._fakeLoading">
-                            @if (this._fakeLoading)
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                <span>Creating Account...</span>
-                            }
-                            else
-                            {
-                                <span>Register</span>
-                            }
-                        </button>
-                    </EditForm>
-                }
+                    <button type="submit" 
+                            class="w-100 btn btn-primary mb-3">
+                        Register
+                    </button>
+                </EditForm>
 
                 <div class="text-center">
                     <p class="mb-0">
@@ -134,8 +111,6 @@
 
 @code {
     private string _errorMessage = string.Empty;
-    private bool _fakeLoading; // this isn't working currently because static page lmao
-    private bool _successMessage;
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -148,7 +123,6 @@
         try
         {
             this._errorMessage = string.Empty;
-            this._fakeLoading = true;
 
             var _User = new CocktailUser
             {
@@ -158,22 +132,16 @@
             var _Result = await this.UserManager.CreateAsync(_User, this.RegisterForm.Password);
 
             if (_Result.Succeeded)
-            {
-                this._successMessage = true;
-                await Task.Delay(2000); // this is pointless because static page
-                this.HttpContext?.Response.Redirect("/login");
-            }
+                this.HttpContext?.Response.Redirect("/redirect?RedirectType=register");
             else
             {
                 var _ErrorMessages = string.Join(" ", _Result.Errors.Select(e => e.Description));
                 this._errorMessage = $"Registration failed: {_ErrorMessages}";
-                this._fakeLoading = false;
             }
         }
         catch (Exception ex)
         {
             this._errorMessage = $"An error occurred during registration: {ex.Message}";
-            this._fakeLoading = false;
         }
     }
 
