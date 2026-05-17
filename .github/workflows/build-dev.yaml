@@ -1,0 +1,29 @@
+name: Development PR Build Check
+
+run-name: Build for ${{ github.head_ref }} by @${{ github.triggering_actor }}
+
+on:
+  pull_request:
+    branches:
+      - development
+
+jobs:
+  build:
+    name: Build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build Solution
+        run: dotnet build --configuration Release --no-restore
