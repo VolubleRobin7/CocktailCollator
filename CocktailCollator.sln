@@ -13,6 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CocktailCollator.Applicatio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2A9CA377-50E7-4874-A159-38BD69E0D38D}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build-dev.yaml = .github\workflows\build-dev.yaml
 		.github\workflows\container-dev.yaml = .github\workflows\container-dev.yaml
 		.github\workflows\container-latest.yaml = .github\workflows\container-latest.yaml
 		Dockerfile = Dockerfile
