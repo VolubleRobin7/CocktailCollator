@@ -10,7 +10,7 @@ public class CocktailAuthenticationStateProvider(
     IServiceScopeFactory scopeFactory)
     : RevalidatingServerAuthenticationStateProvider(loggerFactory)
 {
-    protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(1);
+    protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(10);
 
     // this check needs to be confirmed, just forcing it to return false is not good enough, needs to be a true false result
     protected override async Task<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState, CancellationToken cancellationToken)

@@ -4,11 +4,13 @@ using CocktailCollator.Web.FormModels.IngredientCategories;
 using CocktailCollator.Web.FormModels.Ingredients;
 using CocktailCollator.Web.FormModels.Measurements;
 using CocktailCollator.Web.FormModels.Recipes;
+using CocktailCollator.Web.FormModels.Users;
 using CocktailCollator.Web.Infrastructure.Authentication;
 using CocktailCollator.Web.ViewModels.IngredientCategories;
 using CocktailCollator.Web.ViewModels.Ingredients;
 using CocktailCollator.Web.ViewModels.Measurements;
 using CocktailCollator.Web.ViewModels.Recipes;
+using CocktailCollator.Web.ViewModels.Users;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 
@@ -41,6 +43,7 @@ public static class DependencyInjector
                 options.LoginPath = "/login";
                 options.LogoutPath = "/logout";
                 options.AccessDeniedPath = "/access-denied";
+                options.ExpireTimeSpan = TimeSpan.FromDays(14); // 14 days is default
             })
             .AddCascadingAuthenticationState()
             .AddScoped<AuthenticationStateProvider, CocktailAuthenticationStateProvider>()
@@ -52,6 +55,7 @@ public static class DependencyInjector
             .AddScoped<CreateIngredientCategoryFormModel>()
             .AddScoped<CreateMeasurementFormModel>()
             .AddScoped<CreateRecipeFormModel>()
+            .AddScoped<CreateUserFormModel>()
             .AddScoped<UpdateIngredientFormModel>()
             .AddScoped<UpdateRecipeFormModel>();
 
@@ -60,5 +64,6 @@ public static class DependencyInjector
             .AddScoped<RecipesViewModel>()
             .AddScoped<IngredientsViewModel>()
             .AddScoped<MeasurementsViewModel>()
-            .AddScoped<IngredientCategoriesViewModel>();
+            .AddScoped<IngredientCategoriesViewModel>()
+            .AddScoped<UsersViewModel>();
 }
