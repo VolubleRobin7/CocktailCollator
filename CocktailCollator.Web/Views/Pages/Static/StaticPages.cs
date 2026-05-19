@@ -5,8 +5,6 @@ public static class StaticPages
     public static string[] Routes
         => [
             "/login",
-            "/register",
             "/logout",
-            "/forgot-password"
         ];
 }

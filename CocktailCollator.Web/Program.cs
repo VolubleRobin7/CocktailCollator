@@ -1,8 +1,10 @@
 using CocktailCollator.Application;
 using CocktailCollator.Infrastructure;
 using CocktailCollator.Infrastructure.Persistence;
+using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web;
 using CocktailCollator.Web.Views;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -68,6 +70,35 @@ if (builder.Configuration.GetValue<bool>("RunMigrationsOnStartup"))
     using var _Scope = app.Services.CreateScope();
     var _DbContext = _Scope.ServiceProvider.GetRequiredService<CocktailDbContext>();
     _DbContext.Database.Migrate();
+}
+
+// Create default admin user if no users exist
+using (var _Scope = app.Services.CreateScope())
+{
+    var _UserManager = _Scope.ServiceProvider.GetRequiredService<UserManager<CocktailUser>>();
+    var _DbContext = _Scope.ServiceProvider.GetRequiredService<CocktailDbContext>();
+
+    if (!_DbContext.Users.Any())
+    {
+        var _AdminUser = new CocktailUser
+        {
+            UserName = "Admin",
+            Email = "admin@cocktailcollator.local",
+            EmailConfirmed = true
+        };
+
+        var _Result = await _UserManager.CreateAsync(_AdminUser, "cocktail");
+        if (_Result.Succeeded)
+            Console.WriteLine("Default admin user 'Admin' created successfully.");
+        else
+        {
+            Console.WriteLine("Failed to create default admin user:");
+            foreach (var _Error in _Result.Errors)
+            {
+                Console.WriteLine($"  - {_Error.Code}: {_Error.Description}");
+            }
+        }
+    }
 }
 
 // Configure the HTTP request pipeline.
