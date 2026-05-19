@@ -16,6 +16,7 @@ public class UsersViewModel
     public IAsyncRelayCommand<CreateUserInputPort> CreateCommand { get; }
     public IAsyncRelayCommand<Guid> DeleteCommand { get; }
     public IAsyncRelayCommand GetCommand { get; }
+    public IAsyncRelayCommand<ChangePasswordInputPort> ChangePasswordCommand { get; }
 
     public UserViewModel? CurrentUser { get; private set; }
     public List<UserViewModel> Users { get; private set; } = [];
@@ -37,6 +38,38 @@ public class UsersViewModel
         this.DeleteCommand = new AsyncRelayCommand<Guid>(this.DeleteUserAsync);
 
         this.GetCommand = new AsyncRelayCommand(this.GetUsersAsync);
+
+        this.ChangePasswordCommand = new AsyncRelayCommand<ChangePasswordInputPort>((inputPort, cancellationToken)
+            => this.ChangePasswordAsync(inputPort.UserId, inputPort.NewPassword, cancellationToken));
+    }
+
+    private async Task ChangePasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken)
+    {
+        try
+        {
+            this.Error = string.Empty;
+
+            var _User = await this._userManager.FindByIdAsync(userId.ToString());
+
+            if (_User is null)
+            {
+                this.Error = "User not found.";
+                return;
+            }
+
+            var _Token = await this._userManager.GeneratePasswordResetTokenAsync(_User);
+            var _Result = await this._userManager.ResetPasswordAsync(_User, _Token, newPassword);
+
+            if (!_Result.Succeeded)
+            {
+                var _ErrorMessages = string.Join(" ", _Result.Errors.Select(e => e.Description));
+                this.Error = $"Failed to change password: {_ErrorMessages}";
+            }
+        }
+        catch (Exception ex)
+        {
+            this.Error = $"An error occurred while changing the password: {ex.Message}";
+        }
     }
 
     private async Task CreateUserAsync(string username, string password, CancellationToken cancellationToken)

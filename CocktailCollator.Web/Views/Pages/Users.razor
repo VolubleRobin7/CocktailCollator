@@ -34,13 +34,21 @@
                             <span class="ms-2 text-muted">(@user.Email)</span>
                         }
                     </span>
-                    @if (user.UserId != this.ViewModel.CurrentUser?.UserId)
-                    {
-                        <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(user.UserId)"
+                    <div>
+                        <Button @onclick="() => this._changePasswordModal.OpenModalAsync(user.UserId)"
                                 Size="ButtonSize.Small"
-                                Theme="ButtonTheme.Danger"
-                                Text="Delete" />
-                    }
+                                Theme="ButtonTheme.Secondary"
+                                Text="Change Password"
+                                class="me-2" />
+
+                        @if (user.UserId != this.ViewModel.CurrentUser?.UserId)
+                        {
+                            <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(user.UserId)"
+                                    Size="ButtonSize.Small"
+                                    Theme="ButtonTheme.Danger"
+                                    Text="Delete" />
+                        }
+                    </div>
                 </div>
             </li>
         }
@@ -58,6 +66,9 @@
 <CreateUserModal @ref="this._createUserModal"
                  OnAfterCreation="this.StateHasChanged" />
 
+<ChangePasswordModal @ref="this._changePasswordModal" /> 
+
 @code {
+    private ChangePasswordModal _changePasswordModal = default!;
     private CreateUserModal _createUserModal = default!;
 }

@@ -52,6 +52,7 @@ public static class DependencyInjector
 
     private static IServiceCollection AddFormModels(this IServiceCollection services)
         => services
+            .AddScoped<ChangePasswordFormModel>()
             .AddScoped<CreateIngredientCategoryFormModel>()
             .AddScoped<CreateMeasurementFormModel>()
             .AddScoped<CreateRecipeFormModel>()
