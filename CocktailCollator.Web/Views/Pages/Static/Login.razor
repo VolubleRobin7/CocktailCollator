@@ -58,12 +58,12 @@
                         </label>
 
                         <InputText @bind-Value="LoginForm.Password"
-                                   type="password"
+                                   aria-required="true"
+                                   autocomplete="current-password"
                                    class="form-control"
                                    id="password"
-                                   autocomplete="current-password"
-                                   aria-required="true"
-                                   placeholder="Password" />
+                                   placeholder="Password"
+                                   type="password" />
 
                         <ValidationMessage For="@(() => LoginForm.Password)"
                                            class="text-danger d-block mt-1" />
@@ -82,13 +82,6 @@
 
                     <button type="submit" class="w-100 btn btn-primary mb-3">Log In</button>
                 </EditForm>
-
-                <div class="text-center">
-                    <p class="mb-0">
-                        Don't have an account?
-                        <a href="/register" class="link-primary">Register here</a>
-                    </p>
-                </div>
             </div>
         </div>
     </div>
@@ -132,7 +125,6 @@
 
             if (_Result.Succeeded)
             {
-
                 var redirectUrl = Uri.IsWellFormedUriString(this.ReturnUrl, UriKind.Relative)
                     ? this.ReturnUrl
                     : "/";

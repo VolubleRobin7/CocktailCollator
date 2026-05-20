@@ -6,7 +6,7 @@
 <nav class="navbar navbar-expand-lg bg-body-secondary">
     <div class="container">
         <a class="navbar-brand"
-               href="/">
+           href="/">
             Cocktail Collator
         </a>
 
@@ -119,7 +119,6 @@
         this._currentPage = this.UriStringToAddress(this.NavigationManager.Uri);
         this.NavigationManager.LocationChanged += this.LocationChanged;
 
-        // surely theres a nicer way to do this
         var authState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
         this._isUserAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
         this.AuthenticationStateProvider.AuthenticationStateChanged += async (authState) => 

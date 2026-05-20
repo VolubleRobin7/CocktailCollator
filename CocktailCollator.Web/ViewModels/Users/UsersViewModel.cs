@@ -62,7 +62,7 @@ public class UsersViewModel
 
             if (!_Result.Succeeded)
             {
-                var _ErrorMessages = string.Join(" ", _Result.Errors.Select(e => e.Description));
+                var _ErrorMessages = string.Join(", ", _Result.Errors.Select(e => e.Description));
                 this.Error = $"Failed to change password: {_ErrorMessages}";
             }
         }
@@ -78,10 +78,7 @@ public class UsersViewModel
         {
             this.Error = string.Empty;
 
-            var _User = new CocktailUser
-            {
-                UserName = username,
-            };
+            var _User = new CocktailUser { UserName = username, };
 
             var _Result = await this._userManager.CreateAsync(_User, password);
 
@@ -89,7 +86,7 @@ public class UsersViewModel
                 this.Users.Add(this._mapper.Map<UserViewModel>(_User));
             else
             {
-                var _ErrorMessages = string.Join(" ", _Result.Errors.Select(e => e.Description));
+                var _ErrorMessages = string.Join(", ", _Result.Errors.Select(e => e.Description));
                 this.Error = $"Failed to create user: {_ErrorMessages}";
             }
         }
@@ -119,7 +116,7 @@ public class UsersViewModel
                 _ = this.Users.RemoveAll(u => u.UserId == userId);
             else
             {
-                var _ErrorMessages = string.Join(" ", _Result.Errors.Select(e => e.Description));
+                var _ErrorMessages = string.Join(", ", _Result.Errors.Select(e => e.Description));
                 this.Error = $"Failed to delete user: {_ErrorMessages}";
             }
         }

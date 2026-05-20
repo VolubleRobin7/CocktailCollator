@@ -8,10 +8,9 @@ public class CreateUserFormModel : IFormModel<CreateUserInputPort>
 {
     private readonly IMapper _mapper;
 
-    public InputProperty<string> Username { get; set; }
-        = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
-
     public InputProperty<string> Password { get; set; }
+        = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
+    public InputProperty<string> Username { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
 
     public Action? OnChange { get; set; }
@@ -20,8 +19,8 @@ public class CreateUserFormModel : IFormModel<CreateUserInputPort>
     {
         this._mapper = mapper;
 
-        this.Username.OnChange = () => OnChange?.Invoke();
         this.Password.OnChange = () => OnChange?.Invoke();
+        this.Username.OnChange = () => OnChange?.Invoke();
     }
 
     public CreateUserInputPort ExtractToInputPort()
