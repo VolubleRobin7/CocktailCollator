@@ -12,7 +12,6 @@ public class CocktailAuthenticationStateProvider(
 {
     protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(10);
 
-    // this check needs to be confirmed, just forcing it to return false is not good enough, needs to be a true false result
     protected override async Task<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState, CancellationToken cancellationToken)
     {
         var user = authenticationState.User;
