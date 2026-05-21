@@ -1,0 +1,79 @@
+@inject NavigationManager NavigationManager
+
+@page "/redirect"
+
+<PageTitle>@this._messageData.PageTitle</PageTitle>
+
+<div class="container-sm mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 card">
+            <div class="card-body px-3 py-4 text-center">
+                <h2 class="card-title mb-4">@this._messageData.Heading</h2>
+
+                <div class="alert alert-info" role="alert">
+                    <p class="mb-0">@this._messageData.Message</p>
+                    <p class="mb-0">Redirecting to @(this._messageData.TargetPage)...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // This page is currently unused, however may serve useful in the future
+
+    private RedirectMessageData _messageData = default!; 
+
+    [SupplyParameterFromQuery]
+    public string? RedirectType { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (this.RedirectType == "register")
+            this._messageData = RedirectMessageData.SuccessfulRegistration;
+        else
+            this._messageData = RedirectMessageData.Default;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(3000);
+            this.NavigationManager.NavigateTo(this._messageData.Uri, forceLoad: true);
+        }
+    }
+
+    private class RedirectMessageData
+    {
+        public static readonly RedirectMessageData Default = new(
+            "Redirecting...",
+            "Redirecting...",
+            "You are being redirected.",
+            "home",
+            "/"
+        );
+        public static readonly RedirectMessageData SuccessfulRegistration = new(
+            "Registration Successful",
+            "Registration Successful!",
+            "Your account has been created successfully.",
+            "login",
+            "/login"
+        );
+
+        private RedirectMessageData(string title, string heading, string message, string target, string uri)
+        {
+            this.PageTitle = title;
+            this.Heading = heading;
+            this.Message = message;
+            this.TargetPage = target;
+            this.Uri = uri;
+        }
+
+        public readonly string Heading;
+        public readonly string Message;
+        public readonly string PageTitle;
+        public readonly string TargetPage;
+        public readonly string Uri;
+    }
+}

@@ -1,4 +1,7 @@
-﻿@inject NavigationManager NavigationManager
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 
 <nav class="navbar navbar-expand-lg bg-body-secondary">
     <div class="container">
@@ -22,16 +25,73 @@
         <div class="collapse navbar-collapse"
              id="navbarLinks">
 
-            <ul class="navbar-nav">
+            <ul class="navbar-nav me-auto">
                 @foreach (var _Page in this.Pages)
                 {
-                    <li class="nav-item">
-                        <a class="nav-link @(this.IsPageActive(_Page) ? "active" : "")"
-                           href="@_Page.RelativeUri">
-                            @_Page.DisplayName
-                        </a>
-                    </li>
+                    @if (!_Page.AuthRequired || this._isUserAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <NavLink Match="NavLinkMatch.All" 
+                                     class="nav-link"
+                                     href="@_Page.RelativeUri">
+                                @_Page.DisplayName
+                            </NavLink>
+                        </li>
+                    }
                 }
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                <AuthorizeView>
+                    <Authorized>
+                        <li class="nav-item dropdown">
+                            <a aria-expanded="false" 
+                               class="nav-link dropdown-toggle"
+                               data-bs-toggle="dropdown"
+                               href="#"
+                               id="userDropdown"
+                               role="button">
+                                @(context.User.Identity?.Name ?? "Account")
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <span class="dropdown-item-text">
+                                        Settings (TEMP)
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <NavLink Match="NavLinkMatch.All"
+                                             class="dropdown-item"
+                                             href="users">
+                                        Users Management
+                                    </NavLink>
+                                </li>
+
+                                <li><hr class="dropdown-divider"></li>
+
+                                <li>
+                                    <a @onclick="@(() => this.NavigationManager.NavigateTo("/logout", forceLoad: true))"
+                                       class="dropdown-item"
+                                       role="button">
+                                        Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </Authorized>
+
+                    <NotAuthorized>
+                        <li class="nav-item">
+                            <a @onclick="@(() => this.NavigationManager.NavigateTo("/login", forceLoad: true))"
+                               class="nav-link"
+                               role="button">
+                                Login
+                            </a>
+                        </li>
+                    </NotAuthorized>
+                </AuthorizeView>
             </ul>
 
         </div>
@@ -40,12 +100,10 @@
 
 @code {
     private NavbarAddress _currentPage = NavbarAddress.Recipes;
+    private bool _isUserAuthenticated = false;
 
     [Parameter]
     public NavbarAddress[] Pages { get; set; } = [];
-
-    private bool IsPageActive(NavbarAddress page)
-        => page.RelativeUri == this._currentPage.RelativeUri;
 
     private void LocationChanged(object? sender, LocationChangedEventArgs args)
     {
@@ -56,10 +114,18 @@
     public void NavigateTo(NavbarAddress address)
         => this.NavigationManager.NavigateTo(address.RelativeUri);
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         this._currentPage = this.UriStringToAddress(this.NavigationManager.Uri);
         this.NavigationManager.LocationChanged += this.LocationChanged;
+
+        var authState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
+        this._isUserAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+        this.AuthenticationStateProvider.AuthenticationStateChanged += async (authState) => 
+        {
+            this._isUserAuthenticated = (await authState).User.Identity?.IsAuthenticated ?? false;
+            await this.InvokeAsync(this.StateHasChanged);
+        };
     }
 
     private NavbarAddress UriStringToAddress(string uri)

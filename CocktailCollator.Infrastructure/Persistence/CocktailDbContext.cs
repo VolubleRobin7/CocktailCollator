@@ -1,10 +1,12 @@
 ﻿using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.Infrastructure.Persistence.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CocktailCollator.Infrastructure.Persistence;
 
-public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : DbContext(options), ICocktailDbContext
+public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : IdentityDbContext<CocktailUser, CocktailRole, Guid>(options), ICocktailDbContext
 {
     void ICocktailDbContext.Add<TEntity>(TEntity entity)
         => this.Add(entity);
@@ -31,7 +33,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : Db
     // Remove Previous Migration Command (Can only do before being applied I think)
     // dotnet ef migrations remove --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
     //
-    // Apply Migration Command
+    // Apply Migration Command (May not be needed, based on RunMigrationsOnStartup in appsettings)
     // dotnet ef database update --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
 
     private static void AddEntities(ModelBuilder modelBuilder)

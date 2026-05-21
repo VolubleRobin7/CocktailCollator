@@ -1,0 +1,74 @@
+@using CocktailCollator.Web.ViewModels.Users
+@using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Modals
+@using Microsoft.AspNetCore.Authorization
+
+@inject UsersViewModel ViewModel
+
+@attribute [Authorize]
+
+@page "/users"
+
+<PageTitle>Users</PageTitle>
+
+<div class="container pt-2">
+
+    <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
+            Text="Get Accounts"
+            Theme="ButtonTheme.Secondary" />
+
+    <Button @onclick="() => this._createUserModal.OpenModalAsync()"
+            Text="Create User Account"
+            Theme="ButtonTheme.Secondary"
+            class="ms-2" />
+
+    <ul class="list-group list-group-flush mt-3">
+        @foreach (var user in this.ViewModel.Users)
+        {
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <span class="align-content-center">
+                        @user.UserName
+                        @if (!string.IsNullOrEmpty(user.Email))
+                        {
+                            <span class="ms-2 text-muted">(@user.Email)</span>
+                        }
+                    </span>
+                    <div>
+                        <Button @onclick="() => this._changePasswordModal.OpenModalAsync(user.UserId)"
+                                Size="ButtonSize.Small"
+                                Theme="ButtonTheme.Secondary"
+                                Text="Change Password"
+                                class="me-2" />
+
+                        @if (user.UserId != this.ViewModel.CurrentUser?.UserId)
+                        {
+                            <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(user.UserId)"
+                                    Size="ButtonSize.Small"
+                                    Theme="ButtonTheme.Danger"
+                                    Text="Delete" />
+                        }
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+
+</div>
+
+@if (!string.IsNullOrEmpty(this.ViewModel.Error))
+{
+    <div class="alert alert-danger mt-3 ms-2 me-2" role="alert">
+        @this.ViewModel.Error
+    </div>
+}
+
+<CreateUserModal @ref="this._createUserModal"
+                 OnAfterCreation="this.StateHasChanged" />
+
+<ChangePasswordModal @ref="this._changePasswordModal" /> 
+
+@code {
+    private ChangePasswordModal _changePasswordModal = default!;
+    private CreateUserModal _createUserModal = default!;
+}
