@@ -5,6 +5,7 @@
 @using CocktailCollator.Web.Views.Components.Modals
 @using CocktailCollator.Web.Views.Components.Helpers
 
+@inject IConfiguration Configuration
 @inject CreateUserFormModel CreateUserFormModel
 @inject UsersViewModel ViewModel
 
@@ -20,7 +21,7 @@
                         Title="Username" />
 
             <InputField Input="this.CreateUserFormModel.Password"
-                        InvalidMessage="Password requires a value."
+                        InvalidMessage="@this.PasswordInvalidMessage"
                         Title="Password"
                         Type="password" />
 
@@ -44,6 +45,11 @@
     [Parameter]
     public EventCallback OnAfterCreation { get; set; }
 
+    public string PasswordInvalidMessage
+        => this.Configuration.GetValue<bool>("EnforcePasswordPolicies") 
+            ? "Password must be 8 characters long, and contain a lowercase, uppercase, number and special character." 
+            : "Password requires a value.";
+
     private async Task OnClickCreate()
     {
         await this.ViewModel.CreateCommand.ExecuteAsync(this.CreateUserFormModel.ExtractToInputPort());
@@ -53,4 +59,5 @@
 
     public Task OpenModalAsync()
         => this._modal.OpenModalAsync();
+
 }

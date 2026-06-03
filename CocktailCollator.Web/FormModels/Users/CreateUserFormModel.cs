@@ -6,20 +6,24 @@ namespace CocktailCollator.Web.FormModels.Users;
 
 public class CreateUserFormModel : IFormModel<CreateUserInputPort>
 {
+    private readonly bool _enforcePasswordPolicies;
     private readonly IMapper _mapper;
 
     public InputProperty<string> Password { get; set; }
-        = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputProperty<string> Username { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
 
     public Action? OnChange { get; set; }
 
-    public CreateUserFormModel(IMapper mapper)
+    public CreateUserFormModel(IConfiguration configuration, IMapper mapper)
     {
         this._mapper = mapper;
+        this._enforcePasswordPolicies = configuration.GetValue<bool>("EnforcePasswordPolicies");
 
-        this.Password.OnChange = () => OnChange?.Invoke();
+        this.Password = new(() => string.Empty, this.CheckPasswordPolicy)
+        {
+            OnChange = () => OnChange?.Invoke()
+        };
         this.Username.OnChange = () => OnChange?.Invoke();
     }
 
@@ -33,5 +37,28 @@ public class CreateUserFormModel : IFormModel<CreateUserInputPort>
     {
         this.Username.ResetToDefault();
         this.Password.ResetToDefault();
+    }
+
+    private bool CheckPasswordPolicy(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return false;
+
+        if (this._enforcePasswordPolicies)
+        {
+            if (input.Length < 8)
+                return false;
+
+            if (!input.Any(char.IsDigit))
+                return false;
+
+            if (!input.Any(char.IsUpper))
+                return false;
+
+            if (!input.Any(c => !char.IsLetterOrDigit(c)))
+                return false;
+        }
+
+        return true;
     }
 }
