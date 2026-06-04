@@ -9,7 +9,7 @@
 @inject IngredientsViewModel ViewModel
 @inject IngredientCategoriesViewModel IngredientCategoriesViewModel
 
-@attribute [Authorize(Policy = Permissions.Ingredients.View)]
+@attribute [Authorize(Policy = Policies.ViewIngredients)]
 
 @page "/ingredients"
 

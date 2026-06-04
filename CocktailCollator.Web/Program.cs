@@ -86,11 +86,11 @@ using (var _Scope = app.Services.CreateScope())
     {
         var adminRole = new CocktailRole { Name = "Admin" };
         _ = await _RoleManager.CreateAsync(adminRole);
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Users.Manage));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Ingredients.View));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Ingredients.Manage));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Measurements.View));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Measurements.Manage));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Users.Manage));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.Manage));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.Manage));
     }
 
     var userRoleExists = await _RoleManager.RoleExistsAsync("User");
@@ -98,8 +98,8 @@ using (var _Scope = app.Services.CreateScope())
     {
         var userRole = new CocktailRole { Name = "User" };
         _ = await _RoleManager.CreateAsync(userRole);
-        _ = await _RoleManager.AddClaimAsync(userRole, new Claim("Permission", Permissions.Ingredients.View));
-        _ = await _RoleManager.AddClaimAsync(userRole, new Claim("Permission", Permissions.Measurements.View));
+        _ = await _RoleManager.AddClaimAsync(userRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
+        _ = await _RoleManager.AddClaimAsync(userRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
     }
 
     if (!_DbContext.Users.Any())

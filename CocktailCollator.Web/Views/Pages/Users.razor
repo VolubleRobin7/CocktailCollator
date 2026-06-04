@@ -6,7 +6,7 @@
 
 @inject UsersViewModel ViewModel
 
-@attribute [Authorize(Policy = Permissions.Users.Manage)]
+@attribute [Authorize(Policy = Policies.ManageUsers)]
 
 @page "/users"
 

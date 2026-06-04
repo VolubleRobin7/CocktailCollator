@@ -64,11 +64,11 @@ public static class DependencyInjector
 
     private static void AddPolicies(AuthorizationOptions options)
     {
-        options.AddPolicy(Permissions.Users.Manage, policy => policy.RequireClaim("Permission", Permissions.Users.Manage));
-        options.AddPolicy(Permissions.Ingredients.View, policy => policy.RequireClaim("Permission", Permissions.Ingredients.View));
-        options.AddPolicy(Permissions.Ingredients.Manage, policy => policy.RequireClaim("Permission", Permissions.Ingredients.Manage));
-        options.AddPolicy(Permissions.Measurements.View, policy => policy.RequireClaim("Permission", Permissions.Measurements.View));
-        options.AddPolicy(Permissions.Measurements.Manage, policy => policy.RequireClaim("Permission", Permissions.Measurements.Manage));
+        options.AddPolicy(Policies.ManageUsers, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Users.Manage));
+        options.AddPolicy(Policies.ViewIngredients, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
+        options.AddPolicy(Policies.ManageIngredients, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.Manage));
+        options.AddPolicy(Policies.ViewMeasurements, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
+        options.AddPolicy(Policies.ManageMeasurements, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Measurements.Manage));
     }
 
     private static IServiceCollection AddViewModels(this IServiceCollection services)
