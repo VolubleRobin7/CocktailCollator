@@ -139,7 +139,7 @@ public class UsersViewModel
             this.CurrentUser = this._mapper.Map<UserViewModel>(await this._userManager.GetUserAsync(_AuthState.User));
 
             var _Users = new List<UserViewModel>();
-            foreach (var _DomainUser in this._userManager.Users)
+            foreach (var _DomainUser in this._userManager.Users.ToList())
             {
                 var _User = this._mapper.Map<UserViewModel>(_DomainUser);
                 _User.Roles = [.. await this._userManager.GetRolesAsync(_DomainUser)];
