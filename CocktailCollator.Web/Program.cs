@@ -3,10 +3,12 @@ using CocktailCollator.Infrastructure;
 using CocktailCollator.Infrastructure.Persistence;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web;
+using CocktailCollator.Web.Infrastructure.Authentication;
 using CocktailCollator.Web.Views;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,11 +74,33 @@ if (builder.Configuration.GetValue<bool>("RunMigrationsOnStartup"))
     _DbContext.Database.Migrate();
 }
 
-// Create default admin user if no users exist
+// Create default admin user and roles if they don't exist
 using (var _Scope = app.Services.CreateScope())
 {
     var _UserManager = _Scope.ServiceProvider.GetRequiredService<UserManager<CocktailUser>>();
+    var _RoleManager = _Scope.ServiceProvider.GetRequiredService<RoleManager<CocktailRole>>();
     var _DbContext = _Scope.ServiceProvider.GetRequiredService<CocktailDbContext>();
+
+    var adminRoleExists = await _RoleManager.RoleExistsAsync("Admin");
+    if (!adminRoleExists)
+    {
+        var adminRole = new CocktailRole { Name = "Admin" };
+        _ = await _RoleManager.CreateAsync(adminRole);
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Users.Manage));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Ingredients.View));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Ingredients.Manage));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Measurements.View));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim("Permission", Permissions.Measurements.Manage));
+    }
+
+    var userRoleExists = await _RoleManager.RoleExistsAsync("User");
+    if (!userRoleExists)
+    {
+        var userRole = new CocktailRole { Name = "User" };
+        _ = await _RoleManager.CreateAsync(userRole);
+        _ = await _RoleManager.AddClaimAsync(userRole, new Claim("Permission", Permissions.Ingredients.View));
+        _ = await _RoleManager.AddClaimAsync(userRole, new Claim("Permission", Permissions.Measurements.View));
+    }
 
     if (!_DbContext.Users.Any())
     {
@@ -89,7 +113,10 @@ using (var _Scope = app.Services.CreateScope())
 
         var _Result = await _UserManager.CreateAsync(_AdminUser, "cocktail");
         if (_Result.Succeeded)
+        {
             Console.WriteLine("Default admin user 'Admin' created successfully.");
+            _ = await _UserManager.AddToRoleAsync(_AdminUser, "Admin");
+        }
         else
         {
             Console.WriteLine("Failed to create default admin user:");

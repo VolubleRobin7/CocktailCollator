@@ -1,11 +1,12 @@
 @using CocktailCollator.Web.ViewModels.Users
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Modals
+@using CocktailCollator.Web.Infrastructure.Authentication
 @using Microsoft.AspNetCore.Authorization
 
 @inject UsersViewModel ViewModel
 
-@attribute [Authorize]
+@attribute [Authorize(Policy = Permissions.Users.Manage)]
 
 @page "/users"
 
@@ -33,8 +34,17 @@
                         {
                             <span class="ms-2 text-muted">(@user.Email)</span>
                         }
+                        @if (user.Roles != null && user.Roles.Any())
+                        {
+                            <span class="ms-2 badge bg-info text-dark">@string.Join(", ", user.Roles)</span>
+                        }
                     </span>
                     <div>
+                        <Button @onclick="() => this._updateRolesModal.OpenModalAsync(user.UserId, user.Roles)"
+                                Size="ButtonSize.Small"
+                                Theme="ButtonTheme.Secondary"
+                                Text="Update Roles"
+                                class="me-2" />
                         <Button @onclick="() => this._changePasswordModal.OpenModalAsync(user.UserId)"
                                 Size="ButtonSize.Small"
                                 Theme="ButtonTheme.Secondary"
@@ -68,7 +78,16 @@
 
 <ChangePasswordModal @ref="this._changePasswordModal" /> 
 
+<UpdateRolesModal @ref="this._updateRolesModal"
+                  OnAfterChange="this.RefreshUsers" />
+
 @code {
     private ChangePasswordModal _changePasswordModal = default!;
     private CreateUserModal _createUserModal = default!;
+    private UpdateRolesModal _updateRolesModal = default!;
+
+    private async Task RefreshUsers()
+    {
+        await this.ViewModel.GetCommand.ExecuteAsync(null);
+    }
 }

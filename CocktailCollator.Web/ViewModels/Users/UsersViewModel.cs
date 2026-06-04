@@ -17,6 +17,7 @@ public class UsersViewModel
     public IAsyncRelayCommand<Guid> DeleteCommand { get; }
     public IAsyncRelayCommand GetCommand { get; }
     public IAsyncRelayCommand<ChangePasswordInputPort> ChangePasswordCommand { get; }
+    public IAsyncRelayCommand<UpdateRolesInputPort> UpdateRolesCommand { get; }
 
     public UserViewModel? CurrentUser { get; private set; }
     public List<UserViewModel> Users { get; private set; } = [];
@@ -41,6 +42,8 @@ public class UsersViewModel
 
         this.ChangePasswordCommand = new AsyncRelayCommand<ChangePasswordInputPort>((inputPort, cancellationToken)
             => this.ChangePasswordAsync(inputPort.UserId, inputPort.NewPassword, cancellationToken));
+
+        this.UpdateRolesCommand = new AsyncRelayCommand<UpdateRolesInputPort>(this.UpdateRolesAsync);
     }
 
     private async Task ChangePasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken)
@@ -134,11 +137,49 @@ public class UsersViewModel
 
             var _AuthState = await this._authenticationStateProvider.GetAuthenticationStateAsync();
             this.CurrentUser = this._mapper.Map<UserViewModel>(await this._userManager.GetUserAsync(_AuthState.User));
-            this.Users = this._mapper.Map<List<UserViewModel>>(this._userManager.Users);
+
+            var _Users = new List<UserViewModel>();
+            foreach (var _DomainUser in this._userManager.Users)
+            {
+                var _User = this._mapper.Map<UserViewModel>(_DomainUser);
+                _User.Roles = [.. await this._userManager.GetRolesAsync(_DomainUser)];
+                _Users.Add(_User);
+            }
+
+            this.Users = _Users;
         }
         catch (Exception ex)
         {
             this.Error = $"An error occurred while retrieving users: {ex.Message}";
+        }
+    }
+
+    private async Task UpdateRolesAsync(UpdateRolesInputPort inputPort, CancellationToken cancellationToken)
+    {
+        try
+        {
+            this.Error = string.Empty;
+
+            var _User = await this._userManager.FindByIdAsync(inputPort.UserId.ToString());
+            if (_User is null)
+            {
+                this.Error = "User not found.";
+                return;
+            }
+
+            _ = inputPort.IsAdmin
+                ? await this._userManager.AddToRoleAsync(_User, "Admin")
+                : await this._userManager.RemoveFromRoleAsync(_User, "Admin");
+
+            _ = inputPort.IsUser
+                ? await this._userManager.AddToRoleAsync(_User, "User")
+                : await this._userManager.RemoveFromRoleAsync(_User, "User");
+
+            _ = await this._userManager.UpdateSecurityStampAsync(_User);
+        }
+        catch (Exception ex)
+        {
+            this.Error = $"An error occurred while updating roles: {ex.Message}";
         }
     }
 }

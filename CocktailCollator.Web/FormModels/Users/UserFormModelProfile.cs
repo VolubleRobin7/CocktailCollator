@@ -12,5 +12,9 @@ public class UserFormModelProfile : Profile
 
         _ = this.CreateMap<ChangePasswordFormModel, ChangePasswordInputPort>()
             .ForMember(d => d.NewPassword, o => o.MapFrom(s => s.NewPassword.Input));
+
+        _ = this.CreateMap<UpdateRolesFormModel, UpdateRolesInputPort>()
+            .ForMember(d => d.IsAdmin, o => o.MapFrom(s => s.IsAdmin.Input))
+            .ForMember(d => d.IsUser, o => o.MapFrom(s => s.IsUser.Input));
     }
 }

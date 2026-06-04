@@ -1,12 +1,13 @@
-﻿@using CocktailCollator.Web.ViewModels.Measurements
+@using CocktailCollator.Web.ViewModels.Measurements
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Navbars
 @using CocktailCollator.Web.Views.Modals
+@using CocktailCollator.Web.Infrastructure.Authentication
 @using Microsoft.AspNetCore.Authorization
 
 @inject MeasurementsViewModel ViewModel
 
-@attribute [Authorize]
+@attribute [Authorize(Policy = Permissions.Measurements.View)]
 
 @page "/measurements"
 

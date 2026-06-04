@@ -1,4 +1,4 @@
-﻿using CocktailCollator.Infrastructure.Persistence;
+using CocktailCollator.Infrastructure.Persistence;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web.FormModels.IngredientCategories;
 using CocktailCollator.Web.FormModels.Ingredients;
@@ -11,6 +11,7 @@ using CocktailCollator.Web.ViewModels.Ingredients;
 using CocktailCollator.Web.ViewModels.Measurements;
 using CocktailCollator.Web.ViewModels.Recipes;
 using CocktailCollator.Web.ViewModels.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 
@@ -47,7 +48,7 @@ public static class DependencyInjector
             })
             .AddCascadingAuthenticationState()
             .AddScoped<AuthenticationStateProvider, CocktailAuthenticationStateProvider>()
-            .AddAuthorization();
+            .AddAuthorization(AddPolicies);
     }
 
     private static IServiceCollection AddFormModels(this IServiceCollection services)
@@ -58,7 +59,17 @@ public static class DependencyInjector
             .AddScoped<CreateRecipeFormModel>()
             .AddScoped<CreateUserFormModel>()
             .AddScoped<UpdateIngredientFormModel>()
-            .AddScoped<UpdateRecipeFormModel>();
+            .AddScoped<UpdateRecipeFormModel>()
+            .AddScoped<UpdateRolesFormModel>();
+
+    private static void AddPolicies(AuthorizationOptions options)
+    {
+        options.AddPolicy(Permissions.Users.Manage, policy => policy.RequireClaim("Permission", Permissions.Users.Manage));
+        options.AddPolicy(Permissions.Ingredients.View, policy => policy.RequireClaim("Permission", Permissions.Ingredients.View));
+        options.AddPolicy(Permissions.Ingredients.Manage, policy => policy.RequireClaim("Permission", Permissions.Ingredients.Manage));
+        options.AddPolicy(Permissions.Measurements.View, policy => policy.RequireClaim("Permission", Permissions.Measurements.View));
+        options.AddPolicy(Permissions.Measurements.Manage, policy => policy.RequireClaim("Permission", Permissions.Measurements.Manage));
+    }
 
     private static IServiceCollection AddViewModels(this IServiceCollection services)
         => services

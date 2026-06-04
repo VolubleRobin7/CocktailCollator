@@ -1,0 +1,76 @@
+@using CocktailCollator.Web.FormModels.Users
+@using CocktailCollator.Web.ViewModels.Users
+@using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Inputs
+@using CocktailCollator.Web.Views.Components.Modals
+@using CocktailCollator.Web.Views.Components.Helpers
+
+@inject UpdateRolesFormModel FormModel
+@inject UsersViewModel ViewModel
+
+<Modal @ref="this._modal" 
+       Title="Update Roles">
+
+    <Body>
+        <form>
+            <h3>Update Roles</h3>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    <input @bind="this.FormModel.IsAdmin.Input" 
+                           class="form-check-input" 
+                           id="isAdmin" 
+                           type="checkbox">
+
+                    <label class="form-check-label" 
+                           for="isAdmin">
+                        Admin
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input @bind="this.FormModel.IsUser.Input" 
+                           class="form-check-input" 
+                           id="isUser" 
+                           type="checkbox">
+
+                    <label class="form-check-label" 
+                           for="isUser">
+                        User
+                    </label>
+                </div>
+            </div>
+
+            <FormChangeWrapper FormModel="this.FormModel">
+                <Button @onclick="this.OnClickUpdateRoles"
+                        Size="ButtonSize.Large"
+                        Theme="ButtonTheme.Success"
+                        Text="Save Roles"
+                        class="mt-2"
+                        data-bs-dismiss="modal" />
+            </FormChangeWrapper>
+        </form>
+    </Body>
+
+</Modal>
+
+@code {
+    private Modal _modal = default!;
+
+    [Parameter]
+    public EventCallback OnAfterChange { get; set; }
+
+    private async Task OnClickUpdateRoles()
+    {
+        await this.ViewModel.UpdateRolesCommand.ExecuteAsync(this.FormModel.ExtractToInputPort());
+        this.FormModel.ResetToDefault();
+        await this.OnAfterChange.InvokeAsync();
+    }
+
+    public Task OpenModalAsync(Guid userId, List<string> currentRoles)
+    {
+        this.FormModel.UserId = userId;
+        this.FormModel.IsAdmin.Input = currentRoles.Contains("Admin");
+        this.FormModel.IsUser.Input = currentRoles.Contains("User");
+        return this._modal.OpenModalAsync();
+    }
+}
