@@ -12,6 +12,8 @@ public class GetRecipesInteractor(ICocktailDbContext dbContext)
             {
                 RecipeId = r.RecipeId,
                 Name = r.Name,
+                RecipeCategoryId = r.RecipeCategoryId,
+                Category = r.Category,
                 Ingredients = r.Ingredients!
                     .Select(ri => new RecipeIngredient
                     {

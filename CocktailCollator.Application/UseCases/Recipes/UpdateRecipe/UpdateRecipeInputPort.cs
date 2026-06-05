@@ -5,6 +5,7 @@ public class UpdateRecipeInputPort
     public List<UpdateRecipeInputPortRecipeIngredient> Ingredients { get; set; } = [];
     public required string Name { get; set; }
     public required Guid RecipeId { get; set; }
+    public Guid? RecipeCategoryId { get; set; }
     public List<UpdateRecipeInputPortStep> Steps { get; set; } = [];
 }
 

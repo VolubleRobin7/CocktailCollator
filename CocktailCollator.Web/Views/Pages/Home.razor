@@ -1,4 +1,5 @@
-﻿@using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.ViewModels.RecipeCategories
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
@@ -8,6 +9,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject CreateRecipeFormModel CreateRecipeFormModel
+@inject RecipeCategoriesViewModel RecipeCategoriesViewModel
 @inject RecipesViewModel ViewModel
 
 @page "/"
@@ -35,7 +37,14 @@
         {
             <div class="col-md-4 py-2">
                 <div class="card">
-                    <h4 class="card-header">@recipe.Name</h4>
+                    <h4 class="card-header">
+                        @recipe.Name
+
+                        @if (recipe.Category is not null)
+                        {
+                            <span class="ms-1 badge text-bg-info">@recipe.Category.Name</span>
+                        }
+                    </h4>
                     <div class="card-body">
                         <div class="card-text">
                             A sentence or two describing the content of the card.
@@ -66,9 +75,44 @@
         }
     </div>
 
+    <p class="text-danger">@this.ViewModel.Error</p>
 </div>
 
-<p>@this.ViewModel.Error</p>
+<hr />
+
+<div class="container pt-2">
+    <h3>Recipe Categories</h3>
+
+    <Button @onclick="this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync"
+            Text="Get Categories"
+            Theme="ButtonTheme.Secondary" />
+
+    <AuthorizeView>
+        <Button @onclick="() => this._createRecipeCategoryModal.OpenModalAsync()"
+                Text="Create Category"
+                Theme="ButtonTheme.Secondary" />
+    </AuthorizeView>
+
+    <div class="list-group list-group-flush">
+        @foreach (var category in this.RecipeCategoriesViewModel.RecipeCategories)
+        {
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <span class="align-content-center">@category.Name</span>
+
+                    <AuthorizeView>
+                        <Button @onclick="() => this.RecipeCategoriesViewModel.DeleteCommand.ExecuteAsync(category.RecipeCategoryId)"
+                                Size="ButtonSize.Small"
+                                Text="Delete"
+                                Theme="ButtonTheme.Danger" />
+                    </AuthorizeView>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<p class="text-danger">@this.RecipeCategoriesViewModel.Error</p>
 
 <Modal @ref=this._recipeModal
        Size="ModalSize.Large"
@@ -114,7 +158,11 @@
 <UpdateRecipeModal @ref="this._updateRecipeModal"
                    OnAfterUpdate="this.StateHasChanged" />
 
+<CreateRecipeCategoryModal @ref="this._createRecipeCategoryModal"
+                           OnAfterCreation="this.StateHasChanged" />
+
 @code {
+    private CreateRecipeCategoryModal _createRecipeCategoryModal = default!;
     private CreateRecipeModal _createRecipeModal = default!;
     private Modal _recipeModal = default!;
     private RecipeViewModel? _selectedRecipe;

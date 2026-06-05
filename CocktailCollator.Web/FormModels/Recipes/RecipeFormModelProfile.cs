@@ -30,6 +30,7 @@ public class RecipeFormModelProfile : Profile
         _ = this.CreateMap<UpdateRecipeFormModel, UpdateRecipeInputPort>()
             .ForMember(d => d.RecipeId, o => o.MapFrom(s => s.RecipeId.Input))
             .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input))
+            .ForMember(d => d.RecipeCategoryId, o => o.Ignore())
             .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients.Input))
             .ForMember(d => d.Steps, o => o.MapFrom(s => s.Steps.Input));
 

@@ -3,6 +3,7 @@ using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using CocktailCollator.Web.Common.Generics;
 using CocktailCollator.Web.Common.Interfaces;
 using CocktailCollator.Web.ViewModels.Measurements;
+using CocktailCollator.Web.ViewModels.RecipeCategories;
 using System.Collections.ObjectModel;
 
 namespace CocktailCollator.Web.FormModels.Recipes;
@@ -11,13 +12,15 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
 {
     private readonly IMapper _mapper;
 
-    public InputProperty<ObservableCollection<UpdateRecipeFormModelIngredient>> Ingredients { get; set; } 
+    public InputProperty<ObservableCollection<UpdateRecipeFormModelIngredient>> Ingredients { get; set; }
         = new(() => [], ValidateIngredients);
-    public InputProperty<string> Name { get; set; } 
+    public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
-    public InputProperty<Guid> RecipeId { get; set; } 
+    public InputProperty<Guid> RecipeId { get; set; }
         = new(() => Guid.Empty, (input) => input != Guid.Empty);
-    public InputProperty<ObservableCollection<UpdateRecipeFormModelStep>> Steps { get; set; } 
+    public InputProperty<RecipeCategoryViewModel?> RecipeCategory { get; set; }
+        = new(() => null, (input) => true);
+    public InputProperty<ObservableCollection<UpdateRecipeFormModelStep>> Steps { get; set; }
         = new(() => [], (inputList) => inputList.All(step => step.Instruction.IsValid() && step.Order.IsValid()));
 
     public Action? OnChange { get; set; }
@@ -53,7 +56,11 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
     }
 
     public UpdateRecipeInputPort ExtractToInputPort()
-        => this._mapper.Map<UpdateRecipeInputPort>(this);
+    {
+        var _InputPort = this._mapper.Map<UpdateRecipeInputPort>(this);
+        _InputPort.RecipeCategoryId = this.RecipeCategory.Input?.RecipeCategoryId;
+        return _InputPort;
+    }
 
     public bool IsValid()
         => this.Name.IsValid() && this.Steps.IsValid() && this.Ingredients.IsValid();
@@ -90,8 +97,8 @@ public class UpdateRecipeFormModelIngredient
 
 public class UpdateRecipeFormModelStep
 {
-    public InputProperty<string> Instruction { get; set; } 
+    public InputProperty<string> Instruction { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
-    public InputProperty<int> Order { get; set; } 
+    public InputProperty<int> Order { get; set; }
         = new(() => 0, (input) => true);
 }

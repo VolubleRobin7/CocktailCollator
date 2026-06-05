@@ -79,7 +79,7 @@ public class RecipesViewModel
 
     private class UpdateRecipePresenter(IMapper mapper, RecipesViewModel viewModel) : IUpdateRecipeOutputPort
     {
-        Task IUpdateRecipeOutputPort.Failure(string failureReason, Recipe? recipe, CancellationToken cancellationToken) 
+        Task IUpdateRecipeOutputPort.Failure(string failureReason, Recipe? recipe, CancellationToken cancellationToken)
             => throw new NotImplementedException();
 
         Task IUpdateRecipeOutputPort.Success(Recipe recipe, CancellationToken cancellationToken)
@@ -91,6 +91,7 @@ public class RecipesViewModel
                 _Existing.Name = _Updated.Name;
                 _Existing.Ingredients = _Updated.Ingredients;
                 _Existing.Steps = _Updated.Steps;
+                _Existing.Category = _Updated.Category;
             }
 
             return Task.CompletedTask;
