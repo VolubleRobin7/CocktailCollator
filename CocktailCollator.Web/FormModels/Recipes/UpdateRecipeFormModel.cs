@@ -17,6 +17,8 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputProperty<Guid> RecipeId { get; set; } 
         = new(() => Guid.Empty, (input) => input != Guid.Empty);
+    public InputProperty<Guid?> RecipeCategoryId { get; set; }
+        = new(() => null, (input) => true);
     public InputProperty<ObservableCollection<UpdateRecipeFormModelStep>> Steps { get; set; } 
         = new(() => [], (inputList) => inputList.All(step => step.Instruction.IsValid() && step.Order.IsValid()));
 

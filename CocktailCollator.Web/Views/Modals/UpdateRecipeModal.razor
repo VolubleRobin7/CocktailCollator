@@ -1,5 +1,6 @@
 @using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.Recipes
+@using CocktailCollator.Web.ViewModels.RecipeCategories
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
@@ -7,6 +8,7 @@
 
 @inject UpdateRecipeFormModel UpdateRecipeFormModel
 @inject RecipesViewModel RecipesViewModel
+@inject RecipeCategoriesViewModel RecipeCategoriesViewModel
 
 <Modal @ref="this._modal"
        Size="ModalSize.Large"
@@ -19,6 +21,17 @@
             <InputField Input="this.UpdateRecipeFormModel.Name"
                         InvalidMessage="Name requires a value."
                         Title="Recipe Name" />
+
+            <div class="mb-3">
+                <label class="form-label">Category</label>
+                <select class="form-select" @bind="this.UpdateRecipeFormModel.RecipeCategoryId.Input">
+                    <option value="">None</option>
+                    @foreach (var category in this.RecipeCategoriesViewModel.RecipeCategories)
+                    {
+                        <option value="@category.RecipeCategoryId">@category.Name</option>
+                    }
+                </select>
+            </div>
 
             <h4>Ingredients</h4>
 
@@ -140,6 +153,7 @@
     {
         this.UpdateRecipeFormModel.RecipeId.Input = recipe.RecipeId;
         this.UpdateRecipeFormModel.Name.Input = recipe.Name ?? string.Empty;
+        this.UpdateRecipeFormModel.RecipeCategoryId.Input = recipe.RecipeCategoryId;
 
         this.UpdateRecipeFormModel.Ingredients.Input.Clear();
         foreach (var ingredient in recipe.Ingredients ?? [])

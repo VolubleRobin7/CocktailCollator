@@ -1,0 +1,60 @@
+@using CocktailCollator.Web.FormModels.RecipeCategories
+@using CocktailCollator.Web.ViewModels.RecipeCategories
+@using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Inputs
+@using CocktailCollator.Web.Views.Components.Modals
+
+@inject RecipeCategoriesViewModel ViewModel
+@inject CreateRecipeCategoryFormModel CreateRecipeCategoryFormModel
+
+<Modal @ref=this._modal
+       Size="ModalSize.Large"
+       Title="Create Recipe Category">
+
+    <Body>
+        <InputField Input="this.CreateRecipeCategoryFormModel.Name"
+                    InvalidMessage="Name requires a value."
+                    Title="Name" />
+    </Body>
+
+    <Footer>
+        <Button @onclick="this.CloseModalAsync"
+                Text="Cancel"
+                Theme="ButtonTheme.Secondary" />
+
+        <Button @onclick="this.CreateRecipeCategoryAsync"
+                Disabled="!this.CreateRecipeCategoryFormModel.IsValid()"
+                Text="Create"
+                Theme="ButtonTheme.Success" />
+    </Footer>
+
+</Modal>
+
+@code {
+    private Modal _modal = default!;
+
+    protected override void OnInitialized()
+    {
+        this.CreateRecipeCategoryFormModel.OnChange += this.StateHasChanged;
+    }
+
+    public async Task OpenModalAsync()
+    {
+        this.CreateRecipeCategoryFormModel.ResetToDefault();
+        await this._modal.OpenModalAsync();
+    }
+
+    public async Task CloseModalAsync()
+    {
+        await this._modal.CloseModalAsync();
+    }
+
+    private async Task CreateRecipeCategoryAsync()
+    {
+        if (this.CreateRecipeCategoryFormModel.IsValid())
+        {
+            await this.ViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeCategoryFormModel.ExtractToInputPort());
+            await this.CloseModalAsync();
+        }
+    }
+}

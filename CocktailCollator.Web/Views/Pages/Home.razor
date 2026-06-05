@@ -8,7 +8,10 @@
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject CreateRecipeFormModel CreateRecipeFormModel
+@using CocktailCollator.Web.ViewModels.RecipeCategories
+
 @inject RecipesViewModel ViewModel
+@inject RecipeCategoriesViewModel RecipeCategoriesViewModel
 
 @page "/"
 
@@ -66,9 +69,48 @@
         }
     </div>
 
+    <hr />
+
+    <h3>Recipe Categories</h3>
+
+    <Button @onclick="this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync"
+            Text="Get Categories"
+            Theme="ButtonTheme.Secondary" />
+
+    <AuthorizeView>
+        <Button @onclick="() => this._createRecipeCategoryModal.OpenModalAsync()"
+                Text="Create Category"
+                Theme="ButtonTheme.Secondary" />
+    </AuthorizeView>
+
+    <div class="row pt-2">
+        @foreach (var category in this.RecipeCategoriesViewModel.RecipeCategories)
+        {
+            <div class="col-md-3 py-2">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@category.Name</h5>
+                        <AuthorizeView>
+                            <Button @onclick="() => this._updateRecipeCategoryModal.OpenModalAsync(category)"
+                                    Size="ButtonSize.Small"
+                                    Text="Edit"
+                                    Theme="ButtonTheme.Info" />
+                            <Button @onclick="() => this.RecipeCategoriesViewModel.DeleteCommand.ExecuteAsync(category.RecipeCategoryId)"
+                                    Size="ButtonSize.Small"
+                                    Text="Delete"
+                                    Theme="ButtonTheme.Danger" />
+                        </AuthorizeView>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <p class="text-danger">@this.RecipeCategoriesViewModel.Error</p>
+
 </div>
 
-<p>@this.ViewModel.Error</p>
+<p class="text-danger">@this.ViewModel.Error</p>
 
 <Modal @ref=this._recipeModal
        Size="ModalSize.Large"
@@ -114,15 +156,25 @@
 <UpdateRecipeModal @ref="this._updateRecipeModal"
                    OnAfterUpdate="this.StateHasChanged" />
 
+<CreateRecipeCategoryModal @ref="this._createRecipeCategoryModal" />
+<UpdateRecipeCategoryModal @ref="this._updateRecipeCategoryModal" />
+
 @code {
     private CreateRecipeModal _createRecipeModal = default!;
     private Modal _recipeModal = default!;
     private RecipeViewModel? _selectedRecipe;
     private UpdateRecipeModal _updateRecipeModal = default!;
+    private CreateRecipeCategoryModal _createRecipeCategoryModal = default!;
+    private UpdateRecipeCategoryModal _updateRecipeCategoryModal = default!;
 
     private string RecipeModalId
     {
         get => this._recipeModal?.Id ?? "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync(null);
     }
 
     private async Task OpenUpdateRecipeModal(RecipeViewModel recipe)

@@ -45,5 +45,6 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : Id
         _ = modelBuilder.Entity<Measurement>();
         _ = modelBuilder.Entity<IngredientMeasurement>();
         _ = modelBuilder.Entity<IngredientCategory>();
+        _ = modelBuilder.Entity<RecipeCategory>();
     }
 }

@@ -11,6 +11,7 @@ public class UpdateRecipeInteractor(ICocktailDbContext dbContext)
         var _Recipe = dbContext.GetEntities<Recipe>().First(r => r.RecipeId == inputPort.RecipeId);
 
         _Recipe.Name = inputPort.Name;
+        _Recipe.RecipeCategoryId = inputPort.RecipeCategoryId;
 
         _Recipe.Steps = [.. inputPort.Steps.Select(s => new RecipeStep
         {
