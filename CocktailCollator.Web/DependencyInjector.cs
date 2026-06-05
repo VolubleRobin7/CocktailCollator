@@ -61,7 +61,6 @@ public static class DependencyInjector
             .AddScoped<CreateRecipeFormModel>()
             .AddScoped<CreateUserFormModel>()
             .AddScoped<UpdateIngredientFormModel>()
-            .AddScoped<UpdateRecipeCategoryFormModel>()
             .AddScoped<UpdateRecipeFormModel>();
 
     private static IServiceCollection AddViewModels(this IServiceCollection services)

@@ -1,7 +1,6 @@
 using CocktailCollator.Application.UseCases.RecipeCategories.CreateRecipeCategory;
 using CocktailCollator.Application.UseCases.RecipeCategories.DeleteRecipeCategory;
 using CocktailCollator.Application.UseCases.RecipeCategories.GetRecipeCategories;
-using CocktailCollator.Application.UseCases.RecipeCategories.UpdateRecipeCategory;
 using CocktailCollator.Domain.Entities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,13 +10,11 @@ namespace CocktailCollator.Web.ViewModels.RecipeCategories;
 public partial class RecipeCategoriesViewModel(
     CreateRecipeCategoryInteractor createInteractor,
     DeleteRecipeCategoryInteractor deleteInteractor,
-    GetRecipeCategoriesInteractor getInteractor,
-    UpdateRecipeCategoryInteractor updateInteractor
+    GetRecipeCategoriesInteractor getInteractor
     ) : ObservableObject,
     ICreateRecipeCategoryOutputPort,
     IDeleteRecipeCategoryOutputPort,
-    IGetRecipeCategoriesOutputPort,
-    IUpdateRecipeCategoryOutputPort
+    IGetRecipeCategoriesOutputPort
 {
     [ObservableProperty]
     private string _error = string.Empty;
@@ -44,13 +41,6 @@ public partial class RecipeCategoriesViewModel(
     {
         this.Error = string.Empty;
         await getInteractor.Interact(this, CancellationToken.None);
-    }
-
-    [RelayCommand]
-    public async Task UpdateAsync(UpdateRecipeCategoryInputPort inputPort)
-    {
-        this.Error = string.Empty;
-        await updateInteractor.Interact(inputPort, this, CancellationToken.None);
     }
 
     Task ICreateRecipeCategoryOutputPort.Success(RecipeCategory recipeCategory, CancellationToken cancellationToken)
@@ -84,14 +74,6 @@ public partial class RecipeCategoriesViewModel(
             RecipeCategoryId = category.RecipeCategoryId,
             Name = category.Name
         })];
-        return Task.CompletedTask;
-    }
-
-    Task IUpdateRecipeCategoryOutputPort.Success(RecipeCategory recipeCategory, CancellationToken cancellationToken)
-    {
-        var categoryToUpdate = this.RecipeCategories.FirstOrDefault(c => c.RecipeCategoryId == recipeCategory.RecipeCategoryId);
-        if (categoryToUpdate is not null)
-            categoryToUpdate.Name = recipeCategory.Name;
         return Task.CompletedTask;
     }
 }

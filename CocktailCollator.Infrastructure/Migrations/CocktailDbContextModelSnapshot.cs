@@ -101,30 +101,9 @@ namespace CocktailCollator.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid?>("RecipeCategoryId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("RecipeId");
 
-                    b.HasIndex("RecipeCategoryId");
-
                     b.ToTable("Recipe");
-                });
-
-            modelBuilder.Entity("CocktailCollator.Domain.Entities.RecipeCategory", b =>
-                {
-                    b.Property<Guid>("RecipeCategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("RecipeCategoryId");
-
-                    b.ToTable("RecipeCategory");
                 });
 
             modelBuilder.Entity("CocktailCollator.Domain.Entities.RecipeIngredient", b =>
@@ -400,16 +379,6 @@ namespace CocktailCollator.Infrastructure.Migrations
                     b.Navigation("Measurement");
                 });
 
-            modelBuilder.Entity("CocktailCollator.Domain.Entities.Recipe", b =>
-                {
-                    b.HasOne("CocktailCollator.Domain.Entities.RecipeCategory", "Category")
-                        .WithMany("Recipes")
-                        .HasForeignKey("RecipeCategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("CocktailCollator.Domain.Entities.RecipeIngredient", b =>
                 {
                     b.HasOne("CocktailCollator.Domain.Entities.Ingredient", "Ingredient")
@@ -523,11 +492,6 @@ namespace CocktailCollator.Infrastructure.Migrations
                     b.Navigation("Ingredients");
 
                     b.Navigation("Steps");
-                });
-
-            modelBuilder.Entity("CocktailCollator.Domain.Entities.RecipeCategory", b =>
-                {
-                    b.Navigation("Recipes");
                 });
 #pragma warning restore 612, 618
         }

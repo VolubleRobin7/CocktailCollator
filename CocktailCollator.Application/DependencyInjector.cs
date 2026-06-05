@@ -14,7 +14,6 @@ using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
 using CocktailCollator.Application.UseCases.RecipeCategories.CreateRecipeCategory;
 using CocktailCollator.Application.UseCases.RecipeCategories.DeleteRecipeCategory;
 using CocktailCollator.Application.UseCases.RecipeCategories.GetRecipeCategories;
-using CocktailCollator.Application.UseCases.RecipeCategories.UpdateRecipeCategory;
 using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -44,6 +43,5 @@ public static class DependencyInjector
             .AddScoped<DeleteIngredientCategoryInteractor>()
             .AddScoped<CreateRecipeCategoryInteractor>()
             .AddScoped<GetRecipeCategoriesInteractor>()
-            .AddScoped<UpdateRecipeCategoryInteractor>()
             .AddScoped<DeleteRecipeCategoryInteractor>();
 }

@@ -91,10 +91,6 @@
                     <div class="card-body">
                         <h5 class="card-title">@category.Name</h5>
                         <AuthorizeView>
-                            <Button @onclick="() => this._updateRecipeCategoryModal.OpenModalAsync(category)"
-                                    Size="ButtonSize.Small"
-                                    Text="Edit"
-                                    Theme="ButtonTheme.Info" />
                             <Button @onclick="() => this.RecipeCategoriesViewModel.DeleteCommand.ExecuteAsync(category.RecipeCategoryId)"
                                     Size="ButtonSize.Small"
                                     Text="Delete"
@@ -157,7 +153,6 @@
                    OnAfterUpdate="this.StateHasChanged" />
 
 <CreateRecipeCategoryModal @ref="this._createRecipeCategoryModal" />
-<UpdateRecipeCategoryModal @ref="this._updateRecipeCategoryModal" />
 
 @code {
     private CreateRecipeModal _createRecipeModal = default!;
@@ -165,7 +160,6 @@
     private RecipeViewModel? _selectedRecipe;
     private UpdateRecipeModal _updateRecipeModal = default!;
     private CreateRecipeCategoryModal _createRecipeCategoryModal = default!;
-    private UpdateRecipeCategoryModal _updateRecipeCategoryModal = default!;
 
     private string RecipeModalId
     {
