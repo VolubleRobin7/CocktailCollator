@@ -22,15 +22,45 @@
                         InvalidMessage="Name requires a value."
                         Title="Recipe Name" />
 
-            <div class="mb-3">
-                <label class="form-label">Category</label>
-                <select class="form-select" @bind="this.UpdateRecipeFormModel.RecipeCategoryId.Input">
-                    <option value="">None</option>
-                    @foreach (var category in this.RecipeCategoriesViewModel.RecipeCategories)
+            <label class="form-label">Category</label>
+            <div class="input-group flex-nowrap">
+                <input class="form-control flex-grow-1"
+                       disabled
+                       placeholder="Select a category..."
+                       type="text"
+                       value="@(this.UpdateRecipeFormModel.RecipeCategory.Input?.Name ?? "")" />
+
+                <button @onclick="() => this.UpdateRecipeFormModel.RecipeCategory.Input = null"
+                        class="btn btn-outline-danger"
+                        type="button">
+                    Clear
+                </button>
+                
+                <button aria-expanded="false"
+                        class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                        data-bs-toggle="dropdown"
+                        type="button">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+
+                <ul class="dropdown-menu">
+                    <li>
+                        <input @bind-value:event="oninput"
+                               @bind-value:get="this._categorySearchString"
+                               @bind-value:set="this.SetCategorySearchValue"
+                               class="form-control mb-2"
+                               placeholder="Type to search..."
+                               type="text" />
+                    </li>
+
+                    @foreach (var category in this._categorySearchResults)
                     {
-                        <option value="@category.RecipeCategoryId">@category.Name</option>
+                        <li>
+                            <span @onclick="() => this.UpdateRecipeFormModel.RecipeCategory.Input = category"
+                                  class="dropdown-item">@category.Name</span>
+                        </li>
                     }
-                </select>
+                </ul>
             </div>
 
             <h4>Ingredients</h4>
@@ -108,6 +138,8 @@
 </Modal>
 
 @code {
+    private List<RecipeCategoryViewModel> _categorySearchResults = [];
+    private string _categorySearchString = "";
     private Modal _modal = default!;
 
     [Parameter]
@@ -153,7 +185,7 @@
     {
         this.UpdateRecipeFormModel.RecipeId.Input = recipe.RecipeId;
         this.UpdateRecipeFormModel.Name.Input = recipe.Name ?? string.Empty;
-        this.UpdateRecipeFormModel.RecipeCategoryId.Input = recipe.RecipeCategoryId;
+        this.UpdateRecipeFormModel.RecipeCategory.Input = recipe.Category;
 
         this.UpdateRecipeFormModel.Ingredients.Input.Clear();
         foreach (var ingredient in recipe.Ingredients ?? [])
@@ -189,5 +221,14 @@
     {
         _ = this.UpdateRecipeFormModel.Steps.Input.Remove(stepIndex);
         this.RecalculateSteps();
+    }
+
+    private void SetCategorySearchValue(string? value)
+    {
+        this._categorySearchString = value ?? "";
+        this._categorySearchResults = this.RecipeCategoriesViewModel.RecipeCategories
+            .Where(category => category.Name is not null && category.Name.Contains(this._categorySearchString, StringComparison.OrdinalIgnoreCase))
+            .Take(5)
+            .ToList();
     }
 }

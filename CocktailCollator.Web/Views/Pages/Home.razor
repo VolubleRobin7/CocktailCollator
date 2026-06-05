@@ -1,4 +1,5 @@
-﻿@using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.ViewModels.RecipeCategories
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
@@ -8,10 +9,8 @@
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject CreateRecipeFormModel CreateRecipeFormModel
-@using CocktailCollator.Web.ViewModels.RecipeCategories
-
-@inject RecipesViewModel ViewModel
 @inject RecipeCategoriesViewModel RecipeCategoriesViewModel
+@inject RecipesViewModel ViewModel
 
 @page "/"
 
@@ -152,23 +151,19 @@
 <UpdateRecipeModal @ref="this._updateRecipeModal"
                    OnAfterUpdate="this.StateHasChanged" />
 
-<CreateRecipeCategoryModal @ref="this._createRecipeCategoryModal" />
+<CreateRecipeCategoryModal @ref="this._createRecipeCategoryModal"
+                           OnAfterCreation="this.StateHasChanged" />
 
 @code {
+    private CreateRecipeCategoryModal _createRecipeCategoryModal = default!;
     private CreateRecipeModal _createRecipeModal = default!;
     private Modal _recipeModal = default!;
     private RecipeViewModel? _selectedRecipe;
     private UpdateRecipeModal _updateRecipeModal = default!;
-    private CreateRecipeCategoryModal _createRecipeCategoryModal = default!;
 
     private string RecipeModalId
     {
         get => this._recipeModal?.Id ?? "";
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync(null);
     }
 
     private async Task OpenUpdateRecipeModal(RecipeViewModel recipe)

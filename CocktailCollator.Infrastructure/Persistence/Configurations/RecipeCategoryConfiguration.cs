@@ -8,15 +8,7 @@ public class RecipeCategoryConfiguration : IEntityTypeConfiguration<RecipeCatego
 {
     public void Configure(EntityTypeBuilder<RecipeCategory> builder)
     {
-        builder.HasKey(x => x.RecipeCategoryId);
-
-        builder.Property(x => x.Name)
-            .IsRequired()
-            .HasMaxLength(255);
-
-        builder.HasMany(x => x.Recipes)
-            .WithOne(x => x.Category)
-            .HasForeignKey(x => x.RecipeCategoryId)
-            .OnDelete(DeleteBehavior.SetNull);
+        _ = builder.Property(rc => rc.Name)
+            .HasMaxLength(100);
     }
 }
