@@ -4,8 +4,10 @@
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
 @using CocktailCollator.Web.Views.Components.Helpers
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Options
 
-@inject IConfiguration Configuration
+@inject IOptions<IdentityOptions> IdentityOptions
 @inject CreateUserFormModel CreateUserFormModel
 @inject UsersViewModel ViewModel
 
@@ -46,9 +48,37 @@
     public EventCallback OnAfterCreation { get; set; }
 
     public string PasswordInvalidMessage
-        => this.Configuration.GetValue<bool>("EnforcePasswordPolicies") 
-            ? "Password must be 8 characters long, and contain a lowercase, uppercase, number and special character." 
-            : "Password requires a value.";
+    {
+        get
+        {
+            // This would be much better if the FormModel's could return their error message.
+            // Then there wouldn't have to be doubled logic here and in the FormModel.
+
+            var options = this.IdentityOptions.Value.Password;
+            var requirements = new List<string>();
+            
+            if (options.RequiredLength > 0) 
+                requirements.Add($"{options.RequiredLength} characters long");
+                
+            var contains = new List<string>();
+            if (options.RequireLowercase) contains.Add("a lowercase letter");
+            if (options.RequireUppercase) contains.Add("an uppercase letter");
+            if (options.RequireDigit) contains.Add("a number");
+            if (options.RequireNonAlphanumeric) contains.Add("a special character");
+            
+            if (contains.Any())
+            {
+                var containsStr = contains.Count > 1 
+                    ? string.Join(", ", contains.Take(contains.Count - 1)) + " and " + contains.Last()
+                    : contains.First();
+                requirements.Add($"contain {containsStr}");
+            }
+            
+            if (!requirements.Any()) return "Password requires a value.";
+            
+            return $"Password must be {string.Join(", and ", requirements)}.";
+        }
+    }
 
     private async Task OnClickCreate()
     {

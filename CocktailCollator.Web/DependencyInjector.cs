@@ -35,6 +35,7 @@ public static class DependencyInjector
                 options.Password.RequireNonAlphanumeric = enforcePasswordPolicies;
                 options.Password.RequiredLength = enforcePasswordPolicies ? 8 : 0;
                 options.Password.RequireUppercase = enforcePasswordPolicies;
+                options.Password.RequireLowercase = enforcePasswordPolicies;
             })
             .AddEntityFrameworkStores<CocktailDbContext>()
             .AddDefaultTokenProviders();
