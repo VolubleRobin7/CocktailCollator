@@ -1,4 +1,4 @@
-﻿using CocktailCollator.Infrastructure.Persistence;
+using CocktailCollator.Infrastructure.Persistence;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web.FormModels.IngredientCategories;
 using CocktailCollator.Web.FormModels.Ingredients;
@@ -20,21 +20,24 @@ namespace CocktailCollator.Web;
 
 public static class DependencyInjector
 {
-    public static IServiceCollection InjectWeb(this IServiceCollection services)
+    public static IServiceCollection InjectWeb(this IServiceCollection services, IConfiguration configuration)
         => services
-            .AddAuth()
+            .AddAuth(configuration)
             .AddFormModels()
             .AddViewModels();
 
-    private static IServiceCollection AddAuth(this IServiceCollection services)
+    private static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
+        var enforcePasswordPolicies = configuration.GetValue<bool>("EnforcePasswordPolicies");
+
         _ = services.AddIdentity<CocktailUser, CocktailRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
-                options.Password.RequireDigit = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 0;
-                options.Password.RequireUppercase = false;
+                options.Password.RequireDigit = enforcePasswordPolicies;
+                options.Password.RequireNonAlphanumeric = enforcePasswordPolicies;
+                options.Password.RequiredLength = enforcePasswordPolicies ? 8 : 0;
+                options.Password.RequireUppercase = enforcePasswordPolicies;
+                options.Password.RequireLowercase = enforcePasswordPolicies;
             })
             .AddEntityFrameworkStores<CocktailDbContext>()
             .AddDefaultTokenProviders();
