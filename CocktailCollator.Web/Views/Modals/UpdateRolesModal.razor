@@ -76,12 +76,11 @@
         }
     }
 
-    public Task OpenModalAsync(Guid userId, List<Guid> currentRoleIds)
+    public Task OpenModalAsync(Guid userId, List<RoleViewModel> currentRoles)
     {
         this.FormModel.UserId = userId;
         this.FormModel.Roles.Input.Clear();
-        var _RolesToSelect = this.RolesViewModel.Roles.Where(r => currentRoleIds.Contains(r.RoleId));
-        foreach (var _Role in _RolesToSelect)
+        foreach (var _Role in currentRoles)
             this.FormModel.Roles.Input.Add(new UpdateRolesFormModelRole { RoleId = _Role.RoleId, Name = _Role.Name });
 
         return this._modal.OpenModalAsync();

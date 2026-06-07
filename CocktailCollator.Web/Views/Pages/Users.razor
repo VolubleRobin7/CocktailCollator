@@ -40,7 +40,7 @@
                         }
                     </span>
                     <div>
-                        <Button @onclick="() => this._updateRolesModal.OpenModalAsync(user.UserId, user.Roles.Select(r => r.RoleId).ToList())"
+                        <Button @onclick="() => this._updateRolesModal.OpenModalAsync(user.UserId, user.Roles!)"
                                 Size="ButtonSize.Small"
                                 Theme="ButtonTheme.Secondary"
                                 Text="Update Roles"
