@@ -36,11 +36,11 @@
                         }
                         @if (user.Roles != null && user.Roles.Any())
                         {
-                            <span class="ms-2 badge bg-info text-dark">@string.Join(", ", user.Roles)</span>
+                            <span class="ms-2 badge bg-info text-dark">@string.Join(", ", user.Roles.Select(r => r.Name))</span>
                         }
                     </span>
                     <div>
-                        <Button @onclick="() => this._updateRolesModal.OpenModalAsync(user.UserId, user.Roles)"
+                        <Button @onclick="() => this._updateRolesModal.OpenModalAsync(user.UserId, user.Roles.Select(r => r.RoleId).ToList())"
                                 Size="ButtonSize.Small"
                                 Theme="ButtonTheme.Secondary"
                                 Text="Update Roles"

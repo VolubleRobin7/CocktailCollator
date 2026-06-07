@@ -10,6 +10,7 @@ using CocktailCollator.Web.ViewModels.IngredientCategories;
 using CocktailCollator.Web.ViewModels.Ingredients;
 using CocktailCollator.Web.ViewModels.Measurements;
 using CocktailCollator.Web.ViewModels.Recipes;
+using CocktailCollator.Web.ViewModels.Roles;
 using CocktailCollator.Web.ViewModels.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -77,5 +78,6 @@ public static class DependencyInjector
             .AddScoped<IngredientsViewModel>()
             .AddScoped<MeasurementsViewModel>()
             .AddScoped<IngredientCategoriesViewModel>()
+            .AddScoped<RolesViewModel>()
             .AddScoped<UsersViewModel>();
 }

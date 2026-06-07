@@ -1,6 +1,7 @@
 using AutoMapper;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web.FormModels.Users;
+using CocktailCollator.Web.ViewModels.Roles;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +12,7 @@ public class UsersViewModel
 {
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly IMapper _mapper;
-    private readonly RoleManager<CocktailRole> _roleManager;
+    private readonly RolesViewModel _rolesViewModel;
     private readonly UserManager<CocktailUser> _userManager;
 
     public IAsyncRelayCommand<CreateUserInputPort> CreateCommand { get; }
@@ -20,7 +21,6 @@ public class UsersViewModel
     public IAsyncRelayCommand<ChangePasswordInputPort> ChangePasswordCommand { get; }
     public IAsyncRelayCommand<UpdateRolesInputPort> UpdateRolesCommand { get; }
 
-    public List<CocktailRole> AvailableRoles { get; private set; } = [];
     public UserViewModel? CurrentUser { get; private set; }
     public List<UserViewModel> Users { get; private set; } = [];
 
@@ -28,14 +28,14 @@ public class UsersViewModel
 
     public UsersViewModel(
         UserManager<CocktailUser> userManager,
-        RoleManager<CocktailRole> roleManager,
+        RolesViewModel rolesViewModel,
         AuthenticationStateProvider authenticationStateProvider,
         IMapper mapper)
     {
         this._authenticationStateProvider = authenticationStateProvider;
         this._mapper = mapper;
         this._userManager = userManager;
-        this._roleManager = roleManager;
+        this._rolesViewModel = rolesViewModel;
 
         this.CreateCommand = new AsyncRelayCommand<CreateUserInputPort>((inputPort, cancellationToken)
             => this.CreateUserAsync(inputPort.Username, inputPort.Password, cancellationToken));
@@ -142,13 +142,14 @@ public class UsersViewModel
             var _AuthState = await this._authenticationStateProvider.GetAuthenticationStateAsync();
             this.CurrentUser = this._mapper.Map<UserViewModel>(await this._userManager.GetUserAsync(_AuthState.User));
 
-            this.AvailableRoles = this._roleManager.Roles.ToList();
+            await this._rolesViewModel.GetCommand.ExecuteAsync(null);
 
             var _Users = new List<UserViewModel>();
             foreach (var _DomainUser in this._userManager.Users.ToList())
             {
                 var _User = this._mapper.Map<UserViewModel>(_DomainUser);
-                _User.Roles = [.. await this._userManager.GetRolesAsync(_DomainUser)];
+                var roleNames = await this._userManager.GetRolesAsync(_DomainUser);
+                _User.Roles = [.. this._rolesViewModel.Roles.Where(r => roleNames.Contains(r.Name))];
                 _Users.Add(_User);
             }
 
@@ -174,7 +175,10 @@ public class UsersViewModel
             }
 
             var _CurrentRoleNames = await this._userManager.GetRolesAsync(_User);
-            var _TargetRoleNames = inputPort.Roles.Select(r => r.Name!).ToList();
+            var _TargetRoleNames = this._rolesViewModel.Roles
+                .Where(r => inputPort.Roles.Contains(r.RoleId))
+                .Select(r => r.Name)
+                .ToList();
 
             var _RolesToAdd = _TargetRoleNames.Except(_CurrentRoleNames).ToList();
             var _RolesToRemove = _CurrentRoleNames.Except(_TargetRoleNames).ToList();

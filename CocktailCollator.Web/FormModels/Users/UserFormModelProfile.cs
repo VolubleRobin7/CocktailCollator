@@ -14,6 +14,6 @@ public class UserFormModelProfile : Profile
             .ForMember(d => d.NewPassword, o => o.MapFrom(s => s.NewPassword.Input));
 
         _ = this.CreateMap<UpdateRolesFormModel, UpdateRolesInputPort>()
-            .ForMember(d => d.Roles, o => o.MapFrom(s => s.Roles.Input));
+            .ForMember(d => d.Roles, o => o.MapFrom(s => s.Roles.Input.Select(r => r.RoleId)));
     }
 }
