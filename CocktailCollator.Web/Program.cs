@@ -81,8 +81,7 @@ using (var _Scope = app.Services.CreateScope())
     var _RoleManager = _Scope.ServiceProvider.GetRequiredService<RoleManager<CocktailRole>>();
     var _DbContext = _Scope.ServiceProvider.GetRequiredService<CocktailDbContext>();
 
-    var adminRoleExists = await _RoleManager.RoleExistsAsync("Admin");
-    if (!adminRoleExists)
+    if (!_RoleManager.Roles.Any())
     {
         var adminRole = new CocktailRole { Name = "Admin" };
         _ = await _RoleManager.CreateAsync(adminRole);
@@ -91,11 +90,7 @@ using (var _Scope = app.Services.CreateScope())
         _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.Manage));
         _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
         _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.Manage));
-    }
 
-    var userRoleExists = await _RoleManager.RoleExistsAsync("User");
-    if (!userRoleExists)
-    {
         var userRole = new CocktailRole { Name = "User" };
         _ = await _RoleManager.CreateAsync(userRole);
         _ = await _RoleManager.AddClaimAsync(userRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
