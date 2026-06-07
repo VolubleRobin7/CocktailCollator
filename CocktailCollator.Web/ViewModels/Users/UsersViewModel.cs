@@ -11,6 +11,7 @@ public class UsersViewModel
 {
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly IMapper _mapper;
+    private readonly RoleManager<CocktailRole> _roleManager;
     private readonly UserManager<CocktailUser> _userManager;
 
     public IAsyncRelayCommand<CreateUserInputPort> CreateCommand { get; }
@@ -19,6 +20,7 @@ public class UsersViewModel
     public IAsyncRelayCommand<ChangePasswordInputPort> ChangePasswordCommand { get; }
     public IAsyncRelayCommand<UpdateRolesInputPort> UpdateRolesCommand { get; }
 
+    public List<CocktailRole> AvailableRoles { get; private set; } = [];
     public UserViewModel? CurrentUser { get; private set; }
     public List<UserViewModel> Users { get; private set; } = [];
 
@@ -26,12 +28,14 @@ public class UsersViewModel
 
     public UsersViewModel(
         UserManager<CocktailUser> userManager,
+        RoleManager<CocktailRole> roleManager,
         AuthenticationStateProvider authenticationStateProvider,
         IMapper mapper)
     {
         this._authenticationStateProvider = authenticationStateProvider;
         this._mapper = mapper;
         this._userManager = userManager;
+        this._roleManager = roleManager;
 
         this.CreateCommand = new AsyncRelayCommand<CreateUserInputPort>((inputPort, cancellationToken)
             => this.CreateUserAsync(inputPort.Username, inputPort.Password, cancellationToken));
@@ -138,6 +142,8 @@ public class UsersViewModel
             var _AuthState = await this._authenticationStateProvider.GetAuthenticationStateAsync();
             this.CurrentUser = this._mapper.Map<UserViewModel>(await this._userManager.GetUserAsync(_AuthState.User));
 
+            this.AvailableRoles = this._roleManager.Roles.ToList();
+
             var _Users = new List<UserViewModel>();
             foreach (var _DomainUser in this._userManager.Users.ToList())
             {
@@ -167,13 +173,17 @@ public class UsersViewModel
                 return;
             }
 
-            _ = inputPort.IsAdmin
-                ? await this._userManager.AddToRoleAsync(_User, "Admin")
-                : await this._userManager.RemoveFromRoleAsync(_User, "Admin");
+            var _CurrentRoleNames = await this._userManager.GetRolesAsync(_User);
+            var _TargetRoleNames = inputPort.Roles.Select(r => r.Name!).ToList();
 
-            _ = inputPort.IsUser
-                ? await this._userManager.AddToRoleAsync(_User, "User")
-                : await this._userManager.RemoveFromRoleAsync(_User, "User");
+            var _RolesToAdd = _TargetRoleNames.Except(_CurrentRoleNames).ToList();
+            var _RolesToRemove = _CurrentRoleNames.Except(_TargetRoleNames).ToList();
+
+            if (_RolesToAdd.Count > 0)
+                _ = await this._userManager.AddToRolesAsync(_User, _RolesToAdd);
+
+            if (_RolesToRemove.Count > 0)
+                _ = await this._userManager.RemoveFromRolesAsync(_User, _RolesToRemove);
 
             _ = await this._userManager.UpdateSecurityStampAsync(_User);
         }

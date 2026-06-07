@@ -4,6 +4,7 @@
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
 @using CocktailCollator.Web.Views.Components.Helpers
+@using CocktailCollator.Infrastructure.Persistence.Models
 
 @inject UpdateRolesFormModel FormModel
 @inject UsersViewModel ViewModel
@@ -16,28 +17,22 @@
             <h3>Update Roles</h3>
 
             <div class="mb-3">
-                <div class="form-check">
-                    <input @bind="this.FormModel.IsAdmin.Input" 
-                           class="form-check-input" 
-                           id="isAdmin" 
-                           type="checkbox">
+                @foreach (var role in this.ViewModel.AvailableRoles)
+                {
+                    var isSelected = this.FormModel.Roles.Input.Any(r => r.Id == role.Id);
+                    <div class="form-check">
+                        <input @onchange ="@(args => this.OnRoleSelectionChanged(role, args.Value))" 
+                               class="form-check-input"
+                               checked="@isSelected"
+                               id="role_@role.Id" 
+                               type="checkbox" />
 
-                    <label class="form-check-label" 
-                           for="isAdmin">
-                        Admin
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input @bind="this.FormModel.IsUser.Input" 
-                           class="form-check-input" 
-                           id="isUser" 
-                           type="checkbox">
-
-                    <label class="form-check-label" 
-                           for="isUser">
-                        User
-                    </label>
-                </div>
+                        <label class="form-check-label" 
+                               for="role_@role.Id">
+                            @role.Name
+                        </label>
+                    </div>
+                }
             </div>
 
             <FormChangeWrapper FormModel="this.FormModel">
@@ -66,11 +61,29 @@
         await this.OnAfterChange.InvokeAsync();
     }
 
+    private void OnRoleSelectionChanged(CocktailRole role, object? isChecked) // The input should be better, so that it can provide a bool directly
+    {
+        if ((bool)(isChecked ?? false))
+        {
+            if (!this.FormModel.Roles.Input.Any(r => r.Id == role.Id))
+                this.FormModel.Roles.Input.Add(role);
+        }
+        else
+        {
+            var _RoleToRemove = this.FormModel.Roles.Input.FirstOrDefault(r => r.Id == role.Id);
+            if (_RoleToRemove is not null)
+                this.FormModel.Roles.Input.Remove(_RoleToRemove);
+        }
+    }
+
     public Task OpenModalAsync(Guid userId, List<string> currentRoles)
     {
         this.FormModel.UserId = userId;
-        this.FormModel.IsAdmin.Input = currentRoles.Contains("Admin");
-        this.FormModel.IsUser.Input = currentRoles.Contains("User");
+        this.FormModel.Roles.Input.Clear();
+        var _RolesToSelect = this.ViewModel.AvailableRoles.Where(r => currentRoles.Contains(r.Name!));
+        foreach (var _Role in _RolesToSelect)
+            this.FormModel.Roles.Input.Add(_Role);
+
         return this._modal.OpenModalAsync();
     }
 }
