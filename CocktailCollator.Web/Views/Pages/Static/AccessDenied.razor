@@ -1,0 +1,18 @@
+﻿@page "/access-denied"
+
+<div class="container-sm mt-5">
+    <div class="alert alert-danger text-center" 
+         role="alert">
+
+        <h4 class="alert-heading">Access Denied</h4>
+        <AuthorizeView>
+            <Authorized>
+                 <p>You do not have permission to view this page.</p>
+            </Authorized>
+            <NotAuthorized>
+                 <p>You must be logged in to view this page.</p>
+            </NotAuthorized>
+        </AuthorizeView>
+
+    </div>
+</div>

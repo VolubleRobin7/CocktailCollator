@@ -6,5 +6,6 @@ public static class StaticPages
         => [
             "/login",
             "/logout",
+            "/access-denied",
         ];
 }
