@@ -16,16 +16,11 @@
 <PageTitle>Home</PageTitle>
 
 <div class="container pt-2">
-
-    <AuthorizeView>
-        <p>Only cool people can see this! Hello @context.User.Identity?.Name!</p>
-    </AuthorizeView>
-
     <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
             Text="Get Recipes"
             Theme="ButtonTheme.Secondary" />
 
-    <AuthorizeView>
+    <AuthorizeView Policy="@Policies.ManageRecipes">
         <Button @onclick="() => this._createRecipeModal.OpenModalAsync()"
                 Text="Create Recipe"
                 Theme="ButtonTheme.Secondary" />
@@ -62,7 +57,7 @@
                                 data-bs-target="@this.RecipeModalId"
                                 data-bs-toggle="modal" />
 
-                        <AuthorizeView>
+                        <AuthorizeView Policy="@Policies.ManageRecipes">
                             <Button @onclick="() => this.OpenUpdateRecipeModal(recipe)"
                                     Size="ButtonSize.Small"
                                     Text="Edit"
@@ -77,16 +72,12 @@
     <p class="text-danger">@this.ViewModel.Error</p>
 </div>
 
-<hr />
-
 <div class="container pt-2">
-    <h3>Recipe Categories</h3>
-
     <Button @onclick="this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync"
             Text="Get Categories"
             Theme="ButtonTheme.Secondary" />
 
-    <AuthorizeView>
+    <AuthorizeView Policy="@Policies.ManageRecipes">
         <Button @onclick="() => this._createRecipeCategoryModal.OpenModalAsync()"
                 Text="Create Category"
                 Theme="ButtonTheme.Secondary" />
@@ -99,7 +90,7 @@
                 <div class="d-flex justify-content-between">
                     <span class="align-content-center">@category.Name</span>
 
-                    <AuthorizeView>
+                    <AuthorizeView Policy="@Policies.ManageRecipes">
                         <Button @onclick="() => this.RecipeCategoriesViewModel.DeleteCommand.ExecuteAsync(category.RecipeCategoryId)"
                                 Size="ButtonSize.Small"
                                 Text="Delete"
@@ -141,7 +132,7 @@
     </Body>
 
     <Footer>
-        <AuthorizeView>
+        <AuthorizeView Policy="@Policies.ManageRecipes">
             <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(this._selectedRecipe!.RecipeId)"
                     Text="Delete"
                     Theme="ButtonTheme.Danger"

@@ -7,7 +7,14 @@ public static class ClaimValues
     {
         public static class Users
         {
+            public const string ChangePassword = "Permissions.Users.ChangePassword";
             public const string Manage = "Permissions.Users.Manage";
+            public const string View = "Permissions.Users.View";
+        }
+
+        public static class Recipes
+        {
+            public const string Manage = "Permissions.Recipes.Manage";
         }
 
         public static class Ingredients

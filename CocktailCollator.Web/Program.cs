@@ -86,6 +86,9 @@ using (var _Scope = app.Services.CreateScope())
         var adminRole = new CocktailRole { Name = "Admin" };
         _ = await _RoleManager.CreateAsync(adminRole);
         _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Users.Manage));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Users.View));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Users.ChangePassword));
+        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Recipes.Manage));
         _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
         _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.Manage));
         _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));

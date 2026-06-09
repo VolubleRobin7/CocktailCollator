@@ -4,7 +4,7 @@
 
 @inject UsersViewModel ViewModel
 
-@attribute [Authorize(Policy = Policies.ManageUsers)]
+@attribute [Authorize(Policy = Policies.ViewUsers)]
 
 @page "/users"
 
@@ -16,10 +16,12 @@
             Text="Get Accounts"
             Theme="ButtonTheme.Secondary" />
 
-    <Button @onclick="() => this._createUserModal.OpenModalAsync()"
-            Text="Create User Account"
-            Theme="ButtonTheme.Secondary"
-            class="ms-2" />
+    <AuthorizeView Policy="@Policies.ManageUsers">
+        <Button @onclick="() => this._createUserModal.OpenModalAsync()"
+                Text="Create User Account"
+                Theme="ButtonTheme.Secondary"
+                class="ms-2" />
+    </AuthorizeView>
 
     <ul class="list-group list-group-flush mt-3">
         @foreach (var user in this.ViewModel.Users)
@@ -41,24 +43,30 @@
                         }
                     </span>
                     <div>
-                        <Button @onclick="() => this._updateRolesModal.OpenModalAsync(user.UserId, user.Roles!)"
-                                Size="ButtonSize.Small"
-                                Theme="ButtonTheme.Secondary"
-                                Text="Update Roles"
-                                class="me-2" />
-                        <Button @onclick="() => this._changePasswordModal.OpenModalAsync(user.UserId)"
-                                Size="ButtonSize.Small"
-                                Theme="ButtonTheme.Secondary"
-                                Text="Change Password"
-                                class="me-2" />
-
-                        @if (user.UserId != this.ViewModel.CurrentUser?.UserId)
-                        {
-                            <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(user.UserId)"
+                        <AuthorizeView Policy="@Policies.ManageUsers">
+                            <Button @onclick="() => this._updateRolesModal.OpenModalAsync(user.UserId, user.Roles!)"
                                     Size="ButtonSize.Small"
-                                    Theme="ButtonTheme.Danger"
-                                    Text="Delete" />
-                        }
+                                    Theme="ButtonTheme.Secondary"
+                                    Text="Update Roles"
+                                    class="me-2" />
+                        </AuthorizeView>
+                        <AuthorizeView Policy="@Policies.ChangeUserPasswords">
+                            <Button @onclick="() => this._changePasswordModal.OpenModalAsync(user.UserId)"
+                                    Size="ButtonSize.Small"
+                                    Theme="ButtonTheme.Secondary"
+                                    Text="Change Password"
+                                    class="me-2" />
+                        </AuthorizeView>
+
+                        <AuthorizeView Policy="@Policies.ManageUsers">
+                            @if (user.UserId != this.ViewModel.CurrentUser?.UserId)
+                            {
+                                <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(user.UserId)"
+                                        Size="ButtonSize.Small"
+                                        Theme="ButtonTheme.Danger"
+                                        Text="Delete" />
+                            }
+                        </AuthorizeView>
                     </div>
                 </div>
             </li>
