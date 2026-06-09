@@ -10,5 +10,10 @@ public class RecipeConfiguration : IEntityTypeConfiguration<Recipe>
     {
         _ = builder.Property(r => r.Name)
             .HasMaxLength(100);
+
+        _ = builder.HasOne(r => r.Category)
+            .WithMany(c => c.Recipes)
+            .HasForeignKey(r => r.RecipeCategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

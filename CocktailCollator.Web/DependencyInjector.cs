@@ -3,12 +3,14 @@ using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web.FormModels.IngredientCategories;
 using CocktailCollator.Web.FormModels.Ingredients;
 using CocktailCollator.Web.FormModels.Measurements;
+using CocktailCollator.Web.FormModels.RecipeCategories;
 using CocktailCollator.Web.FormModels.Recipes;
 using CocktailCollator.Web.FormModels.Users;
 using CocktailCollator.Web.Infrastructure.Authentication;
 using CocktailCollator.Web.ViewModels.IngredientCategories;
 using CocktailCollator.Web.ViewModels.Ingredients;
 using CocktailCollator.Web.ViewModels.Measurements;
+using CocktailCollator.Web.ViewModels.RecipeCategories;
 using CocktailCollator.Web.ViewModels.Recipes;
 using CocktailCollator.Web.ViewModels.Roles;
 using CocktailCollator.Web.ViewModels.Users;
@@ -20,21 +22,24 @@ namespace CocktailCollator.Web;
 
 public static class DependencyInjector
 {
-    public static IServiceCollection InjectWeb(this IServiceCollection services)
+    public static IServiceCollection InjectWeb(this IServiceCollection services, IConfiguration configuration)
         => services
-            .AddAuth()
+            .AddAuth(configuration)
             .AddFormModels()
             .AddViewModels();
 
-    private static IServiceCollection AddAuth(this IServiceCollection services)
+    private static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
+        var enforcePasswordPolicies = configuration.GetValue<bool>("EnforcePasswordPolicies");
+
         _ = services.AddIdentity<CocktailUser, CocktailRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
-                options.Password.RequireDigit = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 0;
-                options.Password.RequireUppercase = false;
+                options.Password.RequireDigit = enforcePasswordPolicies;
+                options.Password.RequireNonAlphanumeric = enforcePasswordPolicies;
+                options.Password.RequiredLength = enforcePasswordPolicies ? 8 : 0;
+                options.Password.RequireUppercase = enforcePasswordPolicies;
+                options.Password.RequireLowercase = enforcePasswordPolicies;
             })
             .AddEntityFrameworkStores<CocktailDbContext>()
             .AddDefaultTokenProviders();
@@ -57,6 +62,7 @@ public static class DependencyInjector
             .AddScoped<ChangePasswordFormModel>()
             .AddScoped<CreateIngredientCategoryFormModel>()
             .AddScoped<CreateMeasurementFormModel>()
+            .AddScoped<CreateRecipeCategoryFormModel>()
             .AddScoped<CreateRecipeFormModel>()
             .AddScoped<CreateUserFormModel>()
             .AddScoped<UpdateIngredientFormModel>()
@@ -78,6 +84,7 @@ public static class DependencyInjector
             .AddScoped<IngredientsViewModel>()
             .AddScoped<MeasurementsViewModel>()
             .AddScoped<IngredientCategoriesViewModel>()
+            .AddScoped<RecipeCategoriesViewModel>()
             .AddScoped<RolesViewModel>()
             .AddScoped<UsersViewModel>();
 }

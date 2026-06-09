@@ -5,7 +5,7 @@
     <input @bind-value="this.Input.Input"
            @bind-value:event="@(this.UpdateOnlyOnFocusLoss ? "onchange" : "oninput")"
            class="form-control @(this.Input.IsValid() ? "is-valid" : "is-invalid")"
-           type="text" />
+           type="@this.Type" />
     <div class="form-text">@this.Subtext</div>
     @if (this.ValidMessage is not null)
     {
@@ -31,6 +31,9 @@
     [EditorRequired]
     [Parameter]
     public string Title { get; set; }
+
+    [Parameter]
+    public string Type { get; set; } = "text";
 
     [Parameter]
     public bool UpdateOnlyOnFocusLoss { get; set; }

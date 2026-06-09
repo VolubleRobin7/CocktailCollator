@@ -20,7 +20,7 @@ builder.Services
 builder.Services
     .InjectApplication()
     .InjectInfrastructure()
-    .InjectWeb();
+    .InjectWeb(builder.Configuration);
 
 builder.Services.AddAutoMapper(
     typeof(CocktailCollator.Web.DependencyInjector),

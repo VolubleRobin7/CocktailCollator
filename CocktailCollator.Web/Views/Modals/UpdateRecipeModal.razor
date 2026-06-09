@@ -1,5 +1,6 @@
 @using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.Recipes
+@using CocktailCollator.Web.ViewModels.RecipeCategories
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
@@ -7,6 +8,7 @@
 
 @inject UpdateRecipeFormModel UpdateRecipeFormModel
 @inject RecipesViewModel RecipesViewModel
+@inject RecipeCategoriesViewModel RecipeCategoriesViewModel
 
 <Modal @ref="this._modal"
        Size="ModalSize.Large"
@@ -19,6 +21,47 @@
             <InputField Input="this.UpdateRecipeFormModel.Name"
                         InvalidMessage="Name requires a value."
                         Title="Recipe Name" />
+
+            <label class="form-label">Category</label>
+            <div class="input-group flex-nowrap">
+                <input class="form-control flex-grow-1"
+                       disabled
+                       placeholder="Select a category..."
+                       type="text"
+                       value="@(this.UpdateRecipeFormModel.RecipeCategory.Input?.Name ?? "")" />
+
+                <button @onclick="() => this.UpdateRecipeFormModel.RecipeCategory.Input = null"
+                        class="btn btn-outline-danger"
+                        type="button">
+                    Clear
+                </button>
+                
+                <button aria-expanded="false"
+                        class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                        data-bs-toggle="dropdown"
+                        type="button">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+
+                <ul class="dropdown-menu">
+                    <li>
+                        <input @bind-value:event="oninput"
+                               @bind-value:get="this._categorySearchString"
+                               @bind-value:set="this.SetCategorySearchValue"
+                               class="form-control mb-2"
+                               placeholder="Type to search..."
+                               type="text" />
+                    </li>
+
+                    @foreach (var category in this._categorySearchResults)
+                    {
+                        <li>
+                            <span @onclick="() => this.UpdateRecipeFormModel.RecipeCategory.Input = category"
+                                  class="dropdown-item">@category.Name</span>
+                        </li>
+                    }
+                </ul>
+            </div>
 
             <h4>Ingredients</h4>
 
@@ -95,6 +138,8 @@
 </Modal>
 
 @code {
+    private List<RecipeCategoryViewModel> _categorySearchResults = [];
+    private string _categorySearchString = "";
     private Modal _modal = default!;
 
     [Parameter]
@@ -136,10 +181,11 @@
     }
 
     // The situation with nullables needs to be improved
-    public Task OpenModalAsync(RecipeViewModel recipe)
+    public async Task OpenModalAsync(RecipeViewModel recipe)
     {
         this.UpdateRecipeFormModel.RecipeId.Input = recipe.RecipeId;
         this.UpdateRecipeFormModel.Name.Input = recipe.Name ?? string.Empty;
+        this.UpdateRecipeFormModel.RecipeCategory.Input = recipe.Category;
 
         this.UpdateRecipeFormModel.Ingredients.Input.Clear();
         foreach (var ingredient in recipe.Ingredients ?? [])
@@ -162,7 +208,9 @@
             this.UpdateRecipeFormModel.Steps.Input.Add(newStep);
         }
 
-        return this._modal.OpenModalAsync();
+        await this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync(default);
+
+        await this._modal.OpenModalAsync();
     }
 
     private void RecalculateSteps()
@@ -175,5 +223,14 @@
     {
         _ = this.UpdateRecipeFormModel.Steps.Input.Remove(stepIndex);
         this.RecalculateSteps();
+    }
+
+    private void SetCategorySearchValue(string? value)
+    {
+        this._categorySearchString = value ?? "";
+        this._categorySearchResults = this.RecipeCategoriesViewModel.RecipeCategories
+            .Where(category => category.Name is not null && category.Name.Contains(this._categorySearchString, StringComparison.OrdinalIgnoreCase))
+            .Take(5)
+            .ToList();
     }
 }
