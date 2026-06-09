@@ -14,7 +14,6 @@ using CocktailCollator.Web.ViewModels.RecipeCategories;
 using CocktailCollator.Web.ViewModels.Recipes;
 using CocktailCollator.Web.ViewModels.Roles;
 using CocktailCollator.Web.ViewModels.Users;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 
@@ -54,7 +53,7 @@ public static class DependencyInjector
             })
             .AddCascadingAuthenticationState()
             .AddScoped<AuthenticationStateProvider, CocktailAuthenticationStateProvider>()
-            .AddAuthorization(AddPolicies);
+            .AddAuthorization(Policies.AddPolicies);
     }
 
     private static IServiceCollection AddFormModels(this IServiceCollection services)
@@ -68,15 +67,6 @@ public static class DependencyInjector
             .AddScoped<UpdateIngredientFormModel>()
             .AddScoped<UpdateRecipeFormModel>()
             .AddScoped<UpdateRolesFormModel>();
-
-    private static void AddPolicies(AuthorizationOptions options)
-    {
-        options.AddPolicy(Policies.ManageUsers, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Users.Manage));
-        options.AddPolicy(Policies.ViewIngredients, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
-        options.AddPolicy(Policies.ManageIngredients, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.Manage));
-        options.AddPolicy(Policies.ViewMeasurements, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
-        options.AddPolicy(Policies.ManageMeasurements, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Measurements.Manage));
-    }
 
     private static IServiceCollection AddViewModels(this IServiceCollection services)
         => services
