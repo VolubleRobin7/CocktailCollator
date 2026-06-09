@@ -34,7 +34,10 @@
                         }
                         @if (user.Roles != null && user.Roles.Any())
                         {
-                            <span class="ms-2 badge bg-info text-dark">@string.Join(", ", user.Roles.Select(r => r.Name))</span>
+                            foreach (var _Role in user.Roles)
+                            {
+                                <span class="ms-2 badge bg-info text-dark">@_Role.Name</span>
+                            }
                         }
                     </span>
                     <div>
@@ -85,7 +88,5 @@
     private UpdateRolesModal _updateRolesModal = default!;
 
     private async Task RefreshUsers()
-    {
-        await this.ViewModel.GetCommand.ExecuteAsync(null);
-    }
+        => await this.ViewModel.GetCommand.ExecuteAsync(null);
 }

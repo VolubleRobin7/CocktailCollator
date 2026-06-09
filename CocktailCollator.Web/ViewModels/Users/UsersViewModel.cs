@@ -175,6 +175,7 @@ public class UsersViewModel
             }
 
             var _CurrentRoleNames = await this._userManager.GetRolesAsync(_User);
+            await this._rolesViewModel.GetCommand.ExecuteAsync(null);
             var _TargetRoleNames = this._rolesViewModel.Roles
                 .Where(r => inputPort.Roles.Contains(r.RoleId))
                 .Select(r => r.Name)

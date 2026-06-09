@@ -21,9 +21,9 @@
                 @foreach (var role in this.RolesViewModel.Roles)
                 {
                     <div class="form-check">
-                        <input @onchange ="@(args => this.OnRoleSelectionChanged(role, args.Value))" 
+                        <input @bind:get="this.FormModel.Roles.Input.Any(r => r.RoleId == role.RoleId)" 
+                               @bind:set="value => this.OnRoleSelectionChanged(role, value)"
                                class="form-check-input"
-                               checked="@(this.FormModel.Roles.Input.Any(r => r.RoleId == role.RoleId))"
                                id="role_@role.RoleId" 
                                type="checkbox" />
 
@@ -61,9 +61,9 @@
         await this.OnAfterChange.InvokeAsync();
     }
 
-    private void OnRoleSelectionChanged(RoleViewModel role, object? isChecked)
+    private void OnRoleSelectionChanged(RoleViewModel role, bool isChecked)
     {
-        if ((bool)(isChecked ?? false))
+        if (isChecked)
         {
             if (!this.FormModel.Roles.Input.Any(r => r.RoleId == role.RoleId))
                 this.FormModel.Roles.Input.Add(new UpdateRolesFormModelRole { RoleId = role.RoleId, Name = role.Name });

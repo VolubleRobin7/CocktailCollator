@@ -9,9 +9,9 @@ public class UpdateRolesFormModel : IFormModel<UpdateRolesInputPort>
 {
     private readonly IMapper _mapper;
 
-    public Guid UserId { get; set; } = Guid.Empty;
     public InputProperty<ObservableCollection<UpdateRolesFormModelRole>> Roles { get; set; }
         = new(() => [], (_) => true);
+    public Guid UserId { get; set; } = Guid.Empty;
 
     public Action? OnChange { get; set; }
 
@@ -26,14 +26,14 @@ public class UpdateRolesFormModel : IFormModel<UpdateRolesInputPort>
     public UpdateRolesInputPort ExtractToInputPort()
         => this._mapper.Map<UpdateRolesInputPort>(this);
 
-    public bool IsValid() => true;
+    public bool IsValid()
+        => this.Roles.IsValid();
 
     public void ResetToDefault()
     {
         this.UserId = Guid.Empty;
         this.Roles.ResetToDefault();
     }
-
 }
 
 public class UpdateRolesFormModelRole
