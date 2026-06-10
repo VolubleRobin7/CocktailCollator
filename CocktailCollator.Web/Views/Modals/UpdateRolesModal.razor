@@ -18,18 +18,18 @@
             <h3>Update Roles</h3>
 
             <div class="mb-3">
-                @foreach (var role in this.RolesViewModel.Roles)
+                @foreach (var _Role in this.RolesViewModel.Roles)
                 {
                     <div class="form-check">
-                        <input @bind:get="this.FormModel.Roles.Input.Any(r => r.RoleId == role.RoleId)" 
-                               @bind:set="value => this.OnRoleSelectionChanged(role, value)"
+                        <input @bind:get="this.FormModel.Roles.Input.Any(r => r.RoleId == _Role.RoleId)" 
+                               @bind:set="value => this.OnRoleSelectionChanged(_Role, value)"
                                class="form-check-input"
-                               id="role_@role.RoleId" 
+                               id="role_@_Role.RoleId" 
                                type="checkbox" />
 
                         <label class="form-check-label" 
-                               for="role_@role.RoleId">
-                            @role.Name
+                               for="role_@_Role.RoleId">
+                            @_Role.Name
                         </label>
                     </div>
                 }
