@@ -1,12 +1,11 @@
-﻿@using CocktailCollator.Web.ViewModels.Measurements
+@using CocktailCollator.Web.ViewModels.Measurements
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Navbars
 @using CocktailCollator.Web.Views.Modals
-@using Microsoft.AspNetCore.Authorization
 
 @inject MeasurementsViewModel ViewModel
 
-@attribute [Authorize]
+@attribute [Authorize(Policy = Policies.ViewMeasurements)]
 
 @page "/measurements"
 
@@ -18,9 +17,11 @@
             Theme="ButtonTheme.Secondary"
             Text="Get Measurements" />
 
-    <Button @onclick="() => this._createModal.OpenModalAsync()"
-            Text="Create Measurement"
-            Theme="ButtonTheme.Secondary" />
+    <AuthorizeView Policy="@Policies.ManageMeasurements">
+        <Button @onclick="() => this._createModal.OpenModalAsync()"
+                Text="Create Measurement"
+                Theme="ButtonTheme.Secondary" />
+    </AuthorizeView>
 
     <ul class="list-group list-group-flush">
         @foreach (var measurement in this.ViewModel.Measurements)
@@ -30,10 +31,12 @@
                     <span class="align-content-center">
                         @measurement.Name
                     </span>
-                    <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(measurement.MeasurementId)"
-                            Size="ButtonSize.Small"
-                            Theme="ButtonTheme.Danger"
-                            Text="Remove" />
+                    <AuthorizeView Policy="@Policies.ManageMeasurements">
+                        <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(measurement.MeasurementId)"
+                                Size="ButtonSize.Small"
+                                Theme="ButtonTheme.Danger"
+                                Text="Remove" />
+                    </AuthorizeView>
                 </div>
             </li>
         }

@@ -12,6 +12,7 @@ using CocktailCollator.Web.ViewModels.Ingredients;
 using CocktailCollator.Web.ViewModels.Measurements;
 using CocktailCollator.Web.ViewModels.RecipeCategories;
 using CocktailCollator.Web.ViewModels.Recipes;
+using CocktailCollator.Web.ViewModels.Roles;
 using CocktailCollator.Web.ViewModels.Users;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -52,7 +53,7 @@ public static class DependencyInjector
             })
             .AddCascadingAuthenticationState()
             .AddScoped<AuthenticationStateProvider, CocktailAuthenticationStateProvider>()
-            .AddAuthorization();
+            .AddAuthorization(Policies.AddPolicies);
     }
 
     private static IServiceCollection AddFormModels(this IServiceCollection services)
@@ -64,7 +65,8 @@ public static class DependencyInjector
             .AddScoped<CreateRecipeFormModel>()
             .AddScoped<CreateUserFormModel>()
             .AddScoped<UpdateIngredientFormModel>()
-            .AddScoped<UpdateRecipeFormModel>();
+            .AddScoped<UpdateRecipeFormModel>()
+            .AddScoped<UpdateRolesFormModel>();
 
     private static IServiceCollection AddViewModels(this IServiceCollection services)
         => services
@@ -73,5 +75,6 @@ public static class DependencyInjector
             .AddScoped<MeasurementsViewModel>()
             .AddScoped<IngredientCategoriesViewModel>()
             .AddScoped<RecipeCategoriesViewModel>()
+            .AddScoped<RolesViewModel>()
             .AddScoped<UsersViewModel>();
 }
