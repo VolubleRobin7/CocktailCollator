@@ -11,7 +11,9 @@
     {
         <div class="valid-feedback">@this.ValidMessage</div>
     }
-    <div class="invalid-feedback">@this.InvalidMessage</div>
+    <div class="invalid-feedback">
+        @(this.InvalidMessage is null ? this.Input.ErrorMessage : this.InvalidMessage)
+    </div>
 </div>
 
 @code {
@@ -22,8 +24,11 @@
     [Parameter]
     public InputProperty<string> Input { get; set; }
 
+    /// <summary>
+    /// Set a custom invalid message that overrides the error message from the InputProperty.
+    /// </summary>
     [Parameter]
-    public string InvalidMessage { get; set; } = "Field is invalid";
+    public string? InvalidMessage { get; set; }
 
     [Parameter]
     public string Subtext { get; set; } = "";
