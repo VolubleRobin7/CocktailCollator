@@ -109,7 +109,7 @@ using (var _Scope = app.Services.CreateScope())
             EmailConfirmed = true
         };
 
-        var _Result = await _UserManager.CreateAsync(_AdminUser, "cocktail");
+        var _Result = await _UserManager.CreateAsync(_AdminUser, "Cockt@!1");
         if (_Result.Succeeded)
         {
             Console.WriteLine("Default admin user 'Admin' created successfully.");
