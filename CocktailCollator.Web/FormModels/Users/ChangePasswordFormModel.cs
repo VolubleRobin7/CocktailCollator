@@ -39,26 +39,26 @@ public class ChangePasswordFormModel : IFormModel<ChangePasswordInputPort>
         this.NewPassword.ResetToDefault();
     }
 
-    private bool CheckPasswordPolicy(string input)
+    private ValidationResult CheckPasswordPolicy(string input)
     {
         if (string.IsNullOrEmpty(input))
-            return false;
+            return new(false, "Password is required.");
 
         if (input.Length < this._passwordOptions.RequiredLength)
-            return false;
+            return new(false, $"Password must be at least {this._passwordOptions.RequiredLength} characters.");
 
         if (this._passwordOptions.RequireDigit && !input.Any(char.IsDigit))
-            return false;
+            return new(false, "Password must contain at least one digit.");
 
         if (this._passwordOptions.RequireUppercase && !input.Any(char.IsUpper))
-            return false;
+            return new(false, "Password must contain at least one uppercase letter.");
 
         if (this._passwordOptions.RequireLowercase && !input.Any(char.IsLower))
-            return false;
+            return new(false, "Password must contain at least one lowercase letter.");
 
         if (this._passwordOptions.RequireNonAlphanumeric && !input.Any(c => !char.IsLetterOrDigit(c)))
-            return false;
+            return new(false, "Password must contain at least one non-alphanumeric character.");
 
-        return true;
+        return new(true);
     }
 }
