@@ -1,0 +1,109 @@
+@using CocktailCollator.Web.FormModels.Roles
+@using CocktailCollator.Web.ViewModels.Roles
+@using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Inputs
+@using CocktailCollator.Web.Views.Components.Modals
+@using CocktailCollator.Web.Views.Components.Helpers
+@using CocktailCollator.Web.Infrastructure.Authentication
+
+@inject UpdateRoleFormModel UpdateRoleFormModel
+@inject RolesViewModel ViewModel
+
+<Modal @ref="this._modal"
+       Title="Update Role">
+
+    <Body>
+        <form>
+            <InputField Input="this.UpdateRoleFormModel.Name"
+                        InvalidMessage="Role name is required."
+                        Title="Role Name" />
+
+            <div class="form-check mt-3">
+                <input @bind="this.UpdateRoleFormModel.HasEveryClaim.Input"
+                       class="form-check-input"
+                       id="updateHasEveryClaim" 
+                       type="checkbox" />
+
+                <label class="form-check-label"
+                       for="updateHasEveryClaim">
+                    Always has every Claim
+                </label>
+            </div>
+
+            <div class="mt-3">
+                <label class="form-label">Claims</label>
+
+                @foreach (var claim in this._allClaims)
+                {
+                    <div class="form-check">
+                        <input @bind:get="this.UpdateRoleFormModel.Claims.Input.Contains(claim)"
+                               @bind:set="(value) => this.OnClaimSet(claim, value)"
+                               class="form-check-input"
+                               disabled="@this.UpdateRoleFormModel.HasEveryClaim.Input"
+                               id="@($"updateClaim_{claim}")" 
+                               type="checkbox" />
+
+                        <label class="form-check-label"
+                               for="@($"updateClaim_{claim}")">
+                            @claim
+                        </label>
+                    </div>
+                }
+            </div>
+            @if (this.UpdateRoleFormModel.Claims.Input.Count == 0 && !this.UpdateRoleFormModel.HasEveryClaim.Input)
+            {
+                <div class="text-danger small mt-1">At least one claim must be selected.</div>
+            }
+
+            <FormChangeWrapper FormModel="this.UpdateRoleFormModel">
+                <Button @onclick="this.OnClickUpdate"
+                        Size="ButtonSize.Large"
+                        Text="Save"
+                        Theme="ButtonTheme.Success"
+                        class="mt-3"
+                        data-bs-dismiss="modal"
+                        disabled="@(!this.UpdateRoleFormModel.IsValid())" />
+            </FormChangeWrapper>
+        </form>
+    </Body>
+
+</Modal>
+
+@code {
+    private List<string> _allClaims = ClaimValues.GetAllClaims();
+    private Modal _modal = default!;
+
+    [Parameter]
+    public EventCallback OnAfterUpdate { get; set; }
+
+    private void OnClaimSet(string claim, bool value)
+    {
+        if (value && !this.UpdateRoleFormModel.Claims.Input.Contains(claim))
+            this.UpdateRoleFormModel.Claims.Input.Add(claim);
+        else if (!value && this.UpdateRoleFormModel.Claims.Input.Contains(claim))
+            this.UpdateRoleFormModel.Claims.Input.Remove(claim);
+    }
+
+    private async Task OnClickUpdate()
+    {
+        await this.ViewModel.UpdateCommand.ExecuteAsync(this.UpdateRoleFormModel.ExtractToInputPort());
+        this.UpdateRoleFormModel.ResetToDefault();
+        await this.OnAfterUpdate.InvokeAsync();
+    }
+
+    public Task OpenModalAsync(RoleViewModel role)
+    {
+        this.UpdateRoleFormModel.ResetToDefault();
+        this.UpdateRoleFormModel.RoleId.Input = role.RoleId;
+        this.UpdateRoleFormModel.Name.Input = role.Name;
+        this.UpdateRoleFormModel.Claims.Input.Clear();
+        foreach (var claim in role.Claims)
+            this.UpdateRoleFormModel.Claims.Input.Add(claim);
+        
+        // If the role has all possible claims, set HasEveryClaim to true.
+        if (this.UpdateRoleFormModel.Claims.Input.Count == this._allClaims.Count)
+            this.UpdateRoleFormModel.HasEveryClaim.Input = true;
+
+        return this._modal.OpenModalAsync();
+    }
+}
