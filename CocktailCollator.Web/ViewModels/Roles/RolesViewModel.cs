@@ -84,14 +84,18 @@ public class RolesViewModel
                 return;
             }
 
-            if (_Role.Name != inputPort.Name && await this._roleManager.RoleExistsAsync(inputPort.Name))
+            IdentityResult _Result = IdentityResult.Success;
+            if (_Role.Name != inputPort.Name)
             {
-                this.Error = "A role with that name already exists.";
-                return;
-            }
+                if (await this._roleManager.RoleExistsAsync(inputPort.Name))
+                {
+                    this.Error = "A role with that name already exists.";
+                    return;
+                }
 
-            _Role.Name = inputPort.Name;
-            var _Result = await this._roleManager.UpdateAsync(_Role);
+                _Role.Name = inputPort.Name;
+                _Result = await this._roleManager.UpdateAsync(_Role);
+            }
 
             if (_Result.Succeeded)
             {
