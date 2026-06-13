@@ -70,7 +70,7 @@
 </Modal>
 
 @code {
-    private List<string> _allClaims = ClaimValues.GetAllClaims();
+    private List<string> _allClaims = ClaimValues.Permissions.GetAll();
     private Modal _modal = default!;
 
     [Parameter]

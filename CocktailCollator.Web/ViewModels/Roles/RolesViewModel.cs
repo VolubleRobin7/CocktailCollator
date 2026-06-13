@@ -53,7 +53,7 @@ public class RolesViewModel
 
             if (_Result.Succeeded)
             {
-                var _ClaimsToAdd = inputPort.HasEveryClaim ? ClaimValues.GetAllClaims() : inputPort.Claims;
+                var _ClaimsToAdd = inputPort.HasEveryClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
                 foreach (var _Claim in _ClaimsToAdd)
                     _ = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
 
@@ -97,10 +97,11 @@ public class RolesViewModel
             {
                 // Remove all existing claims and then add the claims they should have.
                 var _CurrentClaims = await this._roleManager.GetClaimsAsync(_Role);
-                foreach (var _Claim in _CurrentClaims)
+                var _PermissionClaims = _CurrentClaims.Where(c => c.Type == Infrastructure.Authentication.ClaimTypes.Permission);
+                foreach (var _Claim in _PermissionClaims)
                     _ = await this._roleManager.RemoveClaimAsync(_Role, _Claim);
 
-                var _ClaimsToAdd = inputPort.HasEveryClaim ? ClaimValues.GetAllClaims() : inputPort.Claims;
+                var _ClaimsToAdd = inputPort.HasEveryClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
                 foreach (var _Claim in _ClaimsToAdd)
                     _ = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
 
