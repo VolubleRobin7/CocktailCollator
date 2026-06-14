@@ -146,10 +146,10 @@
                   OnAfterChange="this.ViewModel.GetCommand.ExecuteAsync" />
 
 <CreateRoleModal @ref="this._createRoleModal"
-                 OnAfterCreation="this.RolesViewModel.GetCommand.ExecuteAsync" />
+                 OnAfterCreation="this.StateHasChanged" />
 
 <UpdateRoleModal @ref="this._updateRoleModal"
-                 OnAfterUpdate="this.RolesViewModel.GetCommand.ExecuteAsync" />
+                 OnAfterUpdate="this.StateHasChanged" />
 
 @code {
     private ChangePasswordModal _changePasswordModal = default!;

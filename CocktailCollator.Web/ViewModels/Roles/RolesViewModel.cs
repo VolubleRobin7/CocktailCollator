@@ -53,11 +53,26 @@ public class RolesViewModel
 
             if (_Result.Succeeded)
             {
+                var _ClaimResults = new List<IdentityResult>();
+
+                var _RoleViewModel = this._mapper.Map<RoleViewModel>(_Role);
+
                 var _ClaimsToAdd = inputPort.HasEveryClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
                 foreach (var _Claim in _ClaimsToAdd)
-                    _ = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
+                {
+                    var _ClaimResult = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
+                    _ClaimResults.Add(_ClaimResult);
+                    if (_ClaimResult.Succeeded)
+                        _RoleViewModel.Claims.Add(_Claim);
+                }
 
-                await this.GetRolesAsync(cancellationToken);
+                this.Roles.Add(_RoleViewModel);
+
+                if (_ClaimResults.Any(r => !r.Succeeded))
+                {
+                    var _Errors = _ClaimResults.Where(r => !r.Succeeded).SelectMany(r => r.Errors).Select(e => e.Description);
+                    this.Error = $"Role created, but failed to add some claims: {string.Join(", ", _Errors.Distinct())}";
+                }
             }
             else
             {
@@ -99,17 +114,37 @@ public class RolesViewModel
 
             if (_Result.Succeeded)
             {
+                var _ClaimResults = new List<IdentityResult>();
+
+                var _ExistingRole = this.Roles.FirstOrDefault(r => r.RoleId == _Role.Id);
+                if (_ExistingRole != null)
+                    _ExistingRole.Name = _Role.Name;
+
                 // Remove all existing claims and then add the claims they should have.
                 var _CurrentClaims = await this._roleManager.GetClaimsAsync(_Role);
                 var _PermissionClaims = _CurrentClaims.Where(c => c.Type == Infrastructure.Authentication.ClaimTypes.Permission);
                 foreach (var _Claim in _PermissionClaims)
-                    _ = await this._roleManager.RemoveClaimAsync(_Role, _Claim);
+                {
+                    var _ClaimResult = await this._roleManager.RemoveClaimAsync(_Role, _Claim);
+                    _ClaimResults.Add(_ClaimResult);
+                    if (_ClaimResult.Succeeded && _ExistingRole != null)
+                        _ = _ExistingRole.Claims.Remove(_Claim.Value);
+                }
 
                 var _ClaimsToAdd = inputPort.HasEveryClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
                 foreach (var _Claim in _ClaimsToAdd)
-                    _ = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
+                {
+                    var _ClaimResult = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
+                    _ClaimResults.Add(_ClaimResult);
+                    if (_ClaimResult.Succeeded && _ExistingRole != null)
+                        _ExistingRole.Claims.Add(_Claim);
+                }
 
-                await this.GetRolesAsync(cancellationToken);
+                if (_ClaimResults.Any(r => !r.Succeeded))
+                {
+                    var _Errors = _ClaimResults.Where(r => !r.Succeeded).SelectMany(r => r.Errors).Select(e => e.Description);
+                    this.Error = $"Failed to update some claims: {string.Join(", ", _Errors.Distinct())}";
+                }
             }
             else
             {
