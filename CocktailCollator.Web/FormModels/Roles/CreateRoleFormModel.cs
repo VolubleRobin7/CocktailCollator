@@ -10,7 +10,6 @@ public class CreateRoleFormModel : IFormModel<CreateRoleInputPort>
     private readonly IMapper _mapper;
 
     public InputProperty<ObservableCollection<string>> Claims { get; set; }
-        = new(() => [], input => true);
     public InputProperty<bool> HasEveryClaim { get; set; }
         = new(() => false, input => true);
     public InputProperty<string> Name { get; set; }
@@ -22,7 +21,10 @@ public class CreateRoleFormModel : IFormModel<CreateRoleInputPort>
     {
         this._mapper = mapper;
 
-        this.Claims.OnChange = () => OnChange?.Invoke();
+        this.Claims = new(() => [], this.IsClaimsValid)
+        {
+            OnChange = () => OnChange?.Invoke()
+        };
         this.Claims.Input.CollectionChanged += (_, _) => OnChange?.Invoke();
         this.HasEveryClaim.OnChange = () => OnChange?.Invoke();
         this.Name.OnChange = () => OnChange?.Invoke();
@@ -32,7 +34,7 @@ public class CreateRoleFormModel : IFormModel<CreateRoleInputPort>
         => this._mapper.Map<CreateRoleInputPort>(this);
 
     public bool IsValid()
-        => this.Name.IsValid() && (this.HasEveryClaim.Input || this.Claims.Input.Count > 0);
+        => this.Name.IsValid() && this.Claims.IsValid();
 
     public void ResetToDefault()
     {
@@ -40,4 +42,7 @@ public class CreateRoleFormModel : IFormModel<CreateRoleInputPort>
         this.Claims.ResetToDefault();
         this.HasEveryClaim.ResetToDefault();
     }
+
+    private bool IsClaimsValid(ObservableCollection<string> claims)
+        => claims.Count > 0 || this.HasEveryClaim.Input;
 }

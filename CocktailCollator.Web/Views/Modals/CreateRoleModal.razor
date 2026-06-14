@@ -50,7 +50,7 @@
                     </div>
                 }
             </div>
-            @if (this.CreateRoleFormModel.Claims.Input.Count == 0 && !this.CreateRoleFormModel.HasEveryClaim.Input)
+            @if (!this.CreateRoleFormModel.Claims.IsValid())
             {
                 <div class="text-danger small mt-1">At least one claim must be selected.</div>
             }
