@@ -12,6 +12,12 @@ public static class ClaimValues
             public const string View = "Permissions.Users.View";
         }
 
+        public static class Roles
+        {
+            public const string Manage = "Permissions.Roles.Manage";
+            public const string View = "Permissions.Roles.View";
+        }
+
         public static class Recipes
         {
             public const string Manage = "Permissions.Recipes.Manage";

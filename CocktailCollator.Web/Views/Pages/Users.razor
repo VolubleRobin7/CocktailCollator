@@ -84,56 +84,58 @@
     </div>
 }
 
-<div class="container pt-2">
+<AuthorizeView Policy="@Policies.ViewRoles">
+    <div class="container pt-2">
 
-    <Button @onclick="this.RolesViewModel.GetCommand.ExecuteAsync"
-            Text="Get Roles"
-            Theme="ButtonTheme.Secondary" />
+        <Button @onclick="this.RolesViewModel.GetCommand.ExecuteAsync"
+                Text="Get Roles"
+                Theme="ButtonTheme.Secondary" />
 
-    <AuthorizeView Policy="@Policies.ManageUsers">
-        <Button @onclick="() => this._createRoleModal.OpenModalAsync()"
-                Text="Create Role"
-                Theme="ButtonTheme.Secondary"
-                class="ms-2" />
-    </AuthorizeView>
+        <AuthorizeView Policy="@Policies.ManageRoles" Context="createRoleContext">
+            <Button @onclick="() => this._createRoleModal.OpenModalAsync()"
+                    Text="Create Role"
+                    Theme="ButtonTheme.Secondary"
+                    class="ms-2" />
+        </AuthorizeView>
 
-    <ul class="list-group list-group-flush mt-3">
-        @foreach (var role in this.RolesViewModel.Roles)
-        {
-            <li class="list-group-item">
-                <div class="d-flex justify-content-between">
-                    <span class="align-content-center">
-                        @role.Name
-                        <span class="ms-2 text-muted">(@role.Claims.Count claims)</span>
-                    </span>
+        <ul class="list-group list-group-flush mt-3">
+            @foreach (var role in this.RolesViewModel.Roles)
+            {
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <span class="align-content-center">
+                            @role.Name
+                            <span class="ms-2 text-muted">(@role.Claims.Count claims)</span>
+                        </span>
 
-                    <div>
-                        <AuthorizeView Policy="@Policies.ManageUsers">
-                            <Button @onclick="() => this._updateRoleModal.OpenModalAsync(role)"
-                                    Size="ButtonSize.Small"
-                                    Text="Update"
-                                    Theme="ButtonTheme.Secondary"
-                                    class="me-2" />
+                        <div>
+                            <AuthorizeView Policy="@Policies.ManageRoles" Context="updateDeleteRoleContext">
+                                <Button @onclick="() => this._updateRoleModal.OpenModalAsync(role)"
+                                        Size="ButtonSize.Small"
+                                        Text="Update"
+                                        Theme="ButtonTheme.Secondary"
+                                        class="me-2" />
 
-                            <Button @onclick="() => this.RolesViewModel.DeleteCommand.ExecuteAsync(role.RoleId)"
-                                    Size="ButtonSize.Small"
-                                    Text="Delete"
-                                    Theme="ButtonTheme.Danger" />
-                        </AuthorizeView>
+                                <Button @onclick="() => this.RolesViewModel.DeleteCommand.ExecuteAsync(role.RoleId)"
+                                        Size="ButtonSize.Small"
+                                        Text="Delete"
+                                        Theme="ButtonTheme.Danger" />
+                            </AuthorizeView>
+                        </div>
                     </div>
-                </div>
-            </li>
-        }
-    </ul>
+                </li>
+            }
+        </ul>
 
-</div>
-
-@if (!string.IsNullOrEmpty(this.RolesViewModel.Error))
-{
-    <div class="alert alert-danger mt-3 ms-2 me-2" role="alert">
-        @this.RolesViewModel.Error
     </div>
-}
+
+    @if (!string.IsNullOrEmpty(this.RolesViewModel.Error))
+    {
+        <div class="alert alert-danger mt-3 ms-2 me-2" role="alert">
+            @this.RolesViewModel.Error
+        </div>
+    }
+</AuthorizeView>
 
 <CreateUserModal @ref="this._createUserModal"
                  OnAfterCreation="this.StateHasChanged" />

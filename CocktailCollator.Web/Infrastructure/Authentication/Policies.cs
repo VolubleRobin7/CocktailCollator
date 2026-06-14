@@ -7,6 +7,8 @@ public static class Policies
 #pragma warning disable IDE1006
     public const string ManageUsers = "ManageUsers";
     public const string ViewUsers = "ViewUsers";
+    public const string ManageRoles = "ManageRoles";
+    public const string ViewRoles = "ViewRoles";
     public const string ChangeUserPasswords = "ChangeUserPasswords";
     public const string ManageRecipes = "ManageRecipes";
     public const string ViewIngredients = "ViewIngredients";
@@ -19,6 +21,8 @@ public static class Policies
     {
         options.AddPolicy(Policies.ManageUsers, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Users.Manage));
         options.AddPolicy(Policies.ViewUsers, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Users.View));
+        options.AddPolicy(Policies.ManageRoles, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Roles.Manage));
+        options.AddPolicy(Policies.ViewRoles, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Roles.View));
         options.AddPolicy(Policies.ChangeUserPasswords, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Users.ChangePassword));
         options.AddPolicy(Policies.ManageRecipes, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Recipes.Manage));
         options.AddPolicy(Policies.ViewIngredients, policy => policy.RequireClaim(ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
