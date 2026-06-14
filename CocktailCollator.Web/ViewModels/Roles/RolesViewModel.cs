@@ -120,10 +120,9 @@ public class RolesViewModel
                 if (_ExistingRole != null)
                     _ExistingRole.Name = _Role.Name;
 
-                // Remove all existing claims and then add the claims they should have.
+                // Remove all existing permission claims and then add the claims they should have.
                 var _CurrentClaims = await this._roleManager.GetClaimsAsync(_Role);
-                var _PermissionClaims = _CurrentClaims.Where(c => c.Type == Infrastructure.Authentication.ClaimTypes.Permission);
-                foreach (var _Claim in _PermissionClaims)
+                foreach (var _Claim in _CurrentClaims.Where(c => c.Type == Infrastructure.Authentication.ClaimTypes.Permission))
                 {
                     var _ClaimResult = await this._roleManager.RemoveClaimAsync(_Role, _Claim);
                     _ClaimResults.Add(_ClaimResult);
