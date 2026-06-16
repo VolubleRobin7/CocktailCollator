@@ -33,6 +33,10 @@
                         </label>
                     </div>
                 }
+                @if (!this.FormModel.Roles.IsValid())
+                {
+                    <div class="text-danger">A user must have at least one role assigned.</div>
+                }
             </div>
 
             <FormChangeWrapper FormModel="this.FormModel">
@@ -41,7 +45,8 @@
                         Theme="ButtonTheme.Success"
                         Text="Save Roles"
                         class="mt-2"
-                        data-bs-dismiss="modal" />
+                        data-bs-dismiss="modal"
+                        disabled="@(!this.FormModel.IsValid())" />
             </FormChangeWrapper>
         </form>
     </Body>

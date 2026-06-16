@@ -13,6 +13,7 @@ public class RolesViewModel
 {
     private readonly IMapper _mapper;
     private readonly RoleManager<CocktailRole> _roleManager;
+    private readonly UserManager<CocktailUser> _userManager;
 
     public IAsyncRelayCommand<CreateRoleInputPort> CreateCommand { get; }
     public IAsyncRelayCommand<Guid> DeleteCommand { get; }
@@ -25,10 +26,12 @@ public class RolesViewModel
 
     public RolesViewModel(
         RoleManager<CocktailRole> roleManager,
+        UserManager<CocktailUser> userManager,
         IMapper mapper)
     {
         this._mapper = mapper;
         this._roleManager = roleManager;
+        this._userManager = userManager;
 
         this.CreateCommand = new AsyncRelayCommand<CreateRoleInputPort>(this.CreateRoleAsync);
         this.DeleteCommand = new AsyncRelayCommand<Guid>(this.DeleteRoleAsync);
@@ -174,6 +177,13 @@ public class RolesViewModel
             if (_Role is null)
             {
                 this.Error = "Role not found.";
+                return;
+            }
+
+            var _UsersInRole = await this._userManager.GetUsersInRoleAsync(_Role.Name ?? "");
+            if (_UsersInRole.Any())
+            {
+                this.Error = "Cannot delete a role that is currently assigned to one or more users.";
                 return;
             }
 
