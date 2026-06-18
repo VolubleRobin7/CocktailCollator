@@ -19,7 +19,7 @@
                         Title="Role Name" />
 
             <div class="form-check mt-3">
-                <input @bind="this.CreateRoleFormModel.HasEveryClaim.Input"
+                <input @bind="this.CreateRoleFormModel.HasEveryPermissionClaim.Input"
                        class="form-check-input"
                        id="createHasEveryClaim" 
                        type="checkbox" />
@@ -39,7 +39,7 @@
                         <input @bind:get="this.CreateRoleFormModel.Claims.Input.Contains(claim)"
                                @bind:set="(value) => this.OnClaimSet(claim, value)"
                                class="form-check-input"
-                               disabled="@this.CreateRoleFormModel.HasEveryClaim.Input"
+                               disabled="@this.CreateRoleFormModel.HasEveryPermissionClaim.Input"
                                id="@($"createClaim_{claim}")" 
                                type="checkbox" />
 

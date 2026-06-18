@@ -19,7 +19,7 @@
                         Title="Role Name" />
 
             <div class="form-check mt-3">
-                <input @bind="this.UpdateRoleFormModel.HasEveryClaim.Input"
+                <input @bind="this.UpdateRoleFormModel.HasEveryPermissionClaim.Input"
                        class="form-check-input"
                        id="updateHasEveryClaim" 
                        type="checkbox" />
@@ -39,7 +39,7 @@
                         <input @bind:get="this.UpdateRoleFormModel.Claims.Input.Contains(claim)"
                                @bind:set="(value) => this.OnClaimSet(claim, value)"
                                class="form-check-input"
-                               disabled="@this.UpdateRoleFormModel.HasEveryClaim.Input"
+                               disabled="@this.UpdateRoleFormModel.HasEveryPermissionClaim.Input"
                                id="@($"updateClaim_{claim}")" 
                                type="checkbox" />
 
@@ -96,13 +96,10 @@
         this.UpdateRoleFormModel.ResetToDefault();
         this.UpdateRoleFormModel.RoleId.Input = role.RoleId;
         this.UpdateRoleFormModel.Name.Input = role.Name;
+        this.UpdateRoleFormModel.HasEveryPermissionClaim.Input = role.HasEveryPermissionClaim;
         this.UpdateRoleFormModel.Claims.Input.Clear();
         foreach (var claim in role.Claims)
             this.UpdateRoleFormModel.Claims.Input.Add(claim);
-        
-        // If the role has all possible claims, set HasEveryClaim to true.
-        if (this.UpdateRoleFormModel.Claims.Input.Count == this._allClaims.Count)
-            this.UpdateRoleFormModel.HasEveryClaim.Input = true;
 
         return this._modal.OpenModalAsync();
     }

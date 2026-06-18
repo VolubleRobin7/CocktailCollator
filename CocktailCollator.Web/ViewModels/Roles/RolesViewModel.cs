@@ -51,7 +51,7 @@ public class RolesViewModel
                 return;
             }
 
-            var _Role = new CocktailRole { Name = inputPort.Name };
+            var _Role = new CocktailRole { Name = inputPort.Name, HasEveryPermissionClaim = inputPort.HasEveryPermissionClaim };
             var _Result = await this._roleManager.CreateAsync(_Role);
 
             if (_Result.Succeeded)
@@ -60,7 +60,7 @@ public class RolesViewModel
 
                 var _RoleViewModel = this._mapper.Map<RoleViewModel>(_Role);
 
-                var _ClaimsToAdd = inputPort.HasEveryClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
+                var _ClaimsToAdd = inputPort.HasEveryPermissionClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
                 foreach (var _Claim in _ClaimsToAdd)
                 {
                     var _ClaimResult = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
@@ -103,6 +103,8 @@ public class RolesViewModel
             }
 
             IdentityResult _Result = IdentityResult.Success;
+            bool _RoleUpdated = false;
+
             if (_Role.Name != inputPort.Name)
             {
                 if (await this._roleManager.RoleExistsAsync(inputPort.Name))
@@ -112,6 +114,17 @@ public class RolesViewModel
                 }
 
                 _Role.Name = inputPort.Name;
+                _RoleUpdated = true;
+            }
+
+            if (_Role.HasEveryPermissionClaim != inputPort.HasEveryPermissionClaim)
+            {
+                _Role.HasEveryPermissionClaim = inputPort.HasEveryPermissionClaim;
+                _RoleUpdated = true;
+            }
+
+            if (_RoleUpdated)
+            {
                 _Result = await this._roleManager.UpdateAsync(_Role);
             }
 
@@ -133,7 +146,7 @@ public class RolesViewModel
                         _ = _ExistingRole.Claims.Remove(_Claim.Value);
                 }
 
-                var _ClaimsToAdd = inputPort.HasEveryClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
+                var _ClaimsToAdd = inputPort.HasEveryPermissionClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
                 foreach (var _Claim in _ClaimsToAdd)
                 {
                     var _ClaimResult = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
