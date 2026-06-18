@@ -18,6 +18,7 @@ public class RolesViewModel
     public IAsyncRelayCommand<CreateRoleInputPort> CreateCommand { get; }
     public IAsyncRelayCommand<Guid> DeleteCommand { get; }
     public IAsyncRelayCommand GetCommand { get; }
+    public IAsyncRelayCommand<Guid> MarkAsDefaultCommand { get; }
     public IAsyncRelayCommand<UpdateRoleInputPort> UpdateCommand { get; }
 
     public List<RoleViewModel> Roles { get; private set; } = [];
@@ -36,6 +37,7 @@ public class RolesViewModel
         this.CreateCommand = new AsyncRelayCommand<CreateRoleInputPort>(this.CreateRoleAsync);
         this.DeleteCommand = new AsyncRelayCommand<Guid>(this.DeleteRoleAsync);
         this.GetCommand = new AsyncRelayCommand(this.GetRolesAsync);
+        this.MarkAsDefaultCommand = new AsyncRelayCommand<Guid>(this.MarkAsDefaultAsync);
         this.UpdateCommand = new AsyncRelayCommand<UpdateRoleInputPort>(this.UpdateRoleAsync);
     }
 
@@ -213,6 +215,51 @@ public class RolesViewModel
         catch (Exception ex)
         {
             this.Error = $"An error occurred while deleting the role: {ex.Message}";
+        }
+    }
+
+    private async Task MarkAsDefaultAsync(Guid roleId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            this.Error = string.Empty;
+
+            var _Roles = await this._roleManager.Roles.ToListAsync(cancellationToken);
+            foreach (var _Role in _Roles)
+            {
+                if (_Role.Id == roleId)
+                {
+                    if (!_Role.DefaultRole)
+                    {
+                        _Role.DefaultRole = true;
+                        var _Result = await this._roleManager.UpdateAsync(_Role);
+                        if (_Result.Succeeded)
+                        {
+                            var _RoleVm = this.Roles.FirstOrDefault(r => r.RoleId == _Role.Id);
+                            if (_RoleVm is not null)
+                                _RoleVm.IsDefaultRole = true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (_Role.DefaultRole)
+                    {
+                        _Role.DefaultRole = false;
+                        var _Result = await this._roleManager.UpdateAsync(_Role);
+                        if (_Result.Succeeded)
+                        {
+                            var _RoleVm = this.Roles.FirstOrDefault(r => r.RoleId == _Role.Id);
+                            if (_RoleVm is not null)
+                                _RoleVm.IsDefaultRole = false;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            this.Error = $"An error occurred while setting the default role: {ex.Message}";
         }
     }
 

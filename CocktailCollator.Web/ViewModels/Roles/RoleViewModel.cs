@@ -4,6 +4,7 @@ public class RoleViewModel
 {
     public List<string> Claims { get; set; } = [];
     public bool HasEveryPermissionClaim { get; set; }
+    public bool IsDefaultRole { get; set; }
     public required string Name { get; set; }
     public required Guid RoleId { get; set; }
 }

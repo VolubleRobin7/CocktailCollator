@@ -108,8 +108,23 @@
                             <span class="ms-2 text-muted">(@role.Claims.Count claims)</span>
                         </span>
 
-                        <div>
-                            <AuthorizeView Policy="@Policies.ManageRoles" Context="updateDeleteRoleContext">
+                        <div class="d-flex align-items-center">
+                            <AuthorizeView Policy="@Policies.ManageRoles" Context="manageRoleContext">
+                                <div class="form-check form-switch me-3 mb-0">
+                                    <input @onchange="() => this.RolesViewModel.MarkAsDefaultCommand.ExecuteAsync(role.RoleId)" 
+                                           checked="@role.IsDefaultRole" 
+                                           class="form-check-input" 
+                                           disabled="@role.IsDefaultRole"
+                                           id="defaultRoleSwitch_@role.RoleId"
+                                           role="switch" 
+                                           type="checkbox" />
+
+                                    <label class="form-check-label" 
+                                           for="defaultRoleSwitch_@role.RoleId">
+                                        Default
+                                    </label>
+                                </div>
+
                                 <Button @onclick="() => this._updateRoleModal.OpenModalAsync(role)"
                                         Size="ButtonSize.Small"
                                         Text="Update"

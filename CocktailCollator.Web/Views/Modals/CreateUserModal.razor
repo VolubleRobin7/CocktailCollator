@@ -91,6 +91,12 @@
     }
 
     public Task OpenModalAsync()
-        => this._modal.OpenModalAsync();
+    {
+        var _DefaultRole = this.RolesViewModel.Roles.FirstOrDefault(r => r.IsDefaultRole);
+        if (_DefaultRole is not null && this.CreateUserFormModel.Roles.Input.Count == 0)
+            this.CreateUserFormModel.Roles.Input.Add(new CreateUserFormModelRole { RoleId = _DefaultRole.RoleId, Name = _DefaultRole.Name });
+        
+        return this._modal.OpenModalAsync();
+    }
 
 }
