@@ -1,0 +1,99 @@
+@using CocktailCollator.Web.FormModels.Roles
+@using CocktailCollator.Web.ViewModels.Roles
+@using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Inputs
+@using CocktailCollator.Web.Views.Components.Modals
+@using CocktailCollator.Web.Views.Components.Helpers
+@using CocktailCollator.Web.Infrastructure.Authentication
+
+@inject CreateRoleFormModel CreateRoleFormModel
+@inject RolesViewModel ViewModel
+
+<Modal @ref="this._modal"
+       Title="Create Role">
+
+    <Body>
+        <form>
+            <InputField Input="this.CreateRoleFormModel.Name"
+                        InvalidMessage="Role name is required."
+                        Title="Role Name" />
+
+            <div class="form-check mt-3">
+                <input @bind="this.CreateRoleFormModel.HasEveryPermissionClaim.Input"
+                       class="form-check-input"
+                       id="createHasEveryClaim" 
+                       type="checkbox" />
+
+                <label class="form-check-label"
+                       for="createHasEveryClaim">
+                    Always has every Claim
+                </label>
+            </div>
+
+            <div class="mt-3">
+                <label class="form-label">Claims</label>
+
+                @foreach (var claim in this._allClaims)
+                {
+                    <div class="form-check">
+                        <input @bind:get="this.CreateRoleFormModel.Claims.Input.Contains(claim)"
+                               @bind:set="(value) => this.OnClaimSet(claim, value)"
+                               class="form-check-input"
+                               disabled="@this.CreateRoleFormModel.HasEveryPermissionClaim.Input"
+                               id="@($"createClaim_{claim}")" 
+                               type="checkbox" />
+
+                        <label class="form-check-label"
+                               for="@($"createClaim_{claim}")">
+                            @claim
+                        </label>
+                    </div>
+                }
+            </div>
+            @if (!this.CreateRoleFormModel.Claims.IsValid())
+            {
+                <div class="text-danger small mt-1">At least one claim must be selected.</div>
+            }
+
+            <FormChangeWrapper FormModel="this.CreateRoleFormModel">
+                <Button @onclick="this.OnClickCreate"
+                        Size="ButtonSize.Large"
+                        Text="Save"
+                        Theme="ButtonTheme.Success"
+                        class="mt-3"
+                        data-bs-dismiss="modal"
+                        disabled="@(!this.CreateRoleFormModel.IsValid())" />
+            </FormChangeWrapper>
+        </form>
+    </Body>
+
+</Modal>
+
+@code {
+    private List<string> _allClaims = ClaimValues.Permissions.GetAll();
+    private Modal _modal = default!;
+
+    [Parameter]
+    public EventCallback OnAfterCreation { get; set; }
+
+    private void OnClaimSet(string claim, bool value)
+    {
+        if (value && !this.CreateRoleFormModel.Claims.Input.Contains(claim))
+            this.CreateRoleFormModel.Claims.Input.Add(claim);
+        else if (!value && this.CreateRoleFormModel.Claims.Input.Contains(claim))
+            this.CreateRoleFormModel.Claims.Input.Remove(claim);
+    }
+
+    private async Task OnClickCreate()
+    {
+        await this.ViewModel.CreateCommand.ExecuteAsync(this.CreateRoleFormModel.ExtractToInputPort());
+        this.CreateRoleFormModel.ResetToDefault();
+        await this.OnAfterCreation.InvokeAsync();
+    }
+
+    public Task OpenModalAsync()
+    {
+        this.CreateRoleFormModel.ResetToDefault();
+        return this._modal.OpenModalAsync();
+    }
+}

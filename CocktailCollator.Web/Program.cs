@@ -74,13 +74,13 @@ if (builder.Configuration.GetValue<bool>("RunMigrationsOnStartup"))
     _DbContext.Database.Migrate();
 }
 
-// Create default admin user and roles if they don't exist
 using (var _Scope = app.Services.CreateScope())
 {
     var _UserManager = _Scope.ServiceProvider.GetRequiredService<UserManager<CocktailUser>>();
     var _RoleManager = _Scope.ServiceProvider.GetRequiredService<RoleManager<CocktailRole>>();
     var _DbContext = _Scope.ServiceProvider.GetRequiredService<CocktailDbContext>();
 
+    // Create default admin user and roles if they don't exist
     if (!_RoleManager.Roles.Any())
     {
         var adminRole = new CocktailRole { Name = "Admin" };
@@ -94,7 +94,7 @@ using (var _Scope = app.Services.CreateScope())
         _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
         _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.Manage));
 
-        var userRole = new CocktailRole { Name = "User" };
+        var userRole = new CocktailRole { Name = "User", DefaultRole = true };
         _ = await _RoleManager.CreateAsync(userRole);
         _ = await _RoleManager.AddClaimAsync(userRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
         _ = await _RoleManager.AddClaimAsync(userRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
@@ -122,6 +122,22 @@ using (var _Scope = app.Services.CreateScope())
             {
                 Console.WriteLine($"  - {_Error.Code}: {_Error.Description}");
             }
+        }
+    }
+
+    // Ensure roles with HasEveryPermissionClaim have all possible claims
+    var _RolesWithAllClaims = await _RoleManager.Roles.Where(r => r.HasEveryPermissionClaim).ToListAsync();
+    var _AllPossibleClaims = ClaimValues.Permissions.GetAll();
+
+    foreach (var _Role in _RolesWithAllClaims)
+    {
+        var _CurrentClaims = await _RoleManager.GetClaimsAsync(_Role);
+        var _CurrentClaimValues = _CurrentClaims.Where(c => c.Type == CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission).Select(c => c.Value).ToList();
+
+        var _MissingClaims = _AllPossibleClaims.Except(_CurrentClaimValues);
+        foreach (var _Claim in _MissingClaims)
+        {
+            await _RoleManager.AddClaimAsync(_Role, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
         }
     }
 }

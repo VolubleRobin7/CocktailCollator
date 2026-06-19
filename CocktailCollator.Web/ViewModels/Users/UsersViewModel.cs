@@ -37,8 +37,7 @@ public class UsersViewModel
         this._userManager = userManager;
         this._rolesViewModel = rolesViewModel;
 
-        this.CreateCommand = new AsyncRelayCommand<CreateUserInputPort>((inputPort, cancellationToken)
-            => this.CreateUserAsync(inputPort.Username, inputPort.Password, cancellationToken));
+        this.CreateCommand = new AsyncRelayCommand<CreateUserInputPort>(this.CreateUserAsync);
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>(this.DeleteUserAsync);
 
@@ -79,18 +78,42 @@ public class UsersViewModel
         }
     }
 
-    private async Task CreateUserAsync(string username, string password, CancellationToken cancellationToken)
+    private async Task CreateUserAsync(CreateUserInputPort inputPort, CancellationToken cancellationToken)
     {
         try
         {
             this.Error = string.Empty;
 
-            var _User = new CocktailUser { UserName = username, };
+            if (inputPort.Roles.Count == 0)
+            {
+                this.Error = "A user must have at least one role assigned.";
+                return;
+            }
 
-            var _Result = await this._userManager.CreateAsync(_User, password);
+            var _User = new CocktailUser { UserName = inputPort.Username, };
+
+            var _Result = await this._userManager.CreateAsync(_User, inputPort.Password);
 
             if (_Result.Succeeded)
-                this.Users.Add(this._mapper.Map<UserViewModel>(_User));
+            {
+                await this._rolesViewModel.GetCommand.ExecuteAsync(null);
+                var _TargetRoleNames = this._rolesViewModel.Roles
+                    .Where(r => inputPort.Roles.Contains(r.RoleId))
+                    .Select(r => r.Name);
+
+                var _RoleResult = await this._userManager.AddToRolesAsync(_User, _TargetRoleNames);
+                if (!_RoleResult.Succeeded)
+                {
+                    _ = await this._userManager.DeleteAsync(_User);
+                    var _RoleErrors = string.Join(", ", _RoleResult.Errors.Select(e => e.Description));
+                    this.Error = $"Failed to assign roles to the new user: {_RoleErrors}";
+                    return;
+                }
+
+                var _UserViewModel = this._mapper.Map<UserViewModel>(_User);
+                _UserViewModel.Roles = [.. this._rolesViewModel.Roles.Where(r => _TargetRoleNames.Contains(r.Name))];
+                this.Users.Add(_UserViewModel);
+            }
             else
             {
                 var _ErrorMessages = string.Join(", ", _Result.Errors.Select(e => e.Description));
@@ -171,6 +194,12 @@ public class UsersViewModel
             if (_User is null)
             {
                 this.Error = "User not found.";
+                return;
+            }
+
+            if (inputPort.Roles.Count == 0)
+            {
+                this.Error = "A user must have at least one role assigned.";
                 return;
             }
 

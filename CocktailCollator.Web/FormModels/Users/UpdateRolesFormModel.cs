@@ -10,7 +10,7 @@ public class UpdateRolesFormModel : IFormModel<UpdateRolesInputPort>
     private readonly IMapper _mapper;
 
     public InputProperty<ObservableCollection<UpdateRolesFormModelRole>> Roles { get; set; }
-        = new(() => [], (_) => true);
+        = new(() => [], input => input.Count > 0);
     public Guid UserId { get; set; } = Guid.Empty;
 
     public Action? OnChange { get; set; }

@@ -3,6 +3,7 @@ using CocktailCollator.Web.Common.Generics;
 using CocktailCollator.Web.Common.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using System.Collections.ObjectModel;
 
 namespace CocktailCollator.Web.FormModels.Users;
 
@@ -12,6 +13,8 @@ public class CreateUserFormModel : IFormModel<CreateUserInputPort>
     private readonly PasswordOptions _passwordOptions;
 
     public InputProperty<string> Password { get; set; }
+    public InputProperty<ObservableCollection<CreateUserFormModelRole>> Roles { get; set; }
+        = new(() => [], input => input.Count > 0);
     public InputProperty<string> Username { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
 
@@ -26,6 +29,8 @@ public class CreateUserFormModel : IFormModel<CreateUserInputPort>
         {
             OnChange = () => OnChange?.Invoke()
         };
+        this.Roles.OnChange = () => OnChange?.Invoke();
+        this.Roles.Input.CollectionChanged += (_, _) => OnChange?.Invoke();
         this.Username.OnChange = () => OnChange?.Invoke();
     }
 
@@ -33,12 +38,13 @@ public class CreateUserFormModel : IFormModel<CreateUserInputPort>
         => this._mapper.Map<CreateUserInputPort>(this);
 
     public bool IsValid()
-        => this.Username.IsValid() && this.Password.IsValid();
+        => this.Username.IsValid() && this.Password.IsValid() && this.Roles.IsValid();
 
     public void ResetToDefault()
     {
         this.Username.ResetToDefault();
         this.Password.ResetToDefault();
+        this.Roles.ResetToDefault();
     }
 
     private ValidationResult CheckPasswordPolicy(string input)
@@ -63,4 +69,10 @@ public class CreateUserFormModel : IFormModel<CreateUserInputPort>
 
         return new(true);
     }
+}
+
+public class CreateUserFormModelRole
+{
+    public Guid RoleId { get; set; }
+    public string Name { get; set; } = string.Empty;
 }

@@ -8,6 +8,7 @@ public class RoleProfile : Profile
     public RoleProfile()
     {
         _ = this.CreateMap<CocktailRole, RoleViewModel>()
-            .ForMember(d => d.RoleId, o => o.MapFrom(s => s.Id));
+            .ForMember(d => d.RoleId, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.IsDefaultRole, o => o.MapFrom(s => s.DefaultRole));
     }
 }
