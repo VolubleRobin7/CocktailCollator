@@ -83,16 +83,8 @@ using (var _Scope = app.Services.CreateScope())
     // Create default admin user and roles if they don't exist
     if (!_RoleManager.Roles.Any())
     {
-        var adminRole = new CocktailRole { Name = "Admin" };
+        var adminRole = new CocktailRole { Name = "Admin", HasEveryPermissionClaim = true };
         _ = await _RoleManager.CreateAsync(adminRole);
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Users.Manage));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Users.View));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Users.ChangePassword));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Recipes.Manage));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.Manage));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
-        _ = await _RoleManager.AddClaimAsync(adminRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.Manage));
 
         var userRole = new CocktailRole { Name = "User", DefaultRole = true };
         _ = await _RoleManager.CreateAsync(userRole);
