@@ -1,0 +1,14 @@
+::deep .menu-nav-link {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+}
+
+::deep .menu-nav-link.active,
+::deep .menu-nav-link:hover {
+    color: var(--bs-primary) !important;
+}

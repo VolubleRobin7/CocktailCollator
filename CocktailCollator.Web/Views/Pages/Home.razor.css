@@ -1,0 +1,17 @@
+.recipe-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+}
+
+.recipe-leader {
+    border-bottom: 2px dotted var(--bs-secondary);
+}
+
+.recipe-link-wrapper {
+    cursor: pointer;
+}
+
+.recipe-link-wrapper:hover .serif-heading {
+    color: var(--bs-link-color) !important;
+}

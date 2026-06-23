@@ -1,3 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+:root, 
+[data-bs-theme=light] {
+    /* Colors */
+    --bs-primary: #8b7355;
+    --bs-primary-rgb: 139, 115, 85;
+    --bs-secondary: #c5c1b5;
+    --bs-secondary-rgb: 197, 193, 181;
+    /* Body & Typography */
+    --bs-body-bg: #fdfbf7;
+    --bs-body-color: #2c2a26;
+    --bs-heading-color: #1a1917;
+    --bs-body-font-family: 'Inter', sans-serif;
+    /* Borders & Links */
+    --bs-border-color: #e0dbce;
+    --bs-link-color: #8b7355;
+    --bs-link-hover-color: #735f46;
+}
+
+h1, h2, h3, h4, h5, h6, .serif-heading {
+    font-family: 'Playfair Display', serif;
+}
+
+/* Override default Bootstrap button variants using their native CSS variables */
+.btn-primary {
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-bg: #735f46;
+    --bs-btn-hover-border-color: #735f46;
+    --bs-btn-active-bg: #61503b;
+    --bs-btn-active-border-color: #61503b;
+}
+
+.btn-secondary {
+    --bs-btn-bg: #fdfbf7;
+    --bs-btn-color: #2c2a26;
+    --bs-btn-border-color: var(--bs-secondary);
+    --bs-btn-hover-bg: #f4f0e6;
+    --bs-btn-hover-color: #1a1917;
+    --bs-btn-hover-border-color: var(--bs-primary);
+    --bs-btn-active-bg: #eaddc4;
+    --bs-btn-active-color: #1a1917;
+    --bs-btn-active-border-color: var(--bs-primary);
+}
+
+.list-group {
+    --bs-list-group-bg: transparent;
+}
+
+/* Validation and error boundary styles */
 h1:focus {
     outline: none;
 }
@@ -20,9 +71,9 @@ h1:focus {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
