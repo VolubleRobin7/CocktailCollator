@@ -15,3 +15,10 @@
 .recipe-link-wrapper:hover .serif-heading {
     color: var(--bs-link-color) !important;
 }
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
