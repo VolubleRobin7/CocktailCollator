@@ -1,4 +1,4 @@
-﻿@inject IJSRuntime JsRuntime
+@inject IJSRuntime JsRuntime
 
 <div aria-hidden="true"
      aria-labelledby="@this._LabelId"
@@ -9,20 +9,23 @@
      tabindex="-1">
 
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered @this.Size.CssClass">
-        <div class="modal-content">
-            <div class="modal-header">
+        <div class="modal-content position-relative">
 
-                <h3 class="modal-title"
-                    id="@this._LabelId">
-                    @this.Title
-                </h3>
+            <button aria-label="Close"
+                    class="btn-close position-absolute top-0 end-0 mt-3 me-3"
+                    style="z-index: 1055;"
+                    data-bs-dismiss="modal"
+                    type="button"></button>
 
-                <button aria-label="Close"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        type="button" />
-
-            </div>
+            @if (!string.IsNullOrWhiteSpace(this.Title))
+            {
+                <div class="modal-header pe-5">
+                    <h3 class="modal-title"
+                        id="@this._LabelId">
+                        @this.Title
+                    </h3>
+                </div>
+            }
 
             <div class="modal-body">
                 @this.Body
@@ -58,8 +61,8 @@
     [Parameter]
     public ModalSize Size { get; set; } = ModalSize.Medium;
 
-    [EditorRequired, Parameter]
-    public string Title { get; set; }
+    [Parameter]
+    public string? Title { get; set; }
 
     public async Task CloseModalAsync()
         => await this._JsModule.InvokeVoidAsync("closeModal", this._ModalId);
