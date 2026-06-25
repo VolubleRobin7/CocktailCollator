@@ -8,9 +8,6 @@
     border-bottom: 2px dotted var(--bs-secondary);
 }
 
-.recipe-link-wrapper {
-    cursor: pointer;
-}
-
 .recipe-link-wrapper:hover .serif-heading {
     color: var(--bs-link-color) !important;
+}
