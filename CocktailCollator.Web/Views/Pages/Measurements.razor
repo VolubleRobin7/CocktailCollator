@@ -11,37 +11,56 @@
 
 <PageTitle>Measurements</PageTitle>
 
-<div class="container pt-2">
+<div class="container pt-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <h4 class="serif-heading m-0">Measurements</h4>
 
-    <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
-            Theme="ButtonTheme.Secondary"
-            Text="Get Measurements" />
+        <div class="d-grid d-md-flex gap-2">
+            <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
+                    Text="Get Measurements"
+                    Theme="ButtonTheme.Primary" />
 
-    <AuthorizeView Policy="@Policies.ManageMeasurements">
-        <Button @onclick="() => this._createModal.OpenModalAsync()"
-                Text="Create Measurement"
-                Theme="ButtonTheme.Secondary" />
-    </AuthorizeView>
+            <AuthorizeView Policy="@Policies.ManageMeasurements">
+                <Button @onclick="() => this._createModal.OpenModalAsync()"
+                        Text="Create Measurement"
+                        Theme="ButtonTheme.Secondary" />
+            </AuthorizeView>
+        </div>
+    </div>
 
-    <ul class="list-group list-group-flush">
-        @foreach (var measurement in this.ViewModel.Measurements)
-        {
-            <li class="list-group-item">
-                <div class="d-flex justify-content-between">
-                    <span class="align-content-center">
-                        @measurement.Name
-                    </span>
-                    <AuthorizeView Policy="@Policies.ManageMeasurements">
-                        <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(measurement.MeasurementId)"
-                                Size="ButtonSize.Small"
-                                Theme="ButtonTheme.Danger"
-                                Text="Remove" />
-                    </AuthorizeView>
-                </div>
-            </li>
-        }
-    </ul>
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="border-bottom border-primary">
+                    <tr>
+                        <th class="border-0 px-4 py-3">Name</th>
+                        <th class="border-0 px-4 py-3">Abbreviation</th>
+                        <th class="border-0 px-4 py-3 text-end"></th>
+                    </tr>
+                </thead>
 
+                <tbody>
+                    @foreach (var measurement in this.ViewModel.Measurements)
+                    {
+                        <tr>
+                            <td class="px-4 py-3">Constant Name</td>
+                            <td class="px-4 py-3">@measurement.Name</td>
+
+                            <td class="px-4 py-3 text-end">
+                                <AuthorizeView Policy="@Policies.ManageMeasurements">
+                                    <span @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(measurement.MeasurementId)"
+                                          class="text-danger opacity-50 cursor-pointer user-select-none hover-opacity-100 fs-5 lh-1" 
+                                          title="Remove">
+                                        &times;
+                                    </span>
+                                </AuthorizeView>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <p>@this.ViewModel.Error</p>
