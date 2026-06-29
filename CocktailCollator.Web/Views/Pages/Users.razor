@@ -12,145 +12,232 @@
 
 <PageTitle>Users</PageTitle>
 
-<div class="container pt-2">
+<div class="container pt-4">
 
-    <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
-            Text="Get Accounts"
-            Theme="ButtonTheme.Secondary" />
+    <!-- Mobile Tabs Navigation -->
+    <div class="d-md-none mb-4 border-bottom">
+        <ul class="nav nav-tabs border-0">
+            <AuthorizeView Policy="@Policies.ViewRoles">
+                <li class="nav-item">
+                    <a @onclick="() => this._activeMobileTab = MobileTab.Roles" 
+                       class="nav-link cursor-pointer @(this._activeMobileTab == MobileTab.Roles ? "active bg-secondary rounded-top-3" : "text-muted")">
+                        Roles
+                    </a>
+                </li>
+            </AuthorizeView>
 
-    <AuthorizeView Policy="@Policies.ManageUsers">
-        <Button @onclick="() => this._createUserModal.OpenModalAsync()"
-                Text="Create User Account"
-                Theme="ButtonTheme.Secondary"
-                class="ms-2" />
-    </AuthorizeView>
-
-    <ul class="list-group list-group-flush mt-3">
-        @foreach (var user in this.ViewModel.Users)
-        {
-            <li class="list-group-item">
-                <div class="d-flex justify-content-between">
-                    <span class="align-content-center">
-                        @user.UserName
-                        @if (!string.IsNullOrEmpty(user.Email))
-                        {
-                            <span class="ms-2 text-muted">(@user.Email)</span>
-                        }
-                        @if (user.Roles != null && user.Roles.Any())
-                        {
-                            foreach (var _Role in user.Roles)
-                            {
-                                <span class="ms-2 badge bg-info text-dark">@_Role.Name</span>
-                            }
-                        }
-                    </span>
-                    <div>
-                        <AuthorizeView Policy="@Policies.ManageUsers">
-                            <Button @onclick="() => this._updateRolesModal.OpenModalAsync(user.UserId, user.Roles!)"
-                                    Size="ButtonSize.Small"
-                                    Text="Update Roles"
-                                    Theme="ButtonTheme.Secondary"
-                                    class="me-2" />
-                        </AuthorizeView>
-                        <AuthorizeView Policy="@Policies.ChangeUserPasswords">
-                            <Button @onclick="() => this._changePasswordModal.OpenModalAsync(user.UserId)"
-                                    Size="ButtonSize.Small"
-                                    Text="Change Password"
-                                    Theme="ButtonTheme.Secondary"
-                                    class="me-2" />
-                        </AuthorizeView>
-
-                        <AuthorizeView Policy="@Policies.ManageUsers">
-                            @if (user.UserId != this.ViewModel.CurrentUser?.UserId)
-                            {
-                                <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(user.UserId)"
-                                        Size="ButtonSize.Small"
-                                        Text="Delete"
-                                        Theme="ButtonTheme.Danger" />
-                            }
-                        </AuthorizeView>
-                    </div>
-                </div>
+            <li class="nav-item">
+                <a @onclick="() => this._activeMobileTab = MobileTab.Users" 
+                   class="nav-link cursor-pointer @(this._activeMobileTab == MobileTab.Users ? "active bg-secondary rounded-top-3" : "text-muted")">
+                    Users
+                </a>
             </li>
-        }
-    </ul>
-
-</div>
-
-@if (!string.IsNullOrEmpty(this.ViewModel.Error))
-{
-    <div class="alert alert-danger mt-3 ms-2 me-2" role="alert">
-        @this.ViewModel.Error
+        </ul>
     </div>
-}
 
-<AuthorizeView Policy="@Policies.ViewRoles">
-    <div class="container pt-2">
+    <div class="row">
+        
+        <!-- Left Pane: Roles -->
+        <AuthorizeView Policy="@Policies.ViewRoles">
+            <div class="col-md-4 col-lg-3 pe-md-4 @(this._activeMobileTab == MobileTab.Roles ? "" : "d-none d-md-block")">
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="serif-heading m-0">Roles</h4>
+                </div>
 
-        <Button @onclick="this.RolesViewModel.GetCommand.ExecuteAsync"
-                Text="Get Roles"
-                Theme="ButtonTheme.Secondary" />
+                <div class="d-grid gap-2 mb-4">
+                    <Button @onclick="this.RolesViewModel.GetCommand.ExecuteAsync"
+                            Text="Get Roles"
+                            Theme="ButtonTheme.Primary" />
 
-        <AuthorizeView Policy="@Policies.ManageRoles" Context="createRoleContext">
-            <Button @onclick="() => this._createRoleModal.OpenModalAsync()"
-                    Text="Create Role"
-                    Theme="ButtonTheme.Secondary"
-                    class="ms-2" />
+                    <AuthorizeView Context="createRoleContext" 
+                                   Policy="@Policies.ManageRoles">
+
+                        <Button @onclick="() => this._createRoleModal.OpenModalAsync()"
+                                Text="Create Role"
+                                Theme="ButtonTheme.Secondary" />
+
+                    </AuthorizeView>
+                </div>
+
+                <div class="list-group list-group-flush mb-3">
+                    @foreach (var role in this.RolesViewModel.Roles)
+                    {
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-0 bg-transparent border-bottom">
+                            <div>
+                                <span class="fw-medium">@role.Name</span>
+                                <div class="small text-muted">@role.Claims.Count claims</div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3">
+                                <AuthorizeView Context="manageRoleContext" 
+                                               Policy="@Policies.ManageRoles">
+
+                                    <div class="form-check form-switch m-0" 
+                                         title="Default Role">
+
+                                            <input @onchange="() => this.RolesViewModel.MarkAsDefaultCommand.ExecuteAsync(role.RoleId)" 
+                                                   checked="@role.IsDefaultRole" 
+                                               class="form-check-input m-0 mt-1 cursor-pointer" 
+                                                   disabled="@role.IsDefaultRole"
+                                                   id="defaultRoleSwitch_@role.RoleId"
+                                                   role="switch" 
+                                                   type="checkbox" />
+
+                                        <label class="form-check-label visually-hidden" 
+                                               for="defaultRoleSwitch_@role.RoleId">
+                                            Default
+                                        </label>
+
+                                    </div>
+
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-link text-dark text-decoration-none px-2" 
+                                                data-bs-toggle="dropdown" 
+                                                title="More options" 
+                                                type="button">
+                                            &#8942;
+                                        </button>
+
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                            <li>
+                                                <button @onclick="() => this._updateRoleModal.OpenModalAsync(role)" 
+                                                        class="dropdown-item">
+                                                    Update
+                                                </button>
+                                            </li>
+
+                                            <li>
+                                                <button @onclick="() => this.RolesViewModel.DeleteCommand.ExecuteAsync(role.RoleId)" 
+                                                        class="dropdown-item text-danger">
+                                                    Delete
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                </AuthorizeView>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(this.RolesViewModel.Error))
+                {
+                    <p class="text-danger small mt-3">@this.RolesViewModel.Error</p>
+                }
+            </div>
         </AuthorizeView>
 
-        <ul class="list-group list-group-flush mt-3">
-            @foreach (var role in this.RolesViewModel.Roles)
+        <!-- Right Pane: Users -->
+        <div class="col-md-8 col-lg-9 border-start ps-md-4 @(_activeMobileTab == MobileTab.Users ? "" : "d-none d-md-block")">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="serif-heading m-0">Users</h4>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row gap-2 mb-4">
+                <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
+                        Text="Get Accounts"
+                        Theme="ButtonTheme.Primary" />
+
+                <AuthorizeView Policy="@Policies.ManageUsers">
+                    <Button @onclick="() => this._createUserModal.OpenModalAsync()"
+                            Text="Create User Account"
+                            Theme="ButtonTheme.Secondary" />
+                </AuthorizeView>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle table-hover border-top">
+                    <tbody>
+                        @foreach (var user in this.ViewModel.Users)
+                        {
+                            <tr>
+                                <td style="width: 60px;" class="pe-0">
+                                    <img alt="@user.UserName" 
+                                         class="rounded-circle object-fit-cover shadow-sm border border-light" 
+                                         style="width: 48px; height: 48px;" 
+                                         src="/images/placeholder.jpg" />
+                                </td>
+
+                                <td>
+                                    <div class="fw-medium mb-1">@user.UserName</div>
+                                    @if (!string.IsNullOrEmpty(user.Email))
+                                    {
+                                        <div class="small text-muted lh-1 mb-2">@user.Email</div>
+                                    }
+                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                        @if (user.Roles != null && user.Roles.Any())
+                                        {
+                                            foreach (var _Role in user.Roles)
+                                            {
+                                                <span class="badge rounded-pill fw-normal bg-secondary text-dark">@_Role.Name</span>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+
+                                <td class="text-end" style="width: 50px;">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-link text-dark text-decoration-none px-2" 
+                                                data-bs-toggle="dropdown" 
+                                                title="More options" 
+                                                type="button">
+                                            &#8942;
+                                        </button>
+
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                            <AuthorizeView Policy="@Policies.ManageUsers">
+                                                <li>
+                                                    <button @onclick="() => this._updateRolesModal.OpenModalAsync(user.UserId, user.Roles!)" 
+                                                            class="dropdown-item">
+                                                        Update Roles
+                                                    </button>
+                                                </li>
+                                            </AuthorizeView>
+
+                                            <AuthorizeView Policy="@Policies.ChangeUserPasswords">
+                                                <li>
+                                                    <button @onclick="() => this._changePasswordModal.OpenModalAsync(user.UserId)" 
+                                                            class="dropdown-item">
+                                                        Change Password
+                                                    </button>
+                                                </li>
+                                            </AuthorizeView>
+
+                                            <AuthorizeView Policy="@Policies.ManageUsers">
+                                                @if (user.UserId != this.ViewModel.CurrentUser?.UserId)
+                                                {
+                                                    <li>
+                                                        <hr class="dropdown-divider">
+                                                    </li>
+
+                                                    <li>
+                                                        <button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(user.UserId)" 
+                                                                class="dropdown-item text-danger">
+                                                            Delete
+                                                        </button>
+                                                    </li>
+                                                }
+                                            </AuthorizeView>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!string.IsNullOrEmpty(this.ViewModel.Error))
             {
-                <li class="list-group-item">
-                    <div class="d-flex justify-content-between">
-                        <span class="align-content-center">
-                            @role.Name
-                            <span class="ms-2 text-muted">(@role.Claims.Count claims)</span>
-                        </span>
-
-                        <div class="d-flex align-items-center">
-                            <AuthorizeView Policy="@Policies.ManageRoles" Context="manageRoleContext">
-                                <div class="form-check form-switch me-3 mb-0">
-                                    <input @onchange="() => this.RolesViewModel.MarkAsDefaultCommand.ExecuteAsync(role.RoleId)" 
-                                           checked="@role.IsDefaultRole" 
-                                           class="form-check-input" 
-                                           disabled="@role.IsDefaultRole"
-                                           id="defaultRoleSwitch_@role.RoleId"
-                                           role="switch" 
-                                           type="checkbox" />
-
-                                    <label class="form-check-label" 
-                                           for="defaultRoleSwitch_@role.RoleId">
-                                        Default
-                                    </label>
-                                </div>
-
-                                <Button @onclick="() => this._updateRoleModal.OpenModalAsync(role)"
-                                        Size="ButtonSize.Small"
-                                        Text="Update"
-                                        Theme="ButtonTheme.Secondary"
-                                        class="me-2" />
-
-                                <Button @onclick="() => this.RolesViewModel.DeleteCommand.ExecuteAsync(role.RoleId)"
-                                        Size="ButtonSize.Small"
-                                        Text="Delete"
-                                        Theme="ButtonTheme.Danger" />
-                            </AuthorizeView>
-                        </div>
-                    </div>
-                </li>
+                <p class="text-danger small mt-3">@this.ViewModel.Error</p>
             }
-        </ul>
 
-    </div>
-
-    @if (!string.IsNullOrEmpty(this.RolesViewModel.Error))
-    {
-        <div class="alert alert-danger mt-3 ms-2 me-2" role="alert">
-            @this.RolesViewModel.Error
         </div>
-    }
-</AuthorizeView>
+    </div>
+</div>
 
 <CreateUserModal @ref="this._createUserModal"
                  OnAfterCreation="this.StateHasChanged" />
@@ -167,6 +254,13 @@
                  OnAfterUpdate="this.StateHasChanged" />
 
 @code {
+    private enum MobileTab
+    {
+        Roles,
+        Users
+    }
+
+    private MobileTab _activeMobileTab = MobileTab.Roles;
     private ChangePasswordModal _changePasswordModal = default!;
     private CreateRoleModal _createRoleModal = default!;
     private CreateUserModal _createUserModal = default!;
