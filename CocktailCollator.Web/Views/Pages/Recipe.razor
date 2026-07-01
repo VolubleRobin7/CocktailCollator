@@ -1,0 +1,148 @@
+@using CocktailCollator.Web.ViewModels.Recipes
+@using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Infrastructure.Authentication
+
+@inject NavigationManager NavigationManager
+@inject RecipesViewModel ViewModel
+
+@page "/recipe/{RecipeId:guid}"
+
+<PageTitle>@(this._recipe?.Name ?? "Recipe Details")</PageTitle>
+
+<div class="container pt-4">
+    <div class="mb-4">
+        <Button @onclick="GoBack" 
+                Text="← Back to Recipes" 
+                Theme="ButtonTheme.Secondary" />
+    </div>
+
+    @if (this._recipe is null)
+    {
+        if (this._isLoading)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <p>Recipe not found.</p>
+        }
+    }
+    else
+    {
+        @* Mobile Title & Metadata *@
+        <div class="d-md-none text-center mb-4">
+            <h2 class="serif-heading display-5 fw-semibold mb-2">
+                @this._recipe.Name
+            </h2>
+
+            <div class="d-flex justify-content-center gap-3 text-secondary mt-2 small">
+                <span>★★★★☆ 4.5</span>
+                <span>45 mins</span>
+                <span>Serves 4</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-5 mb-4">
+                <img alt="@this._recipe.Name"
+                     class="w-100 rounded-3 shadow-sm object-fit-cover"
+                     src="/images/placeholder.jpg" />
+            </div>
+
+            <div class="col-md-7 ps-md-4">
+                @* Desktop Title & Metadata *@
+                <div class="d-none d-md-block mb-4 pb-3 pt-2 text-center">
+                    <h2 class="serif-heading display-4 fw-semibold mb-2">
+                        @this._recipe.Name
+                    </h2>
+
+                    <div class="text-primary d-flex justify-content-center gap-4 mt-3">
+                        <span>★★★★☆ 4.5</span>
+                        <span>45 mins</span>
+                        <span>Serves 4</span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-5 mb-4 mb-lg-0 pe-lg-4">
+                        <h4 class="serif-heading mb-3 pb-2 border-bottom">Ingredients</h4>
+                        
+                        <ul class="list-unstyled">
+                            @foreach (var ingredient in this._recipe.Ingredients ?? [])
+                            {
+                                <li class="mb-2 pb-2 border-bottom border-light d-flex justify-content-between align-items-center">
+                                    <span class="fw-medium text-dark">
+                                        @ingredient.Ingredient.Name
+                                    </span>
+
+                                    <span class="text-secondary small">
+                                        @ingredient.Amount @ingredient.Measurement.Name
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    
+                    <div class="col-lg-7">
+                        <h4 class="serif-heading mb-3 pb-2 border-bottom">Instructions</h4>
+                        
+                        <ol class="list-unstyled">
+                            @foreach (var step in this._recipe.Steps?.OrderBy(step => step.Order).ToList() ?? [])
+                            {
+                                <li class="mb-4 d-flex">
+                                    <div class="me-3 mt-1">
+                                        <span class="step-number d-flex align-items-center justify-content-center rounded-circle bg-primary text-white">
+                                            @(step.Order + 1)
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <p class="mb-0 text-dark">
+                                            @step.Instruction
+                                        </p>
+                                    </div>
+                                </li>
+                            }
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 py-3 border-top d-flex justify-content-end">
+            <AuthorizeView Policy="@Policies.ManageRecipes">
+                <Button @onclick="DeleteRecipe"
+                        Text="Delete Recipe"
+                        Theme="ButtonTheme.Danger" />
+            </AuthorizeView>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isLoading = true;
+    private RecipeViewModel? _recipe;
+
+    [Parameter]
+    public Guid RecipeId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!this.ViewModel.Recipes.Any())
+        {
+            await this.ViewModel.GetCommand.ExecuteAsync(null);
+        }
+        this._recipe = this.ViewModel.Recipes.FirstOrDefault(r => r.RecipeId == this.RecipeId);
+
+        this._isLoading = false;
+    }
+
+    private void GoBack()
+        => this.NavigationManager.NavigateTo("/");
+
+    private async Task DeleteRecipe()
+    {
+        await this.ViewModel.DeleteCommand.ExecuteAsync(this.RecipeId);
+        this.NavigationManager.NavigateTo("/");
+    }
+}
