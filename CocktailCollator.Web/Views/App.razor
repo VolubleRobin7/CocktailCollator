@@ -1,4 +1,4 @@
-﻿@using Pages.Static
+@using Pages.Static
 
 <!DOCTYPE html>
 <html lang="en">
@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="CocktailCollator.Web.styles.css" />
-    <HeadOutlet />
+    <HeadOutlet @rendermode="this.PageRenderMode()" />
 </head>
 
 <body>
