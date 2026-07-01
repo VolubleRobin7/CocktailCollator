@@ -4,7 +4,6 @@
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Modals
 
-@inject CreateRecipeFormModel CreateRecipeFormModel
 @inject RecipeCategoriesViewModel RecipeCategoriesViewModel
 @inject RecipesViewModel ViewModel
 
@@ -47,15 +46,6 @@
                                     </div>
 
                                 </a>
-                                
-                                <AuthorizeView Policy="@Policies.ManageRecipes">
-                                    <div class="mt-2">
-                                        <Button @onclick="() => this.OpenUpdateRecipeModal(recipe)"
-                                                Size="ButtonSize.Small"
-                                                Text="Edit"
-                                                Theme="ButtonTheme.Secondary" />
-                                    </div>
-                                </AuthorizeView>
                             </div>
                         </div>
                     }
@@ -125,19 +115,10 @@
 <CreateRecipeModal @ref="this._createRecipeModal"
                    OnAfterCreation="this.StateHasChanged" />
 
-<UpdateRecipeModal @ref="this._updateRecipeModal"
-                   OnAfterUpdate="this.StateHasChanged" />
-
 <CreateRecipeCategoryModal @ref="this._createRecipeCategoryModal"
                            OnAfterCreation="this.StateHasChanged" />
 
 @code {
     private CreateRecipeCategoryModal _createRecipeCategoryModal = default!;
     private CreateRecipeModal _createRecipeModal = default!;
-    private UpdateRecipeModal _updateRecipeModal = default!;
-
-    private async Task OpenUpdateRecipeModal(RecipeViewModel recipe)
-    {
-        await this._updateRecipeModal.OpenModalAsync(recipe);
-    }
 }

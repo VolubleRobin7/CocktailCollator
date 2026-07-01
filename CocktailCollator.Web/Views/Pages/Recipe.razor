@@ -1,6 +1,7 @@
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Infrastructure.Authentication
+@using CocktailCollator.Web.Views.Modals
 
 @inject NavigationManager NavigationManager
 @inject RecipesViewModel ViewModel
@@ -109,8 +110,12 @@
             </div>
         </div>
 
-        <div class="mt-5 py-3 border-top d-flex justify-content-end">
+        <div class="mt-5 py-3 border-top d-flex justify-content-between align-items-center">
             <AuthorizeView Policy="@Policies.ManageRecipes">
+                <Button @onclick="() => this.OpenUpdateRecipeModal(this._recipe!)"
+                        Text="Edit"
+                        Theme="ButtonTheme.Secondary" />
+
                 <Button @onclick="DeleteRecipe"
                         Text="Delete Recipe"
                         Theme="ButtonTheme.Danger" />
@@ -119,9 +124,14 @@
     }
 </div>
 
+<UpdateRecipeModal @ref="this._updateRecipeModal"
+                   OnAfterUpdate="this.StateHasChanged" />
+
+
 @code {
     private bool _isLoading = true;
     private RecipeViewModel? _recipe;
+    private UpdateRecipeModal _updateRecipeModal = default!;
 
     [Parameter]
     public Guid RecipeId { get; set; }
@@ -144,5 +154,10 @@
     {
         await this.ViewModel.DeleteCommand.ExecuteAsync(this.RecipeId);
         this.NavigationManager.NavigateTo("/");
+    }
+
+    private async Task OpenUpdateRecipeModal(RecipeViewModel recipe)
+    {
+        await this._updateRecipeModal.OpenModalAsync(recipe);
     }
 }
