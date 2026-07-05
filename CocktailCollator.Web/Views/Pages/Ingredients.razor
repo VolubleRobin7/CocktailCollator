@@ -20,7 +20,7 @@
         
         <!-- Left Pane: Categories -->
         <div class="col-md-4 col-lg-3 pe-md-4">
-            <h4 class="serif-heading mb-4">Categories</h4>
+            <h4 class="mb-4">Categories</h4>
             
             <div class="d-grid gap-2 mb-4">
                 <Button @onclick="this.IngredientCategoriesViewModel.GetCommand.ExecuteAsync"
@@ -57,7 +57,7 @@
         <!-- Right Pane: Ingredients -->
         <div class="col-md-8 col-lg-9 border-start ps-md-4">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-                <h4 class="serif-heading m-0">Ingredients</h4>
+                <h4 class="m-0">Ingredients</h4>
 
                 <div class="d-grid d-md-flex gap-2">
                     <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
@@ -76,7 +76,7 @@
                 {
                     <div class="col">
                         <article @onclick="() => this.OpenUpdateIngredientModalAsync(ingredient.IngredientId)" 
-                                 class="card h-100 shadow-sm ingredient-card border-0 bg-white">
+                                 class="card h-100 shadow-sm ingredient-card border-0">
 
                             <div class="card-body position-relative d-flex flex-row align-items-center gap-3">
                                 <AuthorizeView Policy="@Policies.ManageIngredients">
@@ -97,7 +97,7 @@
                                 </div>
 
                                 <div class="d-flex flex-column text-start flex-grow-1 w-100">
-                                    <h5 class="card-title serif-heading mb-1 fs-6 pe-3">@ingredient.Name</h5>
+                                    <h5 class="card-title mb-1 fs-6 pe-3">@ingredient.Name</h5>
 
                                     @if (ingredient.Category is not null)
                                     {
