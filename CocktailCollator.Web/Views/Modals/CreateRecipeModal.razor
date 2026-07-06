@@ -1,4 +1,4 @@
-﻿@using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
@@ -61,13 +61,13 @@
                             <div class="btn-group">
                                 <Button @onclick="() => this.MoveStepUp(step)" 
                                         Size="ButtonSize.Small"
-                                        Text="Up"
+                                        Text="▲"
                                         Theme="ButtonTheme.Secondary"
                                         disabled="@(step.Order.Input <= 0)" />
 
                                 <Button @onclick="() => this.MoveStepDown(step)"
                                         Size="ButtonSize.Small"
-                                        Text="Down"
+                                        Text="▼"
                                         Theme="ButtonTheme.Secondary"
                                         disabled="@(step.Order.Input >= this.CreateRecipeFormModel.Steps.Input.Count - 1)" />
                             </div>

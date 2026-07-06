@@ -104,13 +104,13 @@
                                 <Button @onclick="() => this.MoveStepUp(step)"
                                         Size="ButtonSize.Small"
                                         Theme="ButtonTheme.Secondary"
-                                        Text="Up"
+                                        Text="▲"
                                         disabled="@(step.Order.Input <= 0)" />
 
                                 <Button @onclick="() => this.MoveStepDown(step)"
                                         Size="ButtonSize.Small"
                                         Theme="ButtonTheme.Secondary"
-                                        Text="Down"
+                                        Text="▼"
                                         disabled="@(step.Order.Input >= this.UpdateRecipeFormModel.Steps.Input.Count - 1)" />
                             </div>
 
