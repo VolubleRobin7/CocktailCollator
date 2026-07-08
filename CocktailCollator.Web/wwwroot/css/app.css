@@ -79,6 +79,7 @@ h1:focus {
     border-color: #929292;
 }
 
+/* General styles */
 .cursor-pointer {
     cursor: pointer;
 }

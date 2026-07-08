@@ -18,8 +18,7 @@
         <div class="col-md-8 pe-md-5">
             @if (this.ViewModel.Recipes.Any())
             {
-                var groupedRecipes = this.ViewModel.Recipes.GroupBy(r => r.Category?.Name ?? "Uncategorized");
-                foreach (var group in groupedRecipes)
+                foreach (var group in this.ViewModel.Recipes.GroupBy(r => r.Category?.Name ?? "Uncategorized"))
                 {
                     <h2 class="fs-2 mt-4 mb-4 border-bottom pb-2">@group.Key</h2>
                     
@@ -36,7 +35,7 @@
 
                                     <div class="d-flex align-items-baseline w-100">
                                         <h3 class="fs-5 fw-semibold m-0 text-nowrap">@recipe.Name</h3>
-                                        <div class="recipe-leader flex-grow-1 mx-2"></div>
+                                        <div class="recipe-leader flex-grow-1 mx-2" />
                                         <div class="fs-6 fw-medium text-secondary text-nowrap">45 mins</div>
                                     </div>
 

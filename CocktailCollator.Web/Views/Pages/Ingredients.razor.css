@@ -7,3 +7,13 @@
     transform: translateY(-2px);
     box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
 }
+
+.ingredient-thumb {
+    height: 80px;
+    width: 80px;
+}
+
+.ingredient-category {
+    background-color: var(--bs-secondary);
+    color: var(--bs-body-color);
+}

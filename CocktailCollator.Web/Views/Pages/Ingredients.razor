@@ -89,10 +89,8 @@
                                 </AuthorizeView>
 
                                 <div class="flex-shrink-0">
-
                                     <img alt="@ingredient.Name" 
-                                         class="rounded-circle object-fit-cover shadow-sm border border-light" 
-                                         style="width: 80px; height: 80px;" 
+                                         class="rounded-circle object-fit-cover shadow-sm border border-light ingredient-thumb" 
                                          src="/images/placeholder.jpg" />
                                 </div>
 
@@ -102,8 +100,7 @@
                                     @if (ingredient.Category is not null)
                                     {
                                         <div class="mt-1">
-                                            <span class="badge rounded-pill fw-normal" 
-                                                  style="background-color: var(--bs-secondary); color: var(--bs-body-color);">
+                                            <span class="badge rounded-pill fw-normal ingredient-category">
                                                 @ingredient.Category.Name
                                             </span>
                                         </div>

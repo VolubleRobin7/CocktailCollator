@@ -12,7 +12,7 @@
 
 <div class="container">
     <div class="mb-4">
-        <Button @onclick="GoBack" 
+        <Button @onclick="this.GoBack" 
                 Text="← Back to Recipes" 
                 Theme="ButtonTheme.Secondary" />
     </div>
@@ -73,11 +73,11 @@
                             {
                                 <li class="mb-2 pb-2 border-bottom border-light d-flex justify-content-between align-items-center">
                                     <span class="fw-medium">
-                                        @ingredient.Ingredient.Name
+                                        @(ingredient.Ingredient?.Name ?? "")
                                     </span>
 
                                     <span class="text-secondary small">
-                                        @ingredient.Amount @ingredient.Measurement.Name
+                                        @ingredient.Amount @(ingredient.Measurement?.Name ?? "")
                                     </span>
                                 </li>
                             }
@@ -112,11 +112,11 @@
 
         <div class="mt-5 py-3 border-top d-flex justify-content-between align-items-center">
             <AuthorizeView Policy="@Policies.ManageRecipes">
-                <Button @onclick="() => this.OpenUpdateRecipeModal(this._recipe!)"
+                <Button @onclick="() => this.OpenUpdateRecipeModal(this._recipe)"
                         Text="Edit"
                         Theme="ButtonTheme.Secondary" />
 
-                <Button @onclick="DeleteRecipe"
+                <Button @onclick="this.DeleteRecipe"
                         Text="Delete Recipe"
                         Theme="ButtonTheme.Danger" />
             </AuthorizeView>
@@ -126,7 +126,6 @@
 
 <UpdateRecipeModal @ref="this._updateRecipeModal"
                    OnAfterUpdate="this.StateHasChanged" />
-
 
 @code {
     private bool _isLoading = true;
@@ -139,11 +138,9 @@
     protected override async Task OnInitializedAsync()
     {
         if (!this.ViewModel.Recipes.Any())
-        {
             await this.ViewModel.GetCommand.ExecuteAsync(null);
-        }
+        
         this._recipe = this.ViewModel.Recipes.FirstOrDefault(r => r.RecipeId == this.RecipeId);
-
         this._isLoading = false;
     }
 

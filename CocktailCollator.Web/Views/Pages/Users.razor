@@ -78,7 +78,7 @@
 
                                             <input @onchange="() => this.RolesViewModel.MarkAsDefaultCommand.ExecuteAsync(role.RoleId)" 
                                                    checked="@role.IsDefaultRole" 
-                                               class="form-check-input m-0 mt-1 cursor-pointer" 
+                                                   class="form-check-input m-0 mt-1 cursor-pointer" 
                                                    disabled="@role.IsDefaultRole"
                                                    id="defaultRoleSwitch_@role.RoleId"
                                                    role="switch" 
@@ -154,10 +154,9 @@
                         @foreach (var user in this.ViewModel.Users)
                         {
                             <tr>
-                                <td style="width: 60px;" class="pe-0">
+                                <td class="pe-0 user-thumb">
                                     <img alt="@user.UserName" 
                                          class="rounded-circle object-fit-cover shadow-sm border border-light" 
-                                         style="width: 48px; height: 48px;" 
                                          src="/images/placeholder.jpg" />
                                 </td>
 
@@ -178,7 +177,7 @@
                                     </div>
                                 </td>
 
-                                <td class="text-end" style="width: 50px;">
+                                <td class="text-end">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-link text-dark text-decoration-none px-2" 
                                                 data-bs-toggle="dropdown" 
