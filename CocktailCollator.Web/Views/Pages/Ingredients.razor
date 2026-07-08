@@ -1,9 +1,11 @@
 @using CocktailCollator.Web.ViewModels.IngredientCategories
 @using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.Views.Components.Buttons
-@using CocktailCollator.Web.Views.Components.Navbars
 @using CocktailCollator.Web.Views.Modals
+@using Microsoft.AspNetCore.Components.Authorization
 
+@inject IAuthorizationService AuthorizationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IngredientsViewModel ViewModel
 @inject IngredientCategoriesViewModel IngredientCategoriesViewModel
 
@@ -13,81 +15,109 @@
 
 <PageTitle>Ingredients</PageTitle>
 
-<div class="container pt-2">
-
-    <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
-            Theme="ButtonTheme.Secondary"
-            Text="Get Ingredients" />
-
-    <ul class="list-group list-group-flush">
-        @foreach (var ingredient in this.ViewModel.Ingredients)
-        {
-            <li class="list-group-item">
-                <div class="d-flex justify-content-between">
-                    <span class="align-content-center">
-                        @ingredient.Name
-
-                        @if (ingredient.Category is not null)
-                        {
-                            <span class="ms-1 badge text-bg-info">@ingredient.Category.Name</span>
-                        }
-                    </span>
-                    <AuthorizeView Policy="@Policies.ManageIngredients">
-                        <div>
-                            <Button @onclick="() => this._updateIngredientModal.OpenModalAsync(ingredient.IngredientId)"
-                                    Size="ButtonSize.Small"
-                                    Theme="ButtonTheme.Secondary"
-                                    Text="Edit" />
-
-                            <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(ingredient.IngredientId)"
-                                    Size="ButtonSize.Small"
-                                    Theme="ButtonTheme.Danger"
-                                    Text="Remove" />
-                        </div>
-                    </AuthorizeView>
-                </div>
-            </li>
-        }
-    </ul>
-
-</div>
-
-<p>@this.ViewModel.Error</p>
-
-<div class="container pt-2">
-
-    <Button @onclick="this.IngredientCategoriesViewModel.GetCommand.ExecuteAsync"
-            Theme="ButtonTheme.Secondary"
-            Text="Get Ingredient Categories" />
+<div class="container">
+    <div class="row">
+        
+        <!-- Left Pane: Categories -->
+        <div class="col-md-4 col-lg-3 pe-md-4">
+            <h4 class="mb-4">Categories</h4>
             
-    <AuthorizeView Policy="@Policies.ManageIngredients">
-        <Button @onclick="() => this._createIngredientCategoryModal.OpenModalAsync()"
-                Text="Create Ingredient Category"
-                Theme="ButtonTheme.Secondary" />
-    </AuthorizeView>
+            <div class="d-grid gap-2 mb-4">
+                <Button @onclick="this.IngredientCategoriesViewModel.GetCommand.ExecuteAsync"
+                        Text="Get Categories"
+                        Theme="ButtonTheme.Primary" />
 
-    <ul class="list-group list-group-flush">
-        @foreach (var ingredientCategory in this.IngredientCategoriesViewModel.IngredientCategories)
-        {
-            <li class="list-group-item">
-                <div class="d-flex justify-content-between">
-                    <span class="align-content-center">
-                        @ingredientCategory.Name
-                    </span>
+                <AuthorizeView Policy="@Policies.ManageIngredients">
+                    <Button @onclick="() => this._createIngredientCategoryModal.OpenModalAsync()"
+                            Text="Create Category"
+                            Theme="ButtonTheme.Secondary" />
+                </AuthorizeView>
+            </div>
+
+            <div class="list-group list-group-flush mb-3">
+                @foreach (var ingredientCategory in this.IngredientCategoriesViewModel.IngredientCategories)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-0 bg-transparent border-bottom">
+                        <span class="fw-medium">@ingredientCategory.Name</span>
+
+                        <AuthorizeView Policy="@Policies.ManageIngredients">
+                            <span @onclick="() => this.IngredientCategoriesViewModel.DeleteCommand.ExecuteAsync(ingredientCategory.IngredientCategoryId)"
+                                  class="text-danger opacity-50 cursor-pointer user-select-none hover-opacity-100 fs-5 lh-1" 
+                                  title="Remove">
+                                &times;
+                            </span>
+                        </AuthorizeView>
+                    </div>
+                }
+            </div>
+            
+            <p class="text-danger small">@this.IngredientCategoriesViewModel.Error</p>
+        </div>
+
+        <!-- Right Pane: Ingredients -->
+        <div class="col-md-8 col-lg-9 border-start ps-md-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <h4 class="m-0">Ingredients</h4>
+
+                <div class="d-grid d-md-flex gap-2">
+                    <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
+                            Text="Get Ingredients"
+                            Theme="ButtonTheme.Primary" />
+
                     <AuthorizeView Policy="@Policies.ManageIngredients">
-                        <Button @onclick="() => this.IngredientCategoriesViewModel.DeleteCommand.ExecuteAsync(ingredientCategory.IngredientCategoryId)"
-                                Size="ButtonSize.Small"
-                                Theme="ButtonTheme.Danger"
-                                Text="Remove" />
+                        <Button Text="Create Ingredient"
+                                Theme="ButtonTheme.Secondary" />
                     </AuthorizeView>
                 </div>
-            </li>
-        }
-    </ul>
+            </div>
 
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                @foreach (var ingredient in this.ViewModel.Ingredients)
+                {
+                    <div class="col">
+                        <article @onclick="() => this.OpenUpdateIngredientModalAsync(ingredient.IngredientId)" 
+                                 class="card h-100 shadow-sm ingredient-card border-0">
+
+                            <div class="card-body position-relative d-flex flex-row align-items-center gap-3">
+                                <AuthorizeView Policy="@Policies.ManageIngredients">
+                                    <span @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(ingredient.IngredientId)"
+                                          @onclick:stopPropagation="true"
+                                          class="text-danger position-absolute top-0 end-0 m-2 opacity-50 cursor-pointer user-select-none hover-opacity-100 fs-5 lh-1"
+                                          title="Remove">
+                                        &times;
+                                    </span>
+                                </AuthorizeView>
+
+                                <div class="flex-shrink-0">
+                                    <img alt="@ingredient.Name" 
+                                         class="rounded-circle object-fit-cover shadow-sm border border-light ingredient-thumb" 
+                                         src="/images/placeholder.jpg" />
+                                </div>
+
+                                <div class="d-flex flex-column text-start flex-grow-1 w-100">
+                                    <h5 class="card-title mb-1 fs-6 pe-3">@ingredient.Name</h5>
+
+                                    @if (ingredient.Category is not null)
+                                    {
+                                        <div class="mt-1">
+                                            <span class="badge rounded-pill fw-normal ingredient-category">
+                                                @ingredient.Category.Name
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                        </article>
+                    </div>
+                }
+            </div>
+
+            <p class="text-danger mt-3 small">@this.ViewModel.Error</p>
+        </div>
+        
+    </div>
 </div>
-
-<p>@this.IngredientCategoriesViewModel.Error</p>
 
 <CreateIngredientCategoryModal @ref="this._createIngredientCategoryModal"
                                OnAfterCreation="this.StateHasChanged" />
@@ -96,6 +126,20 @@
                        OnAfterUpdate="this.StateHasChanged" />
 
 @code {
+    private bool _canManageIngredients;
     private CreateIngredientCategoryModal _createIngredientCategoryModal = default!;
     private UpdateIngredientModal _updateIngredientModal = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authResult = await this.AuthorizationService.AuthorizeAsync(authState.User, Policies.ManageIngredients);
+        this._canManageIngredients = authResult.Succeeded;
+    }
+
+    private async Task OpenUpdateIngredientModalAsync(Guid ingredientId)
+    {
+        if (this._canManageIngredients)
+            await this._updateIngredientModal.OpenModalAsync(ingredientId);
+    }
 }

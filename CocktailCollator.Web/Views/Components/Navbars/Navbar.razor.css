@@ -1,0 +1,31 @@
+.menu-subtitle {
+    letter-spacing: 0.2em;
+}
+
+.menu-top-right a {
+    color: var(--bs-body-color);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.menu-top-right a:hover {
+    color: var(--bs-heading-color);
+}
+
+.menu-toggler {
+    background: transparent;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    color: var(--bs-body-color);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.menu-toggler:active {
+    background-color: var(--bs-border-color);
+}

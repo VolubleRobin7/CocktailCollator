@@ -3,29 +3,90 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
-<nav class="navbar navbar-expand-lg bg-body-secondary">
-    <div class="container">
-        <a class="navbar-brand"
-           href="/">
-            Cocktail Collator
-        </a>
+<header class="text-center pt-3 pb-3 position-relative container">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <div>
+            <button @onclick="ToggleNavMenu"
+                    class="menu-toggler d-md-none border"
+                    type="button">
 
-        <button aria-controls="navbarLinks"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-                class="navbar-toggler"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarLinks"
-                type="button">
+                @* Burger menu icon *@
+                <svg fill="#2c2a26"
+                     height="24"
+                     viewBox="0 0 100 80"
+                     width="24">
+                    <rect height="10"
+                          rx="5"
+                          width="100"></rect>
+                    <rect height="10"
+                          rx="5"
+                          width="100"
+                          y="30"></rect>
+                    <rect height="10"
+                          rx="5"
+                          width="100"
+                          y="60"></rect>
+                </svg>
 
-            <span class="navbar-toggler-icon"></span>
+                <span class="ms-2">MENU</span>
+            </button>
+        </div>
+        
+        <div class="menu-top-right small text-end ms-auto">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="dropdown d-inline-block">
+                        <a aria-expanded="false"
+                           class="dropdown-toggle"
+                           data-bs-toggle="dropdown"
+                           href="#"
+                           id="userDropdown"
+                           role="button">
+                            @(context.User.Identity?.Name ?? "Account") | Log Out
+                        </a>
 
-        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <NavLink Match="NavLinkMatch.All"
+                                         class="dropdown-item"
+                                         href="users">
+                                    Users Management
+                                </NavLink>
+                            </li>
 
-        <div class="collapse navbar-collapse"
-             id="navbarLinks">
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
 
-            <ul class="navbar-nav me-auto">
+                            <li>
+                                <a @onclick="@(() => this.NavigationManager.NavigateTo("/logout", forceLoad: true))"
+                                   class="dropdown-item"
+                                   role="button">
+                                    Confirm Log Out
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </Authorized>
+
+                <NotAuthorized>
+                    <a @onclick="@(() => this.NavigationManager.NavigateTo("/login", forceLoad: true))"
+                       role="button">
+                        Log In
+                    </a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+
+    <h1 class="display-4 fw-bold mb-1">Cocktail Collator</h1>
+    <div class="menu-subtitle small text-uppercase text-secondary">add a phrase here</div>
+
+    <div class="text-center">
+        <div class="collapse d-md-block mt-4 @(this._isNavMenuCollapsed ? "" : "show")"
+             id="menuLinks">
+
+            <ul class="d-flex flex-column flex-md-row justify-content-center gap-3 gap-md-4 mb-4 mb-md-5 pt-3 pt-md-0 list-unstyled px-0">
                 @foreach (var _Page in this.Pages)
                 {
                     @if (_Page.Policy is null)
@@ -41,65 +102,13 @@
                 }
             </ul>
 
-            <ul class="navbar-nav ms-auto">
-                <AuthorizeView>
-                    <Authorized>
-                        <li class="nav-item dropdown">
-                            <a aria-expanded="false" 
-                               class="nav-link dropdown-toggle"
-                               data-bs-toggle="dropdown"
-                               href="#"
-                               id="userDropdown"
-                               role="button">
-                                @(context.User.Identity?.Name ?? "Account")
-                            </a>
-
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <span class="dropdown-item-text">
-                                        Settings (TEMP)
-                                    </span>
-                                </li>
-
-                                <li>
-                                    <NavLink Match="NavLinkMatch.All"
-                                             class="dropdown-item"
-                                             href="users">
-                                        Users Management
-                                    </NavLink>
-                                </li>
-
-                                <li><hr class="dropdown-divider"></li>
-
-                                <li>
-                                    <a @onclick="@(() => this.NavigationManager.NavigateTo("/logout", forceLoad: true))"
-                                       class="dropdown-item"
-                                       role="button">
-                                        Logout
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </Authorized>
-
-                    <NotAuthorized>
-                        <li class="nav-item">
-                            <a @onclick="@(() => this.NavigationManager.NavigateTo("/login", forceLoad: true))"
-                               class="nav-link"
-                               role="button">
-                                Login
-                            </a>
-                        </li>
-                    </NotAuthorized>
-                </AuthorizeView>
-            </ul>
-
         </div>
     </div>
-</nav>
+</header>
 
 @code {
     private NavbarAddress _currentPage = NavbarAddress.Recipes;
+    private bool _isNavMenuCollapsed = true;
     private bool _isUserAuthenticated = false;
 
     [Parameter]
@@ -108,6 +117,7 @@
     private void LocationChanged(object? sender, LocationChangedEventArgs args)
     {
         this._currentPage = this.UriStringToAddress(args.Location);
+        this._isNavMenuCollapsed = true;
         this.StateHasChanged();
     }
 
@@ -127,6 +137,9 @@
             await this.InvokeAsync(this.StateHasChanged);
         };
     }
+
+    private void ToggleNavMenu()
+        => this._isNavMenuCollapsed = !this._isNavMenuCollapsed;
 
     private NavbarAddress UriStringToAddress(string uri)
     {

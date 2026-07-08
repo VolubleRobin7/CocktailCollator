@@ -2,12 +2,8 @@
 @using CocktailCollator.Web.ViewModels.RecipeCategories
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
-@using CocktailCollator.Web.Views.Components.Inputs
-@using CocktailCollator.Web.Views.Components.Modals
-@using CocktailCollator.Web.Views.Components.Navbars
 @using CocktailCollator.Web.Views.Modals
 
-@inject CreateRecipeFormModel CreateRecipeFormModel
 @inject RecipeCategoriesViewModel RecipeCategoriesViewModel
 @inject RecipesViewModel ViewModel
 
@@ -15,138 +11,108 @@
 
 <PageTitle>Home</PageTitle>
 
-<div class="container pt-2">
-    <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
-            Text="Get Recipes"
-            Theme="ButtonTheme.Secondary" />
-
-    <AuthorizeView Policy="@Policies.ManageRecipes">
-        <Button @onclick="() => this._createRecipeModal.OpenModalAsync()"
-                Text="Create Recipe"
-                Theme="ButtonTheme.Secondary" />
-    </AuthorizeView>
-
+<div class="container">
     <div class="row">
-        @foreach (var recipe in this.ViewModel.Recipes)
-        {
-            <div class="col-md-4 py-2">
-                <div class="card">
-                    <h4 class="card-header">
-                        @recipe.Name
 
-                        @if (recipe.Category is not null)
-                        {
-                            <span class="ms-1 badge text-bg-info">@recipe.Category.Name</span>
-                        }
-                    </h4>
-                    <div class="card-body">
-                        <div class="card-text">
-                            A sentence or two describing the content of the card.
-                            This can be interesting or not, i dont know.
+        <!-- Left Pane: Recipes Menu -->
+        <div class="col-md-8 pe-md-5">
+            @if (this.ViewModel.Recipes.Any())
+            {
+                foreach (var group in this.ViewModel.Recipes.GroupBy(r => r.Category?.Name ?? "Uncategorized"))
+                {
+                    <h2 class="fs-2 mt-4 mb-4 border-bottom pb-2">@group.Key</h2>
+                    
+                    @foreach (var recipe in group)
+                    {
+                        <div class="d-flex align-items-center mb-4">
+                            <img alt="@recipe.Name"
+                                 class="recipe-thumb object-fit-cover me-3 shadow-sm"
+                                 src="/images/placeholder.jpg" />
+
+                            <div class="flex-grow-1 d-flex flex-column">
+                                <a href="/recipe/@recipe.RecipeId"
+                                   class="recipe-link-wrapper cursor-pointer text-decoration-none text-reset d-block">
+
+                                    <div class="d-flex align-items-baseline w-100">
+                                        <h3 class="fs-5 fw-semibold m-0 text-nowrap">@recipe.Name</h3>
+                                        <div class="recipe-leader flex-grow-1 mx-2" />
+                                        <div class="fs-6 fw-medium text-secondary text-nowrap">45 mins</div>
+                                    </div>
+
+                                    <div class="text-primary small mt-1 d-flex gap-3">
+                                        <span>★★★★☆ 4.5</span>
+                                        <span>Serves 4</span>
+                                    </div>
+
+                                </a>
+                            </div>
                         </div>
-                        <ul class="list-group list-group-flush">
-                            @foreach (var ingredient in recipe.Ingredients?.Take(3) ?? [])
-                            {
-                                <li class="list-group-item">@ingredient.Ingredient.Name</li>
-                            }
-                        </ul>
-                        <Button @onclick="() => this._selectedRecipe = recipe"
-                                Size="ButtonSize.Small"
-                                Text="Select"
-                                Theme="ButtonTheme.Primary"
-                                data-bs-target="@this.RecipeModalId"
-                                data-bs-toggle="modal" />
+                    }
+                }
+            }
+            else
+            {
+                <p>No recipes available. Click 'Get Recipes' to load.</p>
+            }
+            
+            <p class="text-danger">@this.ViewModel.Error</p>
+        </div>
 
+        <!-- Right Pane: Filters & Management -->
+        <div class="col-md-4 border-start ps-md-4">
+            <h4 class="mb-4">Management</h4>
+            
+            <div class="d-grid gap-2 mb-4">
+                <Button @onclick="this.ViewModel.GetCommand.ExecuteAsync"
+                        Text="Get Recipes"
+                        Theme="ButtonTheme.Primary" />
+
+                <AuthorizeView Policy="@Policies.ManageRecipes">
+                    <Button @onclick="() => this._createRecipeModal.OpenModalAsync()"
+                            Text="Create Recipe"
+                            Theme="ButtonTheme.Secondary" />
+                </AuthorizeView>
+            </div>
+
+            <hr class="my-4" />
+
+            <h5 class="mb-3">Categories</h5>
+            
+            <div class="d-grid gap-2 mb-3">
+                <Button @onclick="this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync"
+                        Text="Get Categories"
+                        Theme="ButtonTheme.Primary" />
+
+                <AuthorizeView Policy="@Policies.ManageRecipes">
+                    <Button @onclick="() => this._createRecipeCategoryModal.OpenModalAsync()"
+                            Text="Create Category"
+                            Theme="ButtonTheme.Secondary" />
+                </AuthorizeView>
+            </div>
+
+            <div class="list-group list-group-flush mb-3">
+                @foreach (var category in this.RecipeCategoriesViewModel.RecipeCategories)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@category.Name</span>
                         <AuthorizeView Policy="@Policies.ManageRecipes">
-                            <Button @onclick="() => this.OpenUpdateRecipeModal(recipe)"
+                            <Button @onclick="() => this.RecipeCategoriesViewModel.DeleteCommand.ExecuteAsync(category.RecipeCategoryId)"
                                     Size="ButtonSize.Small"
-                                    Text="Edit"
-                                    Theme="ButtonTheme.Info" />
+                                    Text="Delete"
+                                    Theme="ButtonTheme.Danger" />
                         </AuthorizeView>
                     </div>
-                </div>
+                }
             </div>
-        }
-    </div>
+            
+            <p class="text-danger">@this.RecipeCategoriesViewModel.Error</p>
+        </div>
 
-    <p class="text-danger">@this.ViewModel.Error</p>
-</div>
-
-<div class="container pt-2">
-    <Button @onclick="this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync"
-            Text="Get Categories"
-            Theme="ButtonTheme.Secondary" />
-
-    <AuthorizeView Policy="@Policies.ManageRecipes">
-        <Button @onclick="() => this._createRecipeCategoryModal.OpenModalAsync()"
-                Text="Create Category"
-                Theme="ButtonTheme.Secondary" />
-    </AuthorizeView>
-
-    <div class="list-group list-group-flush">
-        @foreach (var category in this.RecipeCategoriesViewModel.RecipeCategories)
-        {
-            <div class="list-group-item">
-                <div class="d-flex justify-content-between">
-                    <span class="align-content-center">@category.Name</span>
-
-                    <AuthorizeView Policy="@Policies.ManageRecipes">
-                        <Button @onclick="() => this.RecipeCategoriesViewModel.DeleteCommand.ExecuteAsync(category.RecipeCategoryId)"
-                                Size="ButtonSize.Small"
-                                Text="Delete"
-                                Theme="ButtonTheme.Danger" />
-                    </AuthorizeView>
-                </div>
-            </div>
-        }
     </div>
 </div>
-
-<p class="text-danger">@this.RecipeCategoriesViewModel.Error</p>
-
-<Modal @ref=this._recipeModal
-       Size="ModalSize.Large"
-       Title="@(this._selectedRecipe?.Name ?? "Loading...")">
-
-    <Body>
-        @if (this._selectedRecipe is not null)
-        {
-            <h4>Ingredients</h4>
-
-            <ul class="list-group">
-                @foreach (var ingredient in _selectedRecipe.Ingredients ?? [])
-                {
-                    <li class="list-group-item">@($"{ingredient.Amount} {ingredient.Measurement.Name}: {ingredient.Ingredient.Name}")</li>
-                }
-            </ul>
-
-            <h4>Steps</h4>
-
-            <ol class="list-group list-group-flush list-group-numbered">
-                @foreach (var step in _selectedRecipe.Steps?.OrderBy(step => step.Order).ToList() ?? [])
-                {
-                    <li class="list-group-item">@step.Instruction</li>
-                }
-            </ol>
-        }
-    </Body>
-
-    <Footer>
-        <AuthorizeView Policy="@Policies.ManageRecipes">
-            <Button @onclick="() => this.ViewModel.DeleteCommand.ExecuteAsync(this._selectedRecipe!.RecipeId)"
-                    Text="Delete"
-                    Theme="ButtonTheme.Danger"
-                    data-bs-dismiss="modal" />
-        </AuthorizeView>
-    </Footer>
-
-</Modal>
 
 <CreateRecipeModal @ref="this._createRecipeModal"
                    OnAfterCreation="this.StateHasChanged" />
-
-<UpdateRecipeModal @ref="this._updateRecipeModal"
-                   OnAfterUpdate="this.StateHasChanged" />
 
 <CreateRecipeCategoryModal @ref="this._createRecipeCategoryModal"
                            OnAfterCreation="this.StateHasChanged" />
@@ -154,17 +120,4 @@
 @code {
     private CreateRecipeCategoryModal _createRecipeCategoryModal = default!;
     private CreateRecipeModal _createRecipeModal = default!;
-    private Modal _recipeModal = default!;
-    private RecipeViewModel? _selectedRecipe;
-    private UpdateRecipeModal _updateRecipeModal = default!;
-
-    private string RecipeModalId
-    {
-        get => this._recipeModal?.Id ?? "";
-    }
-
-    private async Task OpenUpdateRecipeModal(RecipeViewModel recipe)
-    {
-        await this._updateRecipeModal.OpenModalAsync(recipe);
-    }
 }
