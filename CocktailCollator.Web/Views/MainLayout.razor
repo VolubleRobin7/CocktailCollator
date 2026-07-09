@@ -1,4 +1,5 @@
 ﻿@using CocktailCollator.Web.Views.Components.Navbars
+@using CocktailCollator.Web.Views.Components.Toasts
 
 @inherits LayoutComponentBase
 
@@ -11,6 +12,8 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+<Toast />
 
 @code {
     private static readonly NavbarAddress[] _pages = new[]
