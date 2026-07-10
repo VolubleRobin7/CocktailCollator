@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CocktailCollator.Application.UseCases.Measurements.CreateMeasurement;
 using CocktailCollator.Application.UseCases.Measurements.DeleteMeasurement;
 using CocktailCollator.Application.UseCases.Measurements.GetMeasurements;
@@ -17,7 +17,6 @@ public class MeasurementsViewModel
 
     public List<MeasurementViewModel> Measurements { get; private set; } = [];
 
-    public string Error { get; private set; } = string.Empty;
 
     public MeasurementsViewModel(
         CreateMeasurementInteractor createMeasurementInteractor,
@@ -49,7 +48,7 @@ public class MeasurementsViewModel
         Task ICreateMeasurementOutputPort.Success(Measurement measurement, CancellationToken cancellationToken)
         {
             viewModel.Measurements.Add(mapper.Map<MeasurementViewModel>(measurement));
-            toastService.ShowToast(ToastType.Success, "Create Successful", $"{measurement.Name} created successfully");
+            toastService.ShowToast(ToastType.Success, "Measurement Created", $"{measurement.Name} created successfully");
             return Task.CompletedTask;
         }
     }
@@ -58,7 +57,6 @@ public class MeasurementsViewModel
     {
         Task IDeleteMeasurementOutputPort.Failure(string reason, Measurement? measurement, CancellationToken cancellationToken)
         {
-            viewModel.Error = reason;
             toastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
             return Task.CompletedTask;
         }
@@ -66,7 +64,7 @@ public class MeasurementsViewModel
         Task IDeleteMeasurementOutputPort.Success(Measurement deletedMeasurement, CancellationToken cancellationToken)
         {
             _ = viewModel.Measurements.RemoveAll(m => m.MeasurementId == deletedMeasurement.MeasurementId);
-            toastService.ShowToast(ToastType.Info, "Delete Successful", $"{deletedMeasurement.Name} deleted successfully");
+            toastService.ShowToast(ToastType.Info, "Measurement Deleted", $"{deletedMeasurement.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }

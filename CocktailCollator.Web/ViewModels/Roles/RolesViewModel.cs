@@ -1,7 +1,9 @@
 using AutoMapper;
 using CocktailCollator.Infrastructure.Persistence.Models;
+using CocktailCollator.Web.Common;
 using CocktailCollator.Web.FormModels.Roles;
 using CocktailCollator.Web.Infrastructure.Authentication;
+using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +16,7 @@ public class RolesViewModel
     private readonly IMapper _mapper;
     private readonly RoleManager<CocktailRole> _roleManager;
     private readonly UserManager<CocktailUser> _userManager;
+    private readonly ToastService _toastService;
 
     public IAsyncRelayCommand<CreateRoleInputPort> CreateCommand { get; }
     public IAsyncRelayCommand<Guid> DeleteCommand { get; }
@@ -23,16 +26,17 @@ public class RolesViewModel
 
     public List<RoleViewModel> Roles { get; private set; } = [];
 
-    public string Error { get; private set; } = string.Empty;
 
     public RolesViewModel(
         RoleManager<CocktailRole> roleManager,
         UserManager<CocktailUser> userManager,
-        IMapper mapper)
+        IMapper mapper,
+        ToastService toastService)
     {
         this._mapper = mapper;
         this._roleManager = roleManager;
         this._userManager = userManager;
+        this._toastService = toastService;
 
         this.CreateCommand = new AsyncRelayCommand<CreateRoleInputPort>(this.CreateRoleAsync);
         this.DeleteCommand = new AsyncRelayCommand<Guid>(this.DeleteRoleAsync);
@@ -45,11 +49,9 @@ public class RolesViewModel
     {
         try
         {
-            this.Error = string.Empty;
-
             if (await this._roleManager.RoleExistsAsync(inputPort.Name))
             {
-                this.Error = "A role with that name already exists.";
+                this._toastService.ShowToast(ToastType.Danger, "Failed to Create", $"{inputPort.Name} already exists.");
                 return;
             }
 
@@ -76,18 +78,23 @@ public class RolesViewModel
                 if (_ClaimResults.Any(r => !r.Succeeded))
                 {
                     var _Errors = _ClaimResults.Where(r => !r.Succeeded).SelectMany(r => r.Errors).Select(e => e.Description);
-                    this.Error = $"Role created, but failed to add some claims: {string.Join(", ", _Errors.Distinct())}";
+                    // TODO: This should be a warning toast
+                    this._toastService.ShowToast(ToastType.Info, "Role Created", $"Role created, but failed to add some claims: {string.Join(", ", _Errors.Distinct())}");
+                }
+                else
+                {
+                    this._toastService.ShowToast(ToastType.Success, "Role Created", $"{_Role.Name} created successfully");
                 }
             }
             else
             {
                 var _ErrorMessages = string.Join(", ", _Result.Errors.Select(e => e.Description));
-                this.Error = $"Failed to create role: {_ErrorMessages}";
+                this._toastService.ShowToast(ToastType.Danger, "Failed to Create", $"Failed to create role: {_ErrorMessages}");
             }
         }
         catch (Exception ex)
         {
-            this.Error = $"An error occurred while creating the role: {ex.Message}";
+            this._toastService.ShowToast(ToastType.Danger, "Error", $"An error occurred while creating the role: {ex.Message}");
         }
     }
 
@@ -95,12 +102,10 @@ public class RolesViewModel
     {
         try
         {
-            this.Error = string.Empty;
-
             var _Role = await this._roleManager.FindByIdAsync(inputPort.RoleId.ToString());
             if (_Role is null)
             {
-                this.Error = "Role not found.";
+                this._toastService.ShowToast(ToastType.Danger, "Failed to Update", "Role not found.");
                 return;
             }
 
@@ -111,7 +116,7 @@ public class RolesViewModel
             {
                 if (await this._roleManager.RoleExistsAsync(inputPort.Name))
                 {
-                    this.Error = "A role with that name already exists.";
+                    this._toastService.ShowToast(ToastType.Danger, "Failed to Update", $"{inputPort.Name} already exists.");
                     return;
                 }
 
@@ -160,18 +165,22 @@ public class RolesViewModel
                 if (_ClaimResults.Any(r => !r.Succeeded))
                 {
                     var _Errors = _ClaimResults.Where(r => !r.Succeeded).SelectMany(r => r.Errors).Select(e => e.Description);
-                    this.Error = $"Failed to update some claims: {string.Join(", ", _Errors.Distinct())}";
+                    this._toastService.ShowToast(ToastType.Danger, "Failed to Update", $"Failed to update some claims: {string.Join(", ", _Errors.Distinct())}");
+                }
+                else
+                {
+                    this._toastService.ShowToast(ToastType.Success, "Role Updated", $"{_Role.Name} updated successfully");
                 }
             }
             else
             {
                 var _ErrorMessages = string.Join(", ", _Result.Errors.Select(e => e.Description));
-                this.Error = $"Failed to update role: {_ErrorMessages}";
+                this._toastService.ShowToast(ToastType.Danger, "Failed to Update", $"Failed to update role: {_ErrorMessages}");
             }
         }
         catch (Exception ex)
         {
-            this.Error = $"An error occurred while updating the role: {ex.Message}";
+            this._toastService.ShowToast(ToastType.Danger, "Error", $"An error occurred while updating the role: {ex.Message}");
         }
     }
 
@@ -179,42 +188,43 @@ public class RolesViewModel
     {
         try
         {
-            this.Error = string.Empty;
-
             var _RolesCount = await this._roleManager.Roles.CountAsync(cancellationToken);
             if (_RolesCount <= 1)
             {
-                this.Error = "Cannot delete the last remaining role.";
+                this._toastService.ShowToast(ToastType.Danger, "Failed to Delete", "Cannot delete the last remaining role.");
                 return;
             }
 
             var _Role = await this._roleManager.FindByIdAsync(roleId.ToString());
             if (_Role is null)
             {
-                this.Error = "Role not found.";
+                this._toastService.ShowToast(ToastType.Danger, "Failed to Delete", "Role not found.");
                 return;
             }
 
             var _UsersInRole = await this._userManager.GetUsersInRoleAsync(_Role.Name ?? "");
             if (_UsersInRole.Any())
             {
-                this.Error = "Cannot delete a role that is currently assigned to one or more users.";
+                this._toastService.ShowToast(ToastType.Danger, "Failed to Delete", "Cannot delete a role that is currently assigned to one or more users.");
                 return;
             }
 
             var _Result = await this._roleManager.DeleteAsync(_Role);
 
             if (_Result.Succeeded)
+            {
                 _ = this.Roles.RemoveAll(r => r.RoleId == roleId);
+                this._toastService.ShowToast(ToastType.Info, "Role Deleted", $"{_Role.Name} deleted successfully");
+            }
             else
             {
                 var _ErrorMessages = string.Join(", ", _Result.Errors.Select(e => e.Description));
-                this.Error = $"Failed to delete role: {_ErrorMessages}";
+                this._toastService.ShowToast(ToastType.Danger, "Failed to Delete", $"Failed to delete role: {_ErrorMessages}");
             }
         }
         catch (Exception ex)
         {
-            this.Error = $"An error occurred while deleting the role: {ex.Message}";
+            this._toastService.ShowToast(ToastType.Danger, "Error", $"An error occurred while deleting the role: {ex.Message}");
         }
     }
 
@@ -222,8 +232,6 @@ public class RolesViewModel
     {
         try
         {
-            this.Error = string.Empty;
-
             var _Roles = await this._roleManager.Roles.ToListAsync(cancellationToken);
             foreach (var _Role in _Roles)
             {
@@ -256,10 +264,12 @@ public class RolesViewModel
                     }
                 }
             }
+
+            this._toastService.ShowToast(ToastType.Success, "Default Role Updated", $"{_Roles.First(role => role.DefaultRole).Name} is now the default role");
         }
         catch (Exception ex)
         {
-            this.Error = $"An error occurred while setting the default role: {ex.Message}";
+            this._toastService.ShowToast(ToastType.Danger, "Error", $"An error occurred while setting the default role: {ex.Message}");
         }
     }
 
@@ -267,7 +277,6 @@ public class RolesViewModel
     {
         try
         {
-            this.Error = string.Empty;
             var _Roles = await this._roleManager.Roles.ToListAsync(cancellationToken);
 
             var _RoleViewModels = new List<RoleViewModel>();
@@ -282,7 +291,7 @@ public class RolesViewModel
         }
         catch (Exception ex)
         {
-            this.Error = $"An error occurred while retrieving roles: {ex.Message}";
+            this._toastService.ShowToast(ToastType.Danger, "Error", $"An error occurred while retrieving roles: {ex.Message}");
         }
     }
 }

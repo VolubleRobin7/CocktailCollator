@@ -122,10 +122,6 @@
                     }
                 </div>
 
-                @if (!string.IsNullOrEmpty(this.RolesViewModel.Error))
-                {
-                    <p class="text-danger small mt-3">@this.RolesViewModel.Error</p>
-                }
             </div>
         </AuthorizeView>
 
@@ -228,11 +224,6 @@
                     </tbody>
                 </table>
             </div>
-
-            @if (!string.IsNullOrEmpty(this.ViewModel.Error))
-            {
-                <p class="text-danger small mt-3">@this.ViewModel.Error</p>
-            }
 
         </div>
     </div>
