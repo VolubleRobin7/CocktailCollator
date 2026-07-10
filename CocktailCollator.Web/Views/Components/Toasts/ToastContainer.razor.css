@@ -1,0 +1,11 @@
+/* Make toasts full width on mobile devices */
+@media (max-width: 575.98px) {
+    .toast-container {
+        width: 100%;
+    }
+    
+    ::deep .toast {
+        width: 100%;
+        max-width: 100%;
+    }
+}
