@@ -1,6 +1,5 @@
 @using CocktailCollator.Web.ViewModels.Measurements
 @using CocktailCollator.Web.Views.Components.Buttons
-@using CocktailCollator.Web.Views.Components.Navbars
 @using CocktailCollator.Web.Views.Modals
 
 @inject MeasurementsViewModel ViewModel
@@ -62,8 +61,6 @@
         </div>
     </div>
 </div>
-
-<p>@this.ViewModel.Error</p>
 
 <CreateMeasurementModal @ref="this._createModal"
                         OnAfterCreation="this.StateHasChanged" />

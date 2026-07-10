@@ -1,0 +1,66 @@
+@using CocktailCollator.Web.Common.Services
+
+@implements IAsyncDisposable
+
+@inject IJSRuntime JSRuntime
+@inject ToastService ToastService
+
+@if (this._toasts.Count > 0)
+{
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        @foreach (var toast in this._toasts)
+        {
+            <Toast CreationTime="toast.Time"
+                   Id="@toast.Id"
+                   Message="@toast.Message"
+                   Title="@toast.Title"
+                   Type="toast.Type"/>
+        }
+    </div>
+}
+
+@code {
+    private DotNetObjectReference<ToastContainer>? _dotNetRef;
+    private IJSObjectReference? _module;
+    private Queue<string> _toastsToShow = new();
+    private List<ToastItem> _toasts = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            this._module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Views/Components/Toasts/ToastContainer.razor.js");
+
+        if (this._module is not null && this._toastsToShow.Count > 0)
+        {
+            while (this._toastsToShow.TryDequeue(out var id))
+                await this._module.InvokeVoidAsync("showToast", id, this._dotNetRef);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        this._dotNetRef = DotNetObjectReference.Create(this);
+        this.ToastService.OnShow += ShowToast;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        this.ToastService.OnShow -= ShowToast;
+        this._dotNetRef?.Dispose();
+        
+        if (this._module is not null)
+            await this._module.DisposeAsync();
+    }
+
+    public void ShowToast(ToastItem toast)
+    {
+        this._toasts.Add(toast);
+        this._toastsToShow.Enqueue(toast.Id);
+        this.InvokeAsync(this.StateHasChanged); 
+    }
+
+    [JSInvokable]
+    public void RemoveToast(string id)
+        => this._toasts.RemoveAll(toast => toast.Id == id);
+}
+    

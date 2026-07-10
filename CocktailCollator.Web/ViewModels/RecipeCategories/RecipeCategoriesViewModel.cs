@@ -3,6 +3,8 @@ using CocktailCollator.Application.UseCases.RecipeCategories.CreateRecipeCategor
 using CocktailCollator.Application.UseCases.RecipeCategories.DeleteRecipeCategory;
 using CocktailCollator.Application.UseCases.RecipeCategories.GetRecipeCategories;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.Web.Common.Services;
+using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CocktailCollator.Web.ViewModels.RecipeCategories;
@@ -15,24 +17,24 @@ public class RecipeCategoriesViewModel
 
     public List<RecipeCategoryViewModel> RecipeCategories { get; private set; } = [];
 
-    public string Error { get; private set; } = string.Empty;
 
     public RecipeCategoriesViewModel(
         CreateRecipeCategoryInteractor createRecipeCategoryInteractor,
         DeleteRecipeCategoryInteractor deleteRecipeCategoryInteractor,
         GetRecipeCategoriesInteractor getRecipeCategoriesInteractor,
-        IMapper mapper)
+        IMapper mapper,
+        ToastService toastService)
     {
         this.CreateCommand = new AsyncRelayCommand<CreateRecipeCategoryInputPort>((inputPort, cancellationToken)
             => createRecipeCategoryInteractor.Interact(
                 inputPort,
-                new CreateRecipeCategoryPresenter(mapper, this),
+                new CreateRecipeCategoryPresenter(mapper, toastService, this),
                 cancellationToken));
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>((categoryId, cancellationToken)
             => deleteRecipeCategoryInteractor.Interact(
                 new() { RecipeCategoryId = categoryId },
-                new DeleteRecipeCategoryPresenter(this),
+                new DeleteRecipeCategoryPresenter(toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
@@ -41,26 +43,28 @@ public class RecipeCategoriesViewModel
                 cancellationToken));
     }
 
-    private class CreateRecipeCategoryPresenter(IMapper mapper, RecipeCategoriesViewModel viewModel) : ICreateRecipeCategoryOutputPort
+    private class CreateRecipeCategoryPresenter(IMapper mapper, ToastService toastService, RecipeCategoriesViewModel viewModel) : ICreateRecipeCategoryOutputPort
     {
         Task ICreateRecipeCategoryOutputPort.Success(RecipeCategory recipeCategory, CancellationToken cancellationToken)
         {
             viewModel.RecipeCategories.Add(mapper.Map<RecipeCategoryViewModel>(recipeCategory));
+            toastService.ShowToast(ToastType.Success, "Category Created", $"{recipeCategory.Name} created successfully");
             return Task.CompletedTask;
         }
     }
 
-    private class DeleteRecipeCategoryPresenter(RecipeCategoriesViewModel viewModel) : IDeleteRecipeCategoryOutputPort
+    private class DeleteRecipeCategoryPresenter(ToastService toastService, RecipeCategoriesViewModel viewModel) : IDeleteRecipeCategoryOutputPort
     {
         Task IDeleteRecipeCategoryOutputPort.Failure(string reason, RecipeCategory? category, CancellationToken cancellationToken)
         {
-            viewModel.Error = reason;
+            toastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
             return Task.CompletedTask;
         }
 
         Task IDeleteRecipeCategoryOutputPort.Success(RecipeCategory deletedCategory, CancellationToken cancellationToken)
         {
             _ = viewModel.RecipeCategories.RemoveAll(c => c.RecipeCategoryId == deletedCategory.RecipeCategoryId);
+            toastService.ShowToast(ToastType.Info, "Category Deleted", $"{deletedCategory.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }

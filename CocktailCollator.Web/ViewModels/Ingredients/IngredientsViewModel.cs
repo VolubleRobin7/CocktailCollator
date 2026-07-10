@@ -1,8 +1,10 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CocktailCollator.Application.UseCases.Ingredients.DeleteIngredient;
 using CocktailCollator.Application.UseCases.Ingredients.GetIngredients;
 using CocktailCollator.Application.UseCases.Ingredients.UpdateIngredient;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.Web.Common.Services;
+using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CocktailCollator.Web.ViewModels.Ingredients;
@@ -15,18 +17,18 @@ public class IngredientsViewModel
 
     public List<IngredientViewModel> Ingredients { get; private set; } = [];
 
-    public string Error { get; private set; } = string.Empty;
 
     public IngredientsViewModel(
         DeleteIngredientInteractor deleteIngredientInteractor,
         GetIngredientsInteractor getIngredientsInteractor,
         UpdateIngredientInteractor updateIngredientInteractor,
-        IMapper mapper)
+        IMapper mapper,
+        ToastService toastService)
     {
         this.DeleteCommand = new AsyncRelayCommand<Guid>((ingredientId, cancellationToken)
             => deleteIngredientInteractor.Interact(
                 new() { IngredientId = ingredientId },
-                new DeleteIngredientPresenter(this),
+                new DeleteIngredientPresenter(toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
@@ -37,21 +39,22 @@ public class IngredientsViewModel
         this.UpdateCommand = new AsyncRelayCommand<UpdateIngredientInputPort>((inputPort, cancellationToken)
             => updateIngredientInteractor.Interact(
                 inputPort,
-                new UpdateIngredientPresenter(mapper, this),
+                new UpdateIngredientPresenter(mapper, toastService, this),
                 cancellationToken));
     }
 
-    private class DeleteIngredientPresenter(IngredientsViewModel viewModel) : IDeleteIngredientOutputPort
+    private class DeleteIngredientPresenter(ToastService toastService, IngredientsViewModel viewModel) : IDeleteIngredientOutputPort
     {
         Task IDeleteIngredientOutputPort.Failure(string reason, Ingredient? ingredient, CancellationToken cancellationToken)
         {
-            viewModel.Error = reason;
+            toastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
             return Task.CompletedTask;
         }
 
         Task IDeleteIngredientOutputPort.Success(Ingredient deletedIngredient, CancellationToken cancellationToken)
         {
             _ = viewModel.Ingredients.RemoveAll(ingredient => ingredient.IngredientId == deletedIngredient.IngredientId);
+            toastService.ShowToast(ToastType.Info, "Ingredient Deleted", $"{deletedIngredient.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }
@@ -65,11 +68,11 @@ public class IngredientsViewModel
         }
     }
 
-    private class UpdateIngredientPresenter(IMapper mapper, IngredientsViewModel viewModel) : IUpdateIngredientOutputPort
+    private class UpdateIngredientPresenter(IMapper mapper, ToastService toastService, IngredientsViewModel viewModel) : IUpdateIngredientOutputPort
     {
         Task IUpdateIngredientOutputPort.Failure(string failureReason, Ingredient? ingredient, CancellationToken cancellationToken)
         {
-            viewModel.Error = failureReason;
+            toastService.ShowToast(ToastType.Danger, "Failed to Update", failureReason);
             return Task.CompletedTask;
         }
 
@@ -83,6 +86,7 @@ public class IngredientsViewModel
                 _Existing.Measurements = _Updated.Measurements;
                 _Existing.Category = _Updated.Category;
             }
+            toastService.ShowToast(ToastType.Success, "Ingredient Updated", $"{ingredient.Name} updated successfully");
             return Task.CompletedTask;
         }
     }
