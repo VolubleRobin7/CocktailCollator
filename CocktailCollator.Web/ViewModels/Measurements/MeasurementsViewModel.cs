@@ -66,7 +66,7 @@ public class MeasurementsViewModel
         Task IDeleteMeasurementOutputPort.Success(Measurement deletedMeasurement, CancellationToken cancellationToken)
         {
             _ = viewModel.Measurements.RemoveAll(m => m.MeasurementId == deletedMeasurement.MeasurementId);
-            toastService.ShowToast(ToastType.Success, "Delete Successful", $"{deletedMeasurement.Name} deleted successfully");
+            toastService.ShowToast(ToastType.Info, "Delete Successful", $"{deletedMeasurement.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }

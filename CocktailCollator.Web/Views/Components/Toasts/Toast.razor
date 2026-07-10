@@ -1,12 +1,12 @@
-﻿<div aria-live="assertive" aria-atomic="true"
-     class="toast fade"
+<div aria-live="assertive" aria-atomic="true"
+     class="toast fade @this.ToastClass"
      id="@this.Id"
      role="alert">
 
     <div class="toast-header">
-        <strong class="me-auto">@this.Title</strong>
+        <strong class="me-auto serif-heading">@this.Title</strong>
         <small>@this.CreationTime.ToShortTimeString()</small>
-        <button class="btn-close"
+        <button class="btn-close ms-2"
                 data-bs-dismiss="toast"
                 type="button" />
     </div>
@@ -26,4 +26,14 @@
     public string Message { get; set; } = string.Empty;
     [Parameter, EditorRequired]
     public string Title { get; set; }
+    [Parameter]
+    public ToastType Type { get; set; } = ToastType.Info;
+
+    private string ToastClass 
+        => this.Type switch
+        {
+            ToastType.Success => "toast-success",
+            ToastType.Error => "toast-error",
+            _ => "toast-info"
+        };
 }
