@@ -3,7 +3,7 @@ using CocktailCollator.Application.UseCases.RecipeCategories.CreateRecipeCategor
 using CocktailCollator.Application.UseCases.RecipeCategories.DeleteRecipeCategory;
 using CocktailCollator.Application.UseCases.RecipeCategories.GetRecipeCategories;
 using CocktailCollator.Domain.Entities;
-using CocktailCollator.Web.Common;
+using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 

@@ -4,7 +4,7 @@ using CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
 using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using CocktailCollator.Domain.Entities;
-using CocktailCollator.Web.Common;
+using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 

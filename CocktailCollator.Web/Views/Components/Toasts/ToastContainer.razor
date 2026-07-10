@@ -1,4 +1,4 @@
-@using CocktailCollator.Web.Common
+@using CocktailCollator.Web.Common.Services
 
 @implements IAsyncDisposable
 
@@ -14,7 +14,7 @@
                    Id="@toast.Id"
                    Message="@toast.Message"
                    Title="@toast.Title"
-                   Type="@toast.Type"/>
+                   Type="toast.Type"/>
         }
     </div>
 }

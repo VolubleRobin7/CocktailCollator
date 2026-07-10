@@ -1,6 +1,6 @@
 using AutoMapper;
 using CocktailCollator.Infrastructure.Persistence.Models;
-using CocktailCollator.Web.Common;
+using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.FormModels.Users;
 using CocktailCollator.Web.ViewModels.Roles;
 using CocktailCollator.Web.Views.Components.Toasts;

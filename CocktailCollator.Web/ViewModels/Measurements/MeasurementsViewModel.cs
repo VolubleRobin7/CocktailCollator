@@ -3,7 +3,7 @@ using CocktailCollator.Application.UseCases.Measurements.CreateMeasurement;
 using CocktailCollator.Application.UseCases.Measurements.DeleteMeasurement;
 using CocktailCollator.Application.UseCases.Measurements.GetMeasurements;
 using CocktailCollator.Domain.Entities;
-using CocktailCollator.Web.Common;
+using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 

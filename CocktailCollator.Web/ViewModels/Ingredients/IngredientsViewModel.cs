@@ -3,7 +3,7 @@ using CocktailCollator.Application.UseCases.Ingredients.DeleteIngredient;
 using CocktailCollator.Application.UseCases.Ingredients.GetIngredients;
 using CocktailCollator.Application.UseCases.Ingredients.UpdateIngredient;
 using CocktailCollator.Domain.Entities;
-using CocktailCollator.Web.Common;
+using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 

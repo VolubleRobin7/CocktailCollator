@@ -1,6 +1,6 @@
 using CocktailCollator.Web.Views.Components.Toasts;
 
-namespace CocktailCollator.Web.Common;
+namespace CocktailCollator.Web.Common.Services;
 
 public class ToastService
 {

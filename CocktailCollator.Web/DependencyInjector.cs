@@ -17,7 +17,7 @@ using CocktailCollator.Web.ViewModels.Roles;
 using CocktailCollator.Web.ViewModels.Users;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using CocktailCollator.Web.Common;
+using CocktailCollator.Web.Common.Services;
 
 namespace CocktailCollator.Web;
 
