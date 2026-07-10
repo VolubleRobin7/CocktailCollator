@@ -78,8 +78,7 @@ public class RolesViewModel
                 if (_ClaimResults.Any(r => !r.Succeeded))
                 {
                     var _Errors = _ClaimResults.Where(r => !r.Succeeded).SelectMany(r => r.Errors).Select(e => e.Description);
-                    // TODO: This should be a warning toast
-                    this._toastService.ShowToast(ToastType.Info, "Role Created", $"Role created, but failed to add some claims: {string.Join(", ", _Errors.Distinct())}");
+                    this._toastService.ShowToast(ToastType.Warning, "Role Created", $"Role created, but failed to add some claims: {string.Join(", ", _Errors.Distinct())}");
                 }
                 else
                 {

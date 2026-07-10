@@ -13,6 +13,10 @@
     border-left-color: var(--bs-danger);
 }
 
+.toast-warning {
+    border-left-color: var(--bs-warning);
+}
+
 .toast-info {
     border-left-color: var(--bs-primary);
 }

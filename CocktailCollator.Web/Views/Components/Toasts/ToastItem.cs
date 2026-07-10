@@ -13,5 +13,6 @@ public enum ToastType
 {
     Info,
     Success,
-    Danger
+    Danger,
+    Warning
 }

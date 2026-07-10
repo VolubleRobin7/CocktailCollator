@@ -18,6 +18,7 @@
     --bs-link-hover-color: #735f46;
     /* Status */
     --bs-success: #26b050;
+    --bs-warning: #ed9a34;
 }
 
 h1, h2, h3, h4, h5, h6, .serif-heading {
