@@ -9,7 +9,7 @@
     border-left-color: var(--bs-success);
 }
 
-.toast-error {
+.toast-danger {
     border-left-color: var(--bs-danger);
 }
 

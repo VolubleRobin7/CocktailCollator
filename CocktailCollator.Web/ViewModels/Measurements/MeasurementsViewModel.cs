@@ -59,7 +59,7 @@ public class MeasurementsViewModel
         Task IDeleteMeasurementOutputPort.Failure(string reason, Measurement? measurement, CancellationToken cancellationToken)
         {
             viewModel.Error = reason;
-            toastService.ShowToast(ToastType.Error, "Failed to Delete", reason);
+            toastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
             return Task.CompletedTask;
         }
 
