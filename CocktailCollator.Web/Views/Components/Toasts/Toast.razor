@@ -1,79 +1,29 @@
-@using CocktailCollator.Web.Common
+﻿<div aria-live="assertive" aria-atomic="true"
+     class="toast fade"
+     id="@this.Id"
+     role="alert">
 
-@implements IAsyncDisposable
-
-@inject IJSRuntime JSRuntime
-@inject ToastService ToastService
-
-@if (this._toasts.Count > 0)
-{
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        @foreach (var toast in this._toasts)
-        {
-            <div aria-live="assertive" aria-atomic="true" 
-                 class="toast fade" 
-                 id="@toast.Id" 
-                 role="alert">
-
-                <div class="toast-header">
-                    <strong class="me-auto">@toast.Title</strong>
-                    <small>@toast.Time.ToShortTimeString()</small>
-                    <button class="btn-close" 
-                            data-bs-dismiss="toast"
-                            type="button" />
-                </div>
-
-                <div class="toast-body">
-                    @toast.Message
-                </div>
-
-            </div>
-        }
+    <div class="toast-header">
+        <strong class="me-auto">@this.Title</strong>
+        <small>@this.CreationTime.ToShortTimeString()</small>
+        <button class="btn-close"
+                data-bs-dismiss="toast"
+                type="button" />
     </div>
-}
+
+    <div class="toast-body">
+        @this.Message
+    </div>
+
+</div>
 
 @code {
-    private DotNetObjectReference<Toast>? _dotNetRef;
-    private IJSObjectReference? _module;
-    private Queue<string> _toastsToShow = new();
-    private List<ToastItem> _toasts = new();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-            this._module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Views/Components/Toasts/Toast.razor.js");
-
-        if (this._module is not null && this._toastsToShow.Count > 0)
-        {
-            while (this._toastsToShow.TryDequeue(out var id))
-                await this._module.InvokeVoidAsync("showToast", id, this._dotNetRef);
-        }
-    }
-
-    protected override void OnInitialized()
-    {
-        this._dotNetRef = DotNetObjectReference.Create(this);
-        this.ToastService.OnShow += ShowToast;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        this.ToastService.OnShow -= ShowToast;
-        this._dotNetRef?.Dispose();
-        
-        if (this._module is not null)
-            await this._module.DisposeAsync();
-    }
-
-    public void ShowToast(ToastItem toast)
-    {
-        this._toasts.Add(toast);
-        this._toastsToShow.Enqueue(toast.Id);
-        this.InvokeAsync(this.StateHasChanged); 
-    }
-
-    [JSInvokable]
-    public void RemoveToast(string id)
-        => this._toasts.RemoveAll(toast => toast.Id == id);
+    [Parameter]
+    public DateTime CreationTime { get; set; } = DateTime.Now;
+    [Parameter, EditorRequired]
+    public string Id { get; set; }
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+    [Parameter, EditorRequired]
+    public string Title { get; set; }
 }
-    
