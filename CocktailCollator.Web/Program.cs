@@ -19,7 +19,7 @@ builder.Services
 
 builder.Services
     .InjectApplication()
-    .InjectInfrastructure()
+    .InjectInfrastructure(builder.Configuration)
     .InjectWeb(builder.Configuration);
 
 builder.Services.AddAutoMapper(

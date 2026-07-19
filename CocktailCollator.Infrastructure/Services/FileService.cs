@@ -1,17 +1,14 @@
 using CocktailCollator.Application.Common.Interfaces;
-using Microsoft.Extensions.Configuration;
+using CocktailCollator.Infrastructure.Options;
+using Microsoft.Extensions.Options;
 
 namespace CocktailCollator.Infrastructure.Services;
 
-public class FileService(IConfiguration configuration) : IFileService
+public class FileService(IOptions<FileStorageOptions> fileStorageOptions) : IFileService
 {
     async Task IFileService.DeleteFileAsync(string filePath, CancellationToken cancellationToken)
     {
-        var _FileStorePath = configuration["FileStorePath"]; // I think I normally get this differently
-        if (string.IsNullOrEmpty(_FileStorePath))
-            throw new InvalidOperationException("FileStorePath is not configured.");
-
-        var _TotalFilePath = Path.Combine(_FileStorePath, filePath);
+        var _TotalFilePath = Path.Combine(fileStorageOptions.Value.FileStorePath, filePath);
         if (Path.Exists(_TotalFilePath))
             File.Delete(_TotalFilePath);
 
@@ -22,14 +19,10 @@ public class FileService(IConfiguration configuration) : IFileService
 
     async Task IFileService.SaveFileAsync(byte[] fileData, string filePath, CancellationToken cancellationToken)
     {
-        var _FileStorePath = configuration["FileStorePath"]; // I think I normally get this differently
-        if (string.IsNullOrEmpty(_FileStorePath))
-            throw new InvalidOperationException("FileStorePath is not configured.");
-
         if (fileData is null || fileData.Length == 0)
             return;
 
-        var _TotalFilePath = Path.Combine(_FileStorePath, filePath);
+        var _TotalFilePath = Path.Combine(fileStorageOptions.Value.FileStorePath, filePath);
 
         var _TotalFilePathDirectory = Path.GetDirectoryName(_TotalFilePath);
         if (!string.IsNullOrEmpty(_TotalFilePathDirectory) && !Directory.Exists(_TotalFilePathDirectory))
