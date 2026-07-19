@@ -21,6 +21,19 @@
                         InvalidMessage="Name requires a value."
                         Title="Recipe Name" />
 
+            <div class="mb-3">
+                <label class="form-label">Recipe Image</label>
+                @* This doesn't reset the file during ResetToDefault *@
+                <InputFile OnChange="(args) => this.CreateRecipeFormModel.Image.UploadFileAsync(args.File)"
+                           accept="image/*" 
+                           class="form-control" />
+
+                @if (!this.CreateRecipeFormModel.Image.IsValid())
+                {
+                    <div class="text-danger mt-1 small">@this.CreateRecipeFormModel.Image.ErrorMessage</div>
+                }
+            </div>
+
             <h4>Ingredients</h4>
 
             <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"

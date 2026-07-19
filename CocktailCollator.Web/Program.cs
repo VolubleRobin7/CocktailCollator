@@ -145,6 +145,24 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+
+var fileStorePath = builder.Configuration.GetValue<string>("FileStorePath");
+if (!string.IsNullOrEmpty(fileStorePath))
+{
+    if (!Directory.Exists(fileStorePath))
+        throw new DirectoryNotFoundException($"The configured FileStorePath '{fileStorePath}' does not exist. Please ensure the directory exists and is accessible.");
+
+    _ = app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(fileStorePath),
+        RequestPath = "/files"
+    });
+}
+else
+{
+    throw new InvalidOperationException("FileStorePath is not configured.");
+}
+
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()

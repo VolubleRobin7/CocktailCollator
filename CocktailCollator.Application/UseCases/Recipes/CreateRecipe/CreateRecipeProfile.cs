@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CocktailCollator.Domain.Entities;
 
 namespace CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
@@ -7,7 +7,8 @@ public class CreateRecipeProfile : Profile
 {
     public CreateRecipeProfile()
     {
-        _ = this.CreateMap<CreateRecipeInputPort, Recipe>();
+        _ = this.CreateMap<CreateRecipeInputPort, Recipe>()
+            .ForMember(dest => dest.Images, opt => opt.Ignore());
 
         _ = this.CreateMap<CreateRecipeInputPortIngredient, Ingredient>();
 

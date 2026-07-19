@@ -47,7 +47,7 @@
             <div class="col-md-5 mb-4">
                 <img alt="@this._recipe.Name"
                      class="w-100 rounded-3 shadow-sm object-fit-cover"
-                     src="/images/placeholder.jpg" />
+                     src="@(this._recipe.Images is not null && this._recipe.Images.Any() ? this._recipe.Images.First().Url : "/images/placeholder.jpg")" />
             </div>
 
             <div class="col-md-7 ps-md-4">

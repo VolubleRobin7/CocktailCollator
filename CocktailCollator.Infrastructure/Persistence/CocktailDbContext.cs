@@ -1,4 +1,5 @@
-﻿using CocktailCollator.Application.Common.Interfaces;
+using CocktailCollator.Application.Common.Interfaces;
+using CocktailCollator.Application.Models;
 using CocktailCollator.Domain.Entities;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -6,8 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CocktailCollator.Infrastructure.Persistence;
 
-public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : IdentityDbContext<CocktailUser, CocktailRole, Guid>(options), ICocktailDbContext
+public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFileService fileService) : IdentityDbContext<CocktailUser, CocktailRole, Guid>(options), ICocktailDbContext
 {
+    private readonly List<DocumentInfo> _queuedDocumentsToAdd = [];
+    private readonly List<Guid> _queuedDocumentsToRemove = [];
+
     void ICocktailDbContext.Add<TEntity>(TEntity entity)
         => this.Add(entity);
 
@@ -17,8 +21,81 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : Id
     void ICocktailDbContext.Remove<TEntity>(TEntity entity)
         => this.Remove(entity);
 
-    Task ICocktailDbContext.SaveChangesAsync(CancellationToken cancellationToken)
-        => this.SaveChangesAsync(cancellationToken);
+    async Task ICocktailDbContext.SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        if (this._queuedDocumentsToRemove.Count > 0)
+        {
+            foreach (var documentId in this._queuedDocumentsToRemove)
+                await RemoveDocumentAsync(documentId, cancellationToken);
+
+            this._queuedDocumentsToRemove.Clear();
+        }
+
+        _ = await this.SaveChangesAsync(cancellationToken);
+
+        if (this._queuedDocumentsToAdd.Count > 0)
+        {
+            foreach (var _DocumentInfo in this._queuedDocumentsToAdd)
+                await AddDocumentAsync(_DocumentInfo, cancellationToken);
+
+            this._queuedDocumentsToAdd.Clear();
+
+            _ = await this.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    Guid ICocktailDbContext.QueueAddDocument<TEntity>(DocumentModel file, TEntity relatedEntity, CancellationToken cancellationToken)
+    {
+        var _NewDocument = new Document
+        {
+            FilePath = "", // This will be filled in during SaveChangesAsync()
+            OriginalFileName = file.FileName
+        };
+        _ = this.Add(_NewDocument);
+        this._queuedDocumentsToAdd.Add(new(file.Data, _NewDocument, () => this.GenerateUniqueDirectoryPath(relatedEntity)));
+
+        return _NewDocument.DocumentId;
+    }
+
+    void ICocktailDbContext.QueueRemoveDocument(Guid documentId)
+    {
+        if (!this._queuedDocumentsToRemove.Exists(d => d == documentId))
+            this._queuedDocumentsToRemove.Add(documentId);
+    }
+
+    private async Task AddDocumentAsync(DocumentInfo documentInfo, CancellationToken cancellationToken)
+    {
+        var _UniqueFileName = documentInfo.Entity.DocumentId.ToString() + Path.GetExtension(documentInfo.Entity.OriginalFileName);
+        var _FilePath = Path.Combine(documentInfo.DirectoryPath(), _UniqueFileName);
+        await fileService.SaveFileAsync(documentInfo.FileData, _FilePath, cancellationToken);
+
+        documentInfo.Entity.FilePath = _FilePath;
+    }
+
+    private string GenerateUniqueDirectoryPath<TEntity>(TEntity relatedEntity)
+    {
+        var _RelatedEntityDatabaseEntry = this.Entry(relatedEntity);
+        var _RelatedEntityTypeName = _RelatedEntityDatabaseEntry.Metadata.ClrType.Name;
+        var _RelatedEntityId = _RelatedEntityDatabaseEntry.CurrentValues
+            .GetValue<Guid>(_RelatedEntityDatabaseEntry.Metadata.FindPrimaryKey().Properties.Single())
+            .ToString();
+
+        if (_RelatedEntityId == Guid.Empty.ToString())
+            throw new InvalidOperationException("The related entity must exist in the database before saving the document.");
+
+        return Path.Combine(_RelatedEntityTypeName, _RelatedEntityId);
+    }
+
+    private async Task RemoveDocumentAsync(Guid documentId, CancellationToken cancellationToken)
+    {
+        var _Document = await this.Set<Document>().FirstAsync(d => d.DocumentId == documentId, cancellationToken)
+            ?? throw new InvalidOperationException($"Document with ID {documentId} not found.");
+
+        await fileService.DeleteFileAsync(_Document.FilePath, cancellationToken);
+        _ = this.Remove(_Document);
+    }
+
+    private record struct DocumentInfo(byte[] FileData, Document Entity, Func<string> DirectoryPath);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,11 +107,14 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : Id
     // Create Migration Command
     // dotnet ef migrations add NAME --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
     //
-    // Remove Previous Migration Command (Can only do before being applied I think)
-    // dotnet ef migrations remove --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
-    //
     // Apply Migration Command (May not be needed, based on RunMigrationsOnStartup in appsettings)
     // dotnet ef database update --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
+    //
+    // Revert Applied Migration Command (Will revert to having NAME as the latest applied migration)
+    // dotnet ef database update NAME --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
+    //
+    // Remove Previous Migrations Command (Can only do after reverting the applied migrations, or if it hasn't been applied yet)
+    // dotnet ef migrations remove --project CocktailCollator.Infrastructure --startup-project CocktailCollator.Web
 
     private static void AddEntities(ModelBuilder modelBuilder)
     {
@@ -46,5 +126,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options) : Id
         _ = modelBuilder.Entity<IngredientMeasurement>();
         _ = modelBuilder.Entity<IngredientCategory>();
         _ = modelBuilder.Entity<RecipeCategory>();
+        _ = modelBuilder.Entity<Document>();
+        _ = modelBuilder.Entity<RecipeDocument>();
     }
 }

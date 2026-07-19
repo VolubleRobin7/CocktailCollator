@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 
@@ -12,7 +12,8 @@ public class RecipeFormModelProfile : Profile
         _ = this.CreateMap<CreateRecipeFormModel, CreateRecipeInputPort>()
             .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input))
             .ForMember(d => d.Steps, o => o.MapFrom(s => s.Steps.Input))
-            .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients.Input));
+            .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients.Input))
+            .ForMember(d => d.Images, o => o.MapFrom(s => s.Image));
 
         _ = this.CreateMap<CreateRecipeFormModelIngredient, CreateRecipeInputPortRecipeIngredient>()
             .ForMember(d => d.Amount, o => o.MapFrom(s => s.Amount.Input))

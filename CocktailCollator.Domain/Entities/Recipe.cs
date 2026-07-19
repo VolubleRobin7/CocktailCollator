@@ -9,4 +9,5 @@ public class Recipe
     public ICollection<RecipeIngredient>? Ingredients { get; set; }
     public ICollection<RecipeStep>? Steps { get; set; }
     public RecipeCategory? Category { get; set; }
+    public ICollection<RecipeDocument>? Images { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 using CocktailCollator.Web.Common.Generics;
 using CocktailCollator.Web.Common.Interfaces;
@@ -15,6 +15,7 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
     // That would allow more precise control, could set better validation, and reset per item
     // Or possibly even InputProp<List<InputProp<object... but that could be overkill
     // Could require the creation of a new class that wraps List, something like InputPropertyList<T>
+    public DocumentInputProperty Image { get; set; } = new();
     public InputProperty<ObservableCollection<CreateRecipeFormModelIngredient>> Ingredients { get; set; }
         = new(() => [], ValidateIngredients);
     public InputProperty<string> Name { get; set; }
@@ -28,6 +29,7 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
     {
         this._mapper = mapper;
 
+        this.Image.OnChange = () => OnChange?.Invoke();
         this.Ingredients.Input.CollectionChanged += (_, args) =>
         {
             if (args.NewItems is not null)
@@ -58,13 +60,14 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
         => this._mapper.Map<CreateRecipeInputPort>(this);
 
     public bool IsValid()
-        => this.Name.IsValid() && this.Steps.IsValid() && this.Ingredients.IsValid();
+        => this.Name.IsValid() && this.Steps.IsValid() && this.Ingredients.IsValid() && this.Image.IsValid();
 
     public void ResetToDefault()
     {
         this.Name.ResetToDefault();
         this.Steps.ResetToDefault();
         this.Ingredients.ResetToDefault();
+        this.Image.ResetToDefault();
     }
 
     private static bool ValidateIngredients(ObservableCollection<CreateRecipeFormModelIngredient> ingredients)

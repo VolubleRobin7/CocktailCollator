@@ -1,4 +1,4 @@
-﻿using CocktailCollator.Application.Common.Interfaces;
+using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
 
 namespace CocktailCollator.Application.UseCases.Recipes.GetRecipes;
@@ -25,7 +25,19 @@ public class GetRecipesInteractor(ICocktailDbContext dbContext)
                         RecipeId = ri.RecipeId,
                     })
                     .ToList(),
-                Steps = r.Steps
+                Steps = r.Steps,
+                Images = r.Images!
+                    .Select(ri => new RecipeDocument
+                    {
+                        RecipeId = ri.RecipeId,
+                        DocumentId = ri.DocumentId,
+                        Document = new Document
+                        {
+                            DocumentId = ri.Document.DocumentId,
+                            FilePath = ri.Document.FilePath,
+                            OriginalFileName = ri.Document.OriginalFileName,
+                        }
+                    }).ToList()
             });
 
         return outputPort.Success([.. _Recipes], cancellationToken);
