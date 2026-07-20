@@ -23,8 +23,8 @@
 
             <div class="mb-3">
                 <label class="form-label">Recipe Image</label>
-                @* This doesn't reset the file during ResetToDefault *@
-                <InputFile OnChange="(args) => this.CreateRecipeFormModel.Image.UploadFileAsync(args.File)"
+                <InputFile @key="this._inputFileKey"
+                           OnChange="(args) => this.CreateRecipeFormModel.Image.UploadFileAsync(args.File)"
                            accept="image/*" 
                            class="form-control" />
 
@@ -109,6 +109,7 @@
 </Modal>
 
 @code {
+    private Guid _inputFileKey = Guid.NewGuid();
     private Modal _modal = default!;
 
     [Parameter]
@@ -147,6 +148,7 @@
     {
         await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
         this.CreateRecipeFormModel.ResetToDefault();
+        this._inputFileKey = Guid.NewGuid();
         await this.OnAfterCreation.InvokeAsync();
     }
 
