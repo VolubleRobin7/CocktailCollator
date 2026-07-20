@@ -2,13 +2,14 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace CocktailCollator.Web.Common.Generics;
 
-public class DocumentInputProperty : InputProperty<(IBrowserFile? File, string? ExceptionMessage)>
+public class DocumentInputProperty(bool isRequired = false)
+    : InputProperty<(IBrowserFile? File, string? ExceptionMessage)>(() => (null, null), (input) => IsDocumentValid(input.File, isRequired, input.ExceptionMessage))
 {
     private const int MAX_ALLOWED_SIZE_MB = 5;
     private const int MAX_ALLOWED_SIZE = MAX_ALLOWED_SIZE_MB * 1024 * 1024;
 
-    public byte[] Data { get; private set; }
-    public string FileName { get; private set; }
+    public byte[] Data { get; private set; } = [];
+    public string FileName { get; private set; } = string.Empty;
 
     // Intentionally hiding the base Input property to prevent external edits.
     /// <summary>
@@ -19,28 +20,19 @@ public class DocumentInputProperty : InputProperty<(IBrowserFile? File, string? 
     /// </remarks>
     public new IBrowserFile? Input => base.Input.File;
 
-    /// <summary>
-    /// Create a new empty document input.
-    /// </summary>
-    public DocumentInputProperty(bool isRequired = false) : base(() => (null, null), (input) => IsDocumentValid(input, isRequired))
+    private static ValidationResult IsDocumentValid(IBrowserFile? file, bool isRequired, string? exceptionMessage)
     {
-        this.Data = [];
-        this.FileName = string.Empty;
-    }
-
-    private static ValidationResult IsDocumentValid((IBrowserFile? File, string? ExceptionMessage) input, bool isRequired)
-    {
-        if (input.File is null)
+        if (file is null)
             return isRequired ? new ValidationResult(false, "No file has been uploaded.") : new ValidationResult(true);
 
-        if (input.File.Size == 0)
+        if (file.Size == 0)
             return new ValidationResult(false, "Uploaded file is empty.");
 
-        if (input.File.Size > MAX_ALLOWED_SIZE)
+        if (file.Size > MAX_ALLOWED_SIZE)
             return new ValidationResult(false, $"File exceeds the maximum allowed size of {MAX_ALLOWED_SIZE_MB} MB.");
 
-        if (!string.IsNullOrEmpty(input.ExceptionMessage))
-            return new ValidationResult(false, $"File upload failed: {input.ExceptionMessage}");
+        if (!string.IsNullOrEmpty(exceptionMessage))
+            return new ValidationResult(false, $"File upload failed: {exceptionMessage}");
 
         return new ValidationResult(true);
     }
