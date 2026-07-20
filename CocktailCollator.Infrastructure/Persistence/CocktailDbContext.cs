@@ -26,16 +26,19 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
         // No need to use try/catch here, as the transaction will automatically roll back if an exception occurs.
         using var transaction = await this.Database.BeginTransactionAsync(cancellationToken);
 
+        // Remove the records of the documents from the database, do not delete the files yet, in case the database save fails.
+        var _FilesToRemove = new List<string>();
         if (this._queuedDocumentsToRemove.Count > 0)
         {
             foreach (var documentId in this._queuedDocumentsToRemove)
-                await RemoveDocumentAsync(documentId, cancellationToken);
+                _FilesToRemove.Add(await this.RemoveDocumentRecordAsync(documentId, cancellationToken));
 
             this._queuedDocumentsToRemove.Clear();
         }
 
         _ = await this.SaveChangesAsync(cancellationToken);
 
+        // Add the new documents to the database and save them to the file system.
         if (this._queuedDocumentsToAdd.Count > 0)
         {
             foreach (var _DocumentInfo in this._queuedDocumentsToAdd)
@@ -47,6 +50,13 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
         }
 
         await transaction.CommitAsync(cancellationToken);
+
+        // Delete the files from the file system after the database save has succeeded.
+        if (_FilesToRemove.Count > 0)
+        {
+            foreach (var _FilePath in _FilesToRemove)
+                await fileService.DeleteFileAsync(_FilePath, cancellationToken);
+        }
     }
 
     Guid ICocktailDbContext.QueueAddDocument<TEntity>(DocumentModel file, TEntity relatedEntity, CancellationToken cancellationToken)
@@ -91,13 +101,13 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
         return Path.Combine(_RelatedEntityTypeName, _RelatedEntityId);
     }
 
-    private async Task RemoveDocumentAsync(Guid documentId, CancellationToken cancellationToken)
+    private async Task<string> RemoveDocumentRecordAsync(Guid documentId, CancellationToken cancellationToken)
     {
         var _Document = await this.Set<Document>().FirstAsync(d => d.DocumentId == documentId, cancellationToken)
             ?? throw new InvalidOperationException($"Document with ID {documentId} not found.");
 
-        await fileService.DeleteFileAsync(_Document.FilePath, cancellationToken);
         _ = this.Remove(_Document);
+        return _Document.FilePath;
     }
 
     private record struct DocumentInfo(byte[] FileData, Document Entity, Func<string> DirectoryPath);
