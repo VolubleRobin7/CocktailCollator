@@ -13,8 +13,12 @@ public class FileService(IOptions<FileStorageOptions> fileStorageOptions) : IFil
             File.Delete(_TotalFilePath);
 
         var _FilePathDirectroy = Path.GetDirectoryName(_TotalFilePath);
-        if (!string.IsNullOrEmpty(_FilePathDirectroy) && Directory.Exists(_FilePathDirectroy))
+        if (!string.IsNullOrEmpty(_FilePathDirectroy)
+            && Directory.Exists(_FilePathDirectroy)
+            && !Directory.EnumerateFileSystemEntries(_FilePathDirectroy).Any())
+        {
             Directory.Delete(_FilePathDirectroy, false);
+        }
     }
 
     async Task IFileService.SaveFileAsync(byte[] fileData, string filePath, CancellationToken cancellationToken)

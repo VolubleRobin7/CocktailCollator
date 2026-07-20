@@ -23,6 +23,9 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
 
     async Task ICocktailDbContext.SaveChangesAsync(CancellationToken cancellationToken)
     {
+        // No need to use try/catch here, as the transaction will automatically roll back if an exception occurs.
+        using var transaction = await this.Database.BeginTransactionAsync(cancellationToken);
+
         if (this._queuedDocumentsToRemove.Count > 0)
         {
             foreach (var documentId in this._queuedDocumentsToRemove)
@@ -42,6 +45,8 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
 
             _ = await this.SaveChangesAsync(cancellationToken);
         }
+
+        await transaction.CommitAsync(cancellationToken);
     }
 
     Guid ICocktailDbContext.QueueAddDocument<TEntity>(DocumentModel file, TEntity relatedEntity, CancellationToken cancellationToken)
