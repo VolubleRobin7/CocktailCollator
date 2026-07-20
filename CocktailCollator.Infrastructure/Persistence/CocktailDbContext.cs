@@ -1,6 +1,6 @@
 using CocktailCollator.Application.Common.Interfaces;
-using CocktailCollator.Application.Models;
 using CocktailCollator.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -59,7 +59,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
         }
     }
 
-    Guid ICocktailDbContext.QueueAddDocument<TEntity>(DocumentModel file, TEntity relatedEntity, CancellationToken cancellationToken)
+    Guid ICocktailDbContext.QueueAddDocument<TEntity>(IFormFile file, TEntity relatedEntity, CancellationToken cancellationToken)
     {
         var _NewDocument = new Document
         {
@@ -67,7 +67,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
             OriginalFileName = file.FileName
         };
         _ = this.Add(_NewDocument);
-        this._queuedDocumentsToAdd.Add(new(file.Data, _NewDocument, () => this.GenerateUniqueDirectoryPath(relatedEntity)));
+        this._queuedDocumentsToAdd.Add(new(file, _NewDocument, () => this.GenerateUniqueDirectoryPath(relatedEntity)));
 
         return _NewDocument.DocumentId;
     }
@@ -82,7 +82,8 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
     {
         var _UniqueFileName = documentInfo.Entity.DocumentId.ToString() + Path.GetExtension(documentInfo.Entity.OriginalFileName);
         var _FilePath = Path.Combine(documentInfo.DirectoryPath(), _UniqueFileName);
-        await fileService.SaveFileAsync(documentInfo.FileData, _FilePath, cancellationToken);
+
+        await fileService.SaveFileAsync(documentInfo.File, _FilePath, cancellationToken);
 
         documentInfo.Entity.FilePath = _FilePath;
     }
@@ -110,7 +111,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
         return _Document.FilePath;
     }
 
-    private record struct DocumentInfo(byte[] FileData, Document Entity, Func<string> DirectoryPath);
+    private record struct DocumentInfo(IFormFile File, Document Entity, Func<string> DirectoryPath);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

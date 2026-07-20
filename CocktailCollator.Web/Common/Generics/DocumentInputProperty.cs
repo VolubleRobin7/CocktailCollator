@@ -8,8 +8,7 @@ public class DocumentInputProperty(bool isRequired = false)
     private const int MAX_ALLOWED_SIZE_MB = 5;
     private const int MAX_ALLOWED_SIZE = MAX_ALLOWED_SIZE_MB * 1024 * 1024;
 
-    public byte[] Data { get; private set; } = [];
-    public string FileName { get; private set; } = string.Empty;
+    public IFormFile? File { get; private set; }
 
     // Intentionally hiding the base Input property to prevent external edits.
     /// <summary>
@@ -52,11 +51,11 @@ public class DocumentInputProperty(bool isRequired = false)
         {
             try
             {
-                using var _Stream = new MemoryStream();
+                var _Stream = new MemoryStream();
                 await base.Input.File.OpenReadStream(MAX_ALLOWED_SIZE).CopyToAsync(_Stream);
 
-                this.Data = _Stream.ToArray();
-                this.FileName = base.Input.File.Name;
+                _Stream.Position = 0;
+                this.File = new FormFile(_Stream, 0, _Stream.Length, base.Input.File.Name, base.Input.File.Name);
             }
             catch (Exception exception)
             {

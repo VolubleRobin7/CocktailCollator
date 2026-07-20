@@ -1,4 +1,4 @@
-using CocktailCollator.Application.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 
@@ -7,7 +7,7 @@ public class CreateRecipeInputPort
     public List<CreateRecipeInputPortRecipeIngredient> Ingredients { get; set; } = [];
     public required string Name { get; set; }
     public List<CreateRecipeInputPortStep> Steps { get; set; } = [];
-    public List<DocumentModel> Images { get; set; } = [];
+    public List<IFormFile> Images { get; set; } = [];
 }
 
 public class CreateRecipeInputPortRecipeIngredient

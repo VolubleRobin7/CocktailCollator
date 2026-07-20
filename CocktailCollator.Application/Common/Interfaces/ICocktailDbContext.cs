@@ -1,4 +1,4 @@
-﻿using CocktailCollator.Application.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace CocktailCollator.Application.Common.Interfaces;
 
@@ -14,7 +14,7 @@ public interface ICocktailDbContext
     Task SaveChangesAsync(CancellationToken cancellationToken);
 
     // File Storage Methods
-    Guid QueueAddDocument<TEntity>(DocumentModel fileData, TEntity relatedEntity, CancellationToken cancellationToken) where TEntity : class;
+    Guid QueueAddDocument<TEntity>(IFormFile fileData, TEntity relatedEntity, CancellationToken cancellationToken) where TEntity : class;
 
     void QueueRemoveDocument(Guid documentId);
 }

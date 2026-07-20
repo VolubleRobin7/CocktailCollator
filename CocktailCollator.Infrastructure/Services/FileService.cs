@@ -1,5 +1,6 @@
 using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Infrastructure.Options;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace CocktailCollator.Infrastructure.Services;
@@ -21,9 +22,9 @@ public class FileService(IOptions<FileStorageOptions> fileStorageOptions) : IFil
         }
     }
 
-    async Task IFileService.SaveFileAsync(byte[] fileData, string filePath, CancellationToken cancellationToken)
+    async Task IFileService.SaveFileAsync(IFormFile file, string filePath, CancellationToken cancellationToken)
     {
-        if (fileData is null || fileData.Length == 0)
+        if (file is null || file.Length == 0)
             return;
 
         var _TotalFilePath = Path.Combine(fileStorageOptions.Value.FileStorePath, filePath);
@@ -32,6 +33,6 @@ public class FileService(IOptions<FileStorageOptions> fileStorageOptions) : IFil
         if (!string.IsNullOrEmpty(_TotalFilePathDirectory) && !Directory.Exists(_TotalFilePathDirectory))
             _ = Directory.CreateDirectory(_TotalFilePathDirectory);
 
-        await File.WriteAllBytesAsync(_TotalFilePath, fileData, cancellationToken);
+        await file.CopyToAsync(new FileStream(_TotalFilePath, FileMode.Create, FileAccess.Write), cancellationToken);
     }
 }
