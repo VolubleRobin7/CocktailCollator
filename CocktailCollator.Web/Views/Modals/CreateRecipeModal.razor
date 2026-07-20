@@ -24,13 +24,13 @@
             <div class="mb-3">
                 <label class="form-label">Recipe Image</label>
                 <InputFile @key="this._inputFileKey"
-                           OnChange="(args) => this.CreateRecipeFormModel.Image.UploadFileAsync(args.File)"
+                           OnChange="(args) => this.CreateRecipeFormModel.Images[0].UploadFileAsync(args.File)"
                            accept="image/*" 
                            class="form-control" />
 
-                @if (!this.CreateRecipeFormModel.Image.IsValid())
+                @if (!this.CreateRecipeFormModel.Images[0].IsValid())
                 {
-                    <div class="text-danger mt-1 small">@this.CreateRecipeFormModel.Image.ErrorMessage</div>
+                    <div class="text-danger mt-1 small">@this.CreateRecipeFormModel.Images[0].ErrorMessage</div>
                 }
             </div>
 

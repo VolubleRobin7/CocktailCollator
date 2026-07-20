@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace CocktailCollator.Web.Common.Generics;
 
@@ -22,16 +22,16 @@ public class DocumentInputProperty : InputProperty<(IBrowserFile? File, string? 
     /// <summary>
     /// Create a new empty document input.
     /// </summary>
-    public DocumentInputProperty() : base(() => (null, null), IsDocumentValid)
+    public DocumentInputProperty(bool isRequired = false) : base(() => (null, null), (input) => IsDocumentValid(input, isRequired))
     {
         this.Data = [];
         this.FileName = string.Empty;
     }
 
-    private static ValidationResult IsDocumentValid((IBrowserFile? File, string? ExceptionMessage) input)
+    private static ValidationResult IsDocumentValid((IBrowserFile? File, string? ExceptionMessage) input, bool isRequired)
     {
         if (input.File is null)
-            return new ValidationResult(false, "No file has been uploaded.");
+            return isRequired ? new ValidationResult(false, "No file has been uploaded.") : new ValidationResult(true);
 
         if (input.File.Size == 0)
             return new ValidationResult(false, "Uploaded file is empty.");

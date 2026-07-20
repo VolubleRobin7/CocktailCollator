@@ -15,7 +15,10 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
     // That would allow more precise control, could set better validation, and reset per item
     // Or possibly even InputProp<List<InputProp<object... but that could be overkill
     // Could require the creation of a new class that wraps List, something like InputPropertyList<T>
-    public DocumentInputProperty Image { get; set; } = new();
+    // If I do that, I would have to handle how each InputProperty gets created on add to list,
+    // as the consumer would likely then have to handle the constructor parameters.
+    // That would not be ideal. Maybe alter the add method to just take in the object?
+    public List<DocumentInputProperty> Images { get; set; } = [new()];
     public InputProperty<ObservableCollection<CreateRecipeFormModelIngredient>> Ingredients { get; set; }
         = new(() => [], ValidateIngredients);
     public InputProperty<string> Name { get; set; }
@@ -29,7 +32,7 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
     {
         this._mapper = mapper;
 
-        this.Image.OnChange = () => OnChange?.Invoke();
+        this.Images[0].OnChange = () => OnChange?.Invoke();
         this.Ingredients.Input.CollectionChanged += (_, args) =>
         {
             if (args.NewItems is not null)
@@ -60,14 +63,18 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
         => this._mapper.Map<CreateRecipeInputPort>(this);
 
     public bool IsValid()
-        => this.Name.IsValid() && this.Steps.IsValid() && this.Ingredients.IsValid() && this.Image.IsValid();
+        => this.Name.IsValid()
+            && this.Steps.IsValid()
+            && this.Ingredients.IsValid()
+            && this.Images.All(i => i.IsValid());
 
     public void ResetToDefault()
     {
         this.Name.ResetToDefault();
         this.Steps.ResetToDefault();
         this.Ingredients.ResetToDefault();
-        this.Image.ResetToDefault();
+        foreach (var _Image in this.Images)
+            _Image.ResetToDefault();
     }
 
     private static bool ValidateIngredients(ObservableCollection<CreateRecipeFormModelIngredient> ingredients)
