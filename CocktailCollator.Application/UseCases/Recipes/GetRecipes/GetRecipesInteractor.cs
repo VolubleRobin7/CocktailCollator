@@ -7,39 +7,25 @@ public class GetRecipesInteractor(ICocktailDbContext dbContext)
 {
     public Task Interact(IGetRecipesOutputPort outputPort, CancellationToken cancellationToken)
     {
-        var _Recipes = dbContext.GetEntities<Recipe>()
-            .Select(r => new Recipe()
+        var _Query = dbContext.GetEntities<Recipe>()
+            .Select(r => new
             {
-                RecipeId = r.RecipeId,
-                Name = r.Name,
-                RecipeCategoryId = r.RecipeCategoryId,
-                Category = r.Category,
-                Ingredients = r.Ingredients!
-                    .Select(ri => new RecipeIngredient
-                    {
-                        Amount = ri.Amount,
-                        Ingredient = ri.Ingredient,
-                        IngredientId = ri.IngredientId,
-                        Measurement = ri.Measurement,
-                        MeasurementId = ri.MeasurementId,
-                        RecipeId = ri.RecipeId,
-                    })
-                    .ToList(),
-                Steps = r.Steps,
-                Images = r.Images!
-                    .Select(ri => new RecipeDocument
-                    {
-                        RecipeId = ri.RecipeId,
-                        DocumentId = ri.DocumentId,
-                        Document = new Document
-                        {
-                            DocumentId = ri.Document.DocumentId,
-                            FilePath = ri.Document.FilePath,
-                            OriginalFileName = ri.Document.OriginalFileName,
-                        }
-                    }).ToList()
+                Recipe = r,
+                r.Category,
+                Ingredients = r.Ingredients!.Select(ri => new
+                {
+                    RecipeIngredient = ri,
+                    ri.Ingredient,
+                    ri.Measurement
+                }),
+                r.Steps,
+                Images = r.Images!.Select(ri => new
+                {
+                    RecipeDocument = ri,
+                    ri.Document
+                })
             });
 
-        return outputPort.Success([.. _Recipes], cancellationToken);
+        return outputPort.Success([.. _Query.AsEnumerable().Select(x => x.Recipe)], cancellationToken);
     }
 }
