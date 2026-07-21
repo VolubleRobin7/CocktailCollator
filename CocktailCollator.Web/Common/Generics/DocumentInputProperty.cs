@@ -2,64 +2,79 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace CocktailCollator.Web.Common.Generics;
 
-public class DocumentInputProperty(bool isRequired = false)
-    : InputProperty<(IBrowserFile? File, string? ExceptionMessage)>(() => (null, null), (input) => IsDocumentValid(input.File, isRequired, input.ExceptionMessage))
+public class DocumentInputProperty(bool isRequired = false, bool isOnlyValidIfUploaded = true)
+    : InputProperty<IBrowserFile?>(() => null, (input) => false)
 {
     private const int MAX_ALLOWED_SIZE_MB = 5;
     private const int MAX_ALLOWED_SIZE = MAX_ALLOWED_SIZE_MB * 1024 * 1024;
 
-    public IFormFile? File { get; private set; }
+    private string? _exceptionMessage;
 
-    // Intentionally hiding the base Input property to prevent external edits.
+    public IFormFile? Output { get; private set; }
+
     /// <summary>
-    /// The IBrowserFile that was uploaded.
+    /// Confirms whether the input document is valid and uploaded successfully.
     /// </summary>
-    /// <remarks>
-    /// This property should generally not be accessed, instead use <see cref="UploadFileAsync(IBrowserFile?)"/> to input a new file.
-    /// </remarks>
-    public new IBrowserFile? Input => base.Input.File;
-
-    private static ValidationResult IsDocumentValid(IBrowserFile? file, bool isRequired, string? exceptionMessage)
+    /// <returns>True if valid.</returns>
+    public override bool IsValid()
     {
-        if (file is null)
+        var _ValidationResult = this.IsDocumentValid();
+        this.ErrorMessage = _ValidationResult.IsValid ? "" : _ValidationResult.ErrorMessage ?? "";
+        return _ValidationResult.IsValid;
+    }
+
+    /// <summary>
+    /// Clear the Input and Output.
+    /// </summary>
+    public override void ResetToDefault()
+    {
+        this.Output = null;
+        this._exceptionMessage = null;
+        base.ResetToDefault();
+    }
+
+    private ValidationResult IsDocumentValid()
+    {
+        if (this.Input is null)
             return isRequired ? new ValidationResult(false, "No file has been uploaded.") : new ValidationResult(true);
 
-        if (file.Size == 0)
+        if (this.Input.Size == 0)
             return new ValidationResult(false, "Uploaded file is empty.");
 
-        if (file.Size > MAX_ALLOWED_SIZE)
+        if (this.Input.Size > MAX_ALLOWED_SIZE)
             return new ValidationResult(false, $"File exceeds the maximum allowed size of {MAX_ALLOWED_SIZE_MB} MB.");
 
-        if (!string.IsNullOrEmpty(exceptionMessage))
-            return new ValidationResult(false, $"File upload failed: {exceptionMessage}");
+        if (isOnlyValidIfUploaded && !string.IsNullOrEmpty(this._exceptionMessage))
+            return new ValidationResult(false, $"File upload failed: {this._exceptionMessage}");
 
         return new ValidationResult(true);
     }
 
     /// <summary>
-    /// Uploads a file and parses the data if successful.
+    /// Uploads the Input file and parses the data into Output if successful.
     /// </summary>
-    /// <param name="file">The file to upload.</param>
     /// <returns>
     /// True if the upload was successful and the file is valid, false otherwise.
     /// </returns>
-    public async Task<bool> UploadFileAsync(IBrowserFile? file)
+    public async Task<bool> UploadFileAsync()
     {
-        base.Input = (file, null);
+        this.Output = null;
 
-        if (base.Input.File is not null && base.Input.File.Size <= MAX_ALLOWED_SIZE)
+        if (this.Input is not null && this.Input.Size <= MAX_ALLOWED_SIZE)
         {
             try
             {
                 var _Stream = new MemoryStream();
-                await base.Input.File.OpenReadStream(MAX_ALLOWED_SIZE).CopyToAsync(_Stream);
+                await this.Input.OpenReadStream(MAX_ALLOWED_SIZE).CopyToAsync(_Stream);
 
                 _Stream.Position = 0;
-                this.File = new FormFile(_Stream, 0, _Stream.Length, base.Input.File.Name, base.Input.File.Name);
+                this.Output = new FormFile(_Stream, 0, _Stream.Length, this.Input.Name, this.Input.Name);
+
+                this._exceptionMessage = null;
             }
             catch (Exception exception)
             {
-                base.Input = (null, $"File upload failed: {exception.Message}");
+                this._exceptionMessage = exception.Message;
             }
         }
 

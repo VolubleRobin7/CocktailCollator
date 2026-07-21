@@ -7,6 +7,6 @@ public class CommonMappingsProfile : Profile
 {
     public CommonMappingsProfile()
     {
-        _ = this.CreateMap<DocumentInputProperty, IFormFile>().ConstructUsing(input => input.File!);
+        _ = this.CreateMap<DocumentInputProperty, IFormFile>().ConstructUsing(input => input.Output!);
     }
 }

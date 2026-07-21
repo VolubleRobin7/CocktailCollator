@@ -24,7 +24,7 @@
             <div class="mb-3">
                 <label class="form-label">Recipe Image</label>
                 <InputFile @key="this._inputFileKey"
-                           OnChange="(args) => this.CreateRecipeFormModel.Images[0].UploadFileAsync(args.File)"
+                           OnChange="this.UploadFileAsync"
                            accept="image/*" 
                            class="form-control" />
 
@@ -165,5 +165,11 @@
     {
         _ = this.CreateRecipeFormModel.Steps.Input.Remove(stepIndex);
         this.RecalculateSteps();
+    }
+
+    private Task UploadFileAsync(InputFileChangeEventArgs args)
+    {
+        this.CreateRecipeFormModel.Images[0].Input = args.File;
+        return this.CreateRecipeFormModel.Images[0].UploadFileAsync();
     }
 }
