@@ -1,0 +1,87 @@
+@using CocktailCollator.Web.Common.Generics
+
+<div @attributes="this.AdditionalAttributes">
+    @if (!string.IsNullOrWhiteSpace(this.Title))
+    {
+        <label class="form-label">@this.Title</label>
+    }
+    
+    <InputFile @key="this._inputFileKey"
+               OnChange="this.UploadFileAsync"
+               accept="@this.Accept"
+               multiple="@this.Multiple"
+               class="form-control" />
+
+    @if (this.Multiple && this.Documents is not null)
+    {
+        @foreach (var document in this.Documents)
+        {
+            @if (!document.IsValid())
+            {
+                <div class="text-danger mt-1 small">@document.ErrorMessage</div>
+            }
+        }
+    }
+    else if (!this.Multiple && this.Document is not null)
+    {
+        @if (!this.Document.IsValid())
+        {
+            <div class="text-danger mt-1 small">@this.Document.ErrorMessage</div>
+        }
+    }
+</div>
+
+@code {
+    private Guid _inputFileKey = Guid.NewGuid();
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    [Parameter]
+    public string Accept { get; set; } = "*/*";
+
+    [Parameter]
+    public DocumentInputProperty? Document { get; set; }
+
+    [Parameter]
+    public ICollection<DocumentInputProperty>? Documents { get; set; }
+
+    [Parameter]
+    public bool Multiple { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<InputFileChangeEventArgs> OnFileUploaded { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    public void Reset()
+    {
+        this._inputFileKey = Guid.NewGuid();
+        this.StateHasChanged();
+    }
+
+    private async Task UploadFileAsync(InputFileChangeEventArgs args)
+    {
+        if (this.Multiple && this.Documents is not null)
+        {
+            this.Documents.Clear();
+            var _UploadTasks = new List<Task>();
+            foreach (var _File in args.GetMultipleFiles())
+            {
+                var _DocumentInput = new DocumentInputProperty();
+                _DocumentInput.Input = _File;
+                this.Documents.Add(_DocumentInput);
+                _UploadTasks.Add(_DocumentInput.UploadFileAsync());
+            }
+            await Task.WhenAll(_UploadTasks);
+        }
+        else if (!this.Multiple && this.Document is not null)
+        {
+            this.Document.Input = args.File;
+            await this.Document.UploadFileAsync();
+        }
+
+        await this.OnFileUploaded.InvokeAsync(args);
+    }
+}

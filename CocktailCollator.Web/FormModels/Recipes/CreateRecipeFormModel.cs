@@ -18,7 +18,7 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
     // If I do that, I would have to handle how each InputProperty gets created on add to list,
     // as the consumer would likely then have to handle the constructor parameters.
     // That would not be ideal. Maybe alter the add method to just take in the object?
-    public List<DocumentInputProperty> Images { get; set; } = [new()];
+    public ObservableCollection<DocumentInputProperty> Images { get; set; } = [];
     public InputProperty<ObservableCollection<CreateRecipeFormModelIngredient>> Ingredients { get; set; }
         = new(() => [], ValidateIngredients);
     public InputProperty<string> Name { get; set; }
@@ -32,7 +32,16 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
     {
         this._mapper = mapper;
 
-        this.Images[0].OnChange = () => OnChange?.Invoke();
+        this.Images.CollectionChanged += (_, args) =>
+        {
+            if (args.NewItems is not null)
+            {
+                foreach (DocumentInputProperty image in args.NewItems)
+                {
+                    image.OnChange = () => OnChange?.Invoke();
+                }
+            }
+        };
         this.Ingredients.Input.CollectionChanged += (_, args) =>
         {
             if (args.NewItems is not null)
@@ -73,8 +82,7 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
         this.Name.ResetToDefault();
         this.Steps.ResetToDefault();
         this.Ingredients.ResetToDefault();
-        foreach (var _Image in this.Images)
-            _Image.ResetToDefault();
+        this.Images.Clear();
     }
 
     private static bool ValidateIngredients(ObservableCollection<CreateRecipeFormModelIngredient> ingredients)

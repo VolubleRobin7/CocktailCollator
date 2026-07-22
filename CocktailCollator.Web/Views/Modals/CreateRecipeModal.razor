@@ -1,5 +1,4 @@
 @using CocktailCollator.Web.FormModels.Recipes
-@using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Helpers
@@ -21,18 +20,12 @@
                         InvalidMessage="Name requires a value."
                         Title="Recipe Name" />
 
-            <div class="mb-3">
-                <label class="form-label">Recipe Image</label>
-                <InputFile @key="this._inputFileKey"
-                           OnChange="this.UploadFileAsync"
-                           accept="image/*" 
-                           class="form-control" />
-
-                @if (!this.CreateRecipeFormModel.Images[0].IsValid())
-                {
-                    <div class="text-danger mt-1 small">@this.CreateRecipeFormModel.Images[0].ErrorMessage</div>
-                }
-            </div>
+            <DocumentUpload @ref="this._documentUpload"
+                            Accept="image/*"
+                            Documents="this.CreateRecipeFormModel.Images"
+                            Multiple="true"
+                            Title="Recipe Images"
+                            class="mb-3" />
 
             <h4>Ingredients</h4>
 
@@ -109,7 +102,7 @@
 </Modal>
 
 @code {
-    private Guid _inputFileKey = Guid.NewGuid();
+    private DocumentUpload _documentUpload = default!;
     private Modal _modal = default!;
 
     [Parameter]
@@ -148,7 +141,7 @@
     {
         await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
         this.CreateRecipeFormModel.ResetToDefault();
-        this._inputFileKey = Guid.NewGuid();
+        this._documentUpload.Reset();
         await this.OnAfterCreation.InvokeAsync();
     }
 
@@ -167,9 +160,4 @@
         this.RecalculateSteps();
     }
 
-    private Task UploadFileAsync(InputFileChangeEventArgs args)
-    {
-        this.CreateRecipeFormModel.Images[0].Input = args.File;
-        return this.CreateRecipeFormModel.Images[0].UploadFileAsync();
-    }
 }
