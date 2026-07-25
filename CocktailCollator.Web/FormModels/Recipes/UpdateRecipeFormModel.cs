@@ -12,6 +12,8 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
 {
     private readonly IMapper _mapper;
 
+    public InputProperty<ObservableCollection<UpdateRecipeFormModelImage>> Images { get; set; }
+        = new(() => [], (inputList) => true); // update validation
     public InputProperty<ObservableCollection<UpdateRecipeFormModelIngredient>> Ingredients { get; set; }
         = new(() => [], ValidateIngredients);
     public InputProperty<string> Name { get; set; }
@@ -79,6 +81,13 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
             && ingredient.Amount.IsValid()
             && ingredient.Measurement.IsValid());
     }
+}
+
+public class UpdateRecipeFormModelImage
+{
+    public Guid? ExistingImageId { get; set; }
+    public string? ExistingImageUrl { get; set; }
+    public DocumentInputProperty? NewImage { get; set; } = new();
 }
 
 public class UpdateRecipeFormModelIngredient

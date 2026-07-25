@@ -33,7 +33,8 @@ public class RecipeFormModelProfile : Profile
             .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input))
             .ForMember(d => d.RecipeCategoryId, o => o.Ignore())
             .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients.Input))
-            .ForMember(d => d.Steps, o => o.MapFrom(s => s.Steps.Input));
+            .ForMember(d => d.Steps, o => o.MapFrom(s => s.Steps.Input))
+            .ForMember(d => d.Images, o => o.MapFrom(s => s.Images.Input));
 
         _ = this.CreateMap<UpdateRecipeFormModelIngredient, UpdateRecipeInputPortRecipeIngredient>()
             .ForMember(d => d.Amount, o => o.MapFrom(s => s.Amount.Input))
@@ -47,5 +48,9 @@ public class RecipeFormModelProfile : Profile
         _ = this.CreateMap<UpdateRecipeFormModelStep, UpdateRecipeInputPortStep>()
             .ForMember(d => d.Instruction, o => o.MapFrom(s => s.Instruction.Input))
             .ForMember(d => d.Order, o => o.MapFrom(s => s.Order.Input));
+
+        _ = this.CreateMap<UpdateRecipeFormModelImage, UpdateRecipeInputPortImage>()
+            .ForMember(d => d.ExistingDocumentId, o => o.MapFrom(s => s.ExistingImageId))
+            .ForMember(d => d.NewDocument, o => o.MapFrom(s => s.NewImage));
     }
 }

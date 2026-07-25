@@ -99,6 +99,7 @@ public class RecipesViewModel
                 _Existing.Ingredients = _Updated.Ingredients;
                 _Existing.Steps = _Updated.Steps;
                 _Existing.Category = _Updated.Category;
+                _Existing.Images = _Updated.Images;
             }
 
             toastService.ShowToast(ToastType.Success, "Recipe Updated", $"{recipe.Name} updated successfully");
