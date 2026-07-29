@@ -64,39 +64,12 @@
                 </ul>
             </div>
 
-            @if (this.UpdateRecipeFormModel.Images.Input.Any(i => i.ExistingImageId.HasValue))
-            {
-                <div class="mb-3">
-                    <label class="form-label">Current Images</label>
-                    <ul class="list-group">
-                        @foreach (var _Image in this.UpdateRecipeFormModel.Images.Input.Where(i => i.ExistingImageId.HasValue))
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <img alt="Recipe Image" 
-                                         class="me-2 rounded" 
-                                         src="@_Image.ExistingImageUrl" 
-                                         style="max-height: 50px; max-width: 50px; object-fit: cover;" />
-
-                                    <span>Image</span>
-                                </div>
-
-                                <Button @onclick="() => this.UpdateRecipeFormModel.Images.Input.Remove(_Image)"
-                                        Size="ButtonSize.Small"
-                                        Text="Remove"
-                                        Theme="ButtonTheme.Danger" />
-                            </li>
-                        }
-                    </ul>
-                </div>
-            }
-
             <DocumentUpload @ref="this._documentUpload"
                             Accept="image/*"
-                            Documents="this._newDocuments"
-                            Multiple="true"
-                            Title="New Images"
-                            class="mb-3" />
+                            Documents="this.UpdateRecipeFormModel.Images"
+                            Multiple
+                            Title="Images"
+                            class="mb-3 mt-1" />
 
             <h4>Ingredients</h4>
 
@@ -155,7 +128,7 @@
                                     Text="Remove" />
                         </li>
                     }
-                </ul>
+                </ul> 
             </div>
 
             <FormChangeWrapper FormModel="this.UpdateRecipeFormModel">
@@ -177,7 +150,6 @@
     private string _categorySearchString = "";
     private DocumentUpload _documentUpload = default!;
     private Modal _modal = default!;
-    private List<DocumentInputProperty> _newDocuments = [];
 
     [Parameter]
     public EventCallback OnAfterUpdate { get; set; }
@@ -213,9 +185,6 @@
 
     private async Task OnClickUpdateAsync()
     {
-        foreach (var _NewImage in this._newDocuments)
-            this.UpdateRecipeFormModel.Images.Input.Add(new UpdateRecipeFormModelImage { NewImage = _NewImage });
-
         await this.RecipesViewModel.UpdateCommand.ExecuteAsync(this.UpdateRecipeFormModel.ExtractToInputPort());
         await this.OnAfterUpdate.InvokeAsync();
     }
@@ -227,12 +196,9 @@
         this.UpdateRecipeFormModel.Name.Input = recipe.Name ?? string.Empty;
         this.UpdateRecipeFormModel.RecipeCategory.Input = recipe.Category;
 
-        this.UpdateRecipeFormModel.Images.ResetToDefault();
+        this.UpdateRecipeFormModel.Images.Clear();
         foreach (var _Image in recipe.Images ?? [])
-        {
-            var _ExistingImage = new UpdateRecipeFormModelImage { ExistingImageId = _Image.DocumentId, ExistingImageUrl = _Image.Url };
-            this.UpdateRecipeFormModel.Images.Input.Add(_ExistingImage);
-        }
+            this.UpdateRecipeFormModel.Images.Add(_Image.AsInputProperty());
 
         this.UpdateRecipeFormModel.Ingredients.Input.Clear();
         foreach (var ingredient in recipe.Ingredients ?? [])

@@ -10,6 +10,8 @@ public class DocumentInputProperty(bool isRequired = false, bool isOnlyValidIfUp
 
     private string? _exceptionMessage;
 
+    public Guid? ExistingDocumentId { get; set; }
+    public string? ExistingDocumentUrl { get; set; } // This should only ever be how to access the existing file. Don't add more properties.
     public IFormFile? Output { get; private set; }
 
     /// <summary>

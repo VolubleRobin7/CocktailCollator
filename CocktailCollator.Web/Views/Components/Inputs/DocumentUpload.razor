@@ -1,4 +1,5 @@
 @using CocktailCollator.Web.Common.Generics
+@using CocktailCollator.Web.Views.Components.Buttons
 
 <div @attributes="this.AdditionalAttributes">
     @if (!string.IsNullOrWhiteSpace(this.Title))
@@ -6,28 +7,44 @@
         <label class="form-label">@this.Title</label>
     }
     
+    @if (this.GetAllDocuments().Any(d => d.ExistingDocumentId.HasValue && d.Input is null))
+    {
+        <div class="mb-3">
+            <ul class="list-group">
+                @foreach (var document in this.GetAllDocuments().Where(d => d.ExistingDocumentId.HasValue && d.Input is null))
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            @if (!string.IsNullOrWhiteSpace(document.ExistingDocumentUrl))
+                            {
+                                <img alt="Document Image" 
+                                     class="me-2 rounded existing-image" 
+                                     src="@document.ExistingDocumentUrl" />
+                            }
+
+                            @* This should be the name of the document, once it is passed back from the back-end *@
+                            <span>@(string.IsNullOrWhiteSpace(document.ExistingDocumentUrl) ? "Document" : "Image")</span>
+                        </div>
+
+                        <Button @onclick="() => this.RemoveDocument(document)"
+                                Size="ButtonSize.Small"
+                                Text="Remove"
+                                Theme="ButtonTheme.Danger" />
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+
     <InputFile @key="this._inputFileKey"
                OnChange="this.UploadFileAsync"
                accept="@this.Accept"
                multiple="@this.Multiple"
                class="form-control" />
 
-    @if (this.Multiple && this.Documents is not null)
+    @foreach (var document in this.GetAllDocuments().Where(d => !d.IsValid()))
     {
-        @foreach (var document in this.Documents)
-        {
-            @if (!document.IsValid())
-            {
-                <div class="text-danger mt-1 small">@document.ErrorMessage</div>
-            }
-        }
-    }
-    else if (!this.Multiple && this.Document is not null)
-    {
-        @if (!this.Document.IsValid())
-        {
-            <div class="text-danger mt-1 small">@this.Document.ErrorMessage</div>
-        }
+        <div class="text-danger mt-1 small">@document.ErrorMessage</div>
     }
 </div>
 
@@ -55,17 +72,44 @@
     [Parameter]
     public string? Title { get; set; }
 
+    private IEnumerable<DocumentInputProperty> GetAllDocuments()
+    {
+        if (this.Multiple && this.Documents is not null)
+            return this.Documents;
+        
+        if (!this.Multiple && this.Document is not null)
+            return [this.Document];
+
+        return [];
+    }
+
     public void Reset()
     {
         this._inputFileKey = Guid.NewGuid();
         this.StateHasChanged();
     }
 
+    private void RemoveDocument(DocumentInputProperty document)
+    {
+        if (this.Multiple && this.Documents is not null)
+            this.Documents.Remove(document);
+        else if (!this.Multiple && this.Document == document)
+        {
+            this.Document.ExistingDocumentId = null;
+            this.Document.ExistingDocumentUrl = null;
+            this.Document.ResetToDefault();
+        }
+    }
+
     private async Task UploadFileAsync(InputFileChangeEventArgs args)
     {
         if (this.Multiple && this.Documents is not null)
         {
+            var _ExistingDocuments = this.Documents.Where(d => d.ExistingDocumentId.HasValue).ToList(); // Must be a list so that they are not lost in the clear.
             this.Documents.Clear();
+            foreach (var _Document in _ExistingDocuments)
+                this.Documents.Add(_Document);
+
             var _UploadTasks = new List<Task>();
             foreach (var _File in args.GetMultipleFiles())
             {
