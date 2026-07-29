@@ -11,6 +11,7 @@ public class CommonMappingsProfile : Profile
         _ = this.CreateMap<DocumentInputProperty, IFormFile>().ConstructUsing(input => input.Output!);
 
         _ = this.CreateMap<DocumentInputProperty, DocumentModel>()
+            .ForMember(d => d.ExistingDocumentId, o => o.MapFrom(s => s.Existing!.Id))
             .ForMember(d => d.NewDocument, o => o.MapFrom(s => s.Output));
     }
 }

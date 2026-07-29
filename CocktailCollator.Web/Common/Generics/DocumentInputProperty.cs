@@ -10,8 +10,7 @@ public class DocumentInputProperty(bool isRequired = false, bool isOnlyValidIfUp
 
     private string? _exceptionMessage;
 
-    public Guid? ExistingDocumentId { get; set; }
-    public string? ExistingDocumentUrl { get; set; } // This should only ever be how to access the existing file. Don't add more properties.
+    public ExistingDocument? Existing { get; set; }
     public IFormFile? Output { get; private set; }
 
     /// <summary>
@@ -53,6 +52,15 @@ public class DocumentInputProperty(bool isRequired = false, bool isOnlyValidIfUp
     }
 
     /// <summary>
+    /// Whether this input document is an existing document in the filesystem and that nothing is input to override it.
+    /// </summary>
+    /// <returns>
+    /// True if existing and unedited, false if either not existing or going to be overridden.
+    /// </returns>
+    public bool IsExisting()
+        => this.Existing is not null && this.Input is null;
+
+    /// <summary>
     /// Uploads the Input file and parses the data into Output if successful.
     /// </summary>
     /// <returns>
@@ -83,5 +91,13 @@ public class DocumentInputProperty(bool isRequired = false, bool isOnlyValidIfUp
         this.OnChange?.Invoke();
         // Set the correct ErrorMessage
         return this.IsValid();
+    }
+
+    // This is theoretically just a copy of DocumentViewModel, but separated so that a generic does not rely on a specific VM.
+    public class ExistingDocument
+    {
+        public string? FileName { get; set; }
+        public required Guid Id { get; set; }
+        public string? Url { get; set; } // This should be how to access the existing file.
     }
 }
