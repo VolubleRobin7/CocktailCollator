@@ -9,37 +9,35 @@
     
     @if (this.GetAllDocuments().Any(d => d.IsExisting()))
     {
-        <div class="mb-3">
-            <ul class="list-group">
-                @foreach (var document in this.GetAllDocuments().Where(d => d.IsExisting()))
-                {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            @if (!string.IsNullOrWhiteSpace(document.Existing!.Url))
-                            {
-                                <img alt="Document Image" 
-                                     class="me-2 rounded existing-image" 
-                                     src="@document.Existing.Url" />
-                            }
+        <ul class="list-group">
+            @foreach (var document in this.GetAllDocuments().Where(d => d.IsExisting()))
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center rounded-bottom-0">
+                    <div>
+                        @if (!string.IsNullOrWhiteSpace(document.Existing!.Url))
+                        {
+                            <img alt="Document Image" 
+                                    class="me-2 rounded existing-image" 
+                                    src="@document.Existing.Url" />
+                        }
 
-                            <span>@(document.Existing.FileName ?? "Document")</span>
-                        </div>
+                        <span>@(document.Existing.FileName ?? "Document")</span>
+                    </div>
 
-                        <Button @onclick="() => this.RemoveDocument(document)"
-                                Size="ButtonSize.Small"
-                                Text="Remove"
-                                Theme="ButtonTheme.Danger" />
-                    </li>
-                }
-            </ul>
-        </div>
+                    <Button @onclick="() => this.RemoveDocument(document)"
+                            Size="ButtonSize.Small"
+                            Text="Remove"
+                            Theme="ButtonTheme.Danger" />
+                </li>
+            }
+        </ul>
     }
 
     <InputFile @key="this._inputFileKey"
                OnChange="this.UploadFileAsync"
                accept="@this.Accept"
                multiple="@this.Multiple"
-               class="form-control" />
+               class="@("form-control" + (this.GetAllDocuments().Any(d => d.IsExisting()) ? " border-top-0 rounded-top-0" : ""))" />
 
     @foreach (var document in this.GetAllDocuments().Where(d => !d.IsValid()))
     {
@@ -75,7 +73,7 @@
     {
         if (this.Multiple && this.Documents is not null)
             return this.Documents;
-        
+
         if (!this.Multiple && this.Document is not null)
             return [this.Document];
 
