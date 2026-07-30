@@ -37,6 +37,10 @@ ENV SA_PASSWORD=YourStrong!Passw0rd
 ENV ASPNETCORE_URLS=http://+:7012
 ENV ASPNETCORE_ENVIRONMENT=Container
 
+# File Storage configuration
+RUN mkdir -p /app/files
+VOLUME /app/files
+
 EXPOSE 7012
 #EXPOSE 1433
 
