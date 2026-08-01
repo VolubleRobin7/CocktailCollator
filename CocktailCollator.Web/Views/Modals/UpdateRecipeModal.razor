@@ -1,10 +1,11 @@
+@using CocktailCollator.Web.Common.Generics
 @using CocktailCollator.Web.FormModels.Recipes
-@using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.ViewModels.RecipeCategories
+@using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Helpers
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
-@using CocktailCollator.Web.Views.Components.Helpers
 
 @inject UpdateRecipeFormModel UpdateRecipeFormModel
 @inject RecipesViewModel RecipesViewModel
@@ -63,6 +64,13 @@
                 </ul>
             </div>
 
+            <DocumentUpload @ref="this._documentUpload"
+                            Accept="image/*"
+                            Documents="this.UpdateRecipeFormModel.Images"
+                            Multiple
+                            Title="Images"
+                            class="mb-3 mt-1" />
+
             <h4>Ingredients</h4>
 
             <Button @onclick="() => this.UpdateRecipeFormModel.Ingredients.Input.Add(new())"
@@ -120,7 +128,7 @@
                                     Text="Remove" />
                         </li>
                     }
-                </ul>
+                </ul> 
             </div>
 
             <FormChangeWrapper FormModel="this.UpdateRecipeFormModel">
@@ -140,6 +148,7 @@
 @code {
     private List<RecipeCategoryViewModel> _categorySearchResults = [];
     private string _categorySearchString = "";
+    private DocumentUpload _documentUpload = default!;
     private Modal _modal = default!;
 
     [Parameter]
@@ -177,6 +186,8 @@
     private async Task OnClickUpdateAsync()
     {
         await this.RecipesViewModel.UpdateCommand.ExecuteAsync(this.UpdateRecipeFormModel.ExtractToInputPort());
+        this._documentUpload.Reset();
+        this.UpdateRecipeFormModel.ResetToDefault();
         await this.OnAfterUpdate.InvokeAsync();
     }
 
@@ -186,6 +197,10 @@
         this.UpdateRecipeFormModel.RecipeId.Input = recipe.RecipeId;
         this.UpdateRecipeFormModel.Name.Input = recipe.Name ?? string.Empty;
         this.UpdateRecipeFormModel.RecipeCategory.Input = recipe.Category;
+
+        this.UpdateRecipeFormModel.Images.Clear();
+        foreach (var _Image in recipe.Images ?? [])
+            this.UpdateRecipeFormModel.Images.Add(_Image.AsInputProperty());
 
         this.UpdateRecipeFormModel.Ingredients.Input.Clear();
         foreach (var ingredient in recipe.Ingredients ?? [])

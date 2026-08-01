@@ -24,7 +24,7 @@ public class InputProperty<TEntity>
     /// <summary>
     /// The current error message for the input based on the validation function. 
     /// </summary>
-    public string ErrorMessage { get; private set; } = DEFAULT_ERROR_MESSAGE;
+    public string ErrorMessage { get; private protected set; } = DEFAULT_ERROR_MESSAGE;
     /// <summary>
     /// An Action that is invoked whenever <see cref="Input"/> is changed.
     /// </summary>
@@ -58,17 +58,17 @@ public class InputProperty<TEntity>
     /// Uses the validation function provided on construction to check whether the input is valid.
     /// </summary>
     /// <returns>True if valid.</returns>
-    public bool IsValid()
+    public virtual bool IsValid()
     {
-        var result = this._validationFunc.Invoke(this._entity);
-        this.ErrorMessage = result.ErrorMessage ?? (result.IsValid ? "" : DEFAULT_ERROR_MESSAGE);
-        return result.IsValid;
+        var _Result = this._validationFunc.Invoke(this._entity);
+        this.ErrorMessage = _Result.ErrorMessage ?? (_Result.IsValid ? "" : DEFAULT_ERROR_MESSAGE);
+        return _Result.IsValid;
     }
 
     /// <summary>
     /// Resets the Input to the original value defined during construction.
     /// </summary>
-    public void ResetToDefault()
+    public virtual void ResetToDefault()
     {
         this._entity = this._defaultEntityFunc.Invoke();
         this.OnChange?.Invoke();

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 using CocktailCollator.Web.Common.Generics;
 using CocktailCollator.Web.Common.Interfaces;
@@ -15,6 +15,10 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
     // That would allow more precise control, could set better validation, and reset per item
     // Or possibly even InputProp<List<InputProp<object... but that could be overkill
     // Could require the creation of a new class that wraps List, something like InputPropertyList<T>
+    // If I do that, I would have to handle how each InputProperty gets created on add to list,
+    // as the consumer would likely then have to handle the constructor parameters.
+    // That would not be ideal. Maybe alter the add method to just take in the object?
+    public ObservableCollection<DocumentInputProperty> Images { get; set; } = [];
     public InputProperty<ObservableCollection<CreateRecipeFormModelIngredient>> Ingredients { get; set; }
         = new(() => [], ValidateIngredients);
     public InputProperty<string> Name { get; set; }
@@ -28,6 +32,16 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
     {
         this._mapper = mapper;
 
+        this.Images.CollectionChanged += (_, args) =>
+        {
+            if (args.NewItems is not null)
+            {
+                foreach (DocumentInputProperty image in args.NewItems)
+                {
+                    image.OnChange = () => OnChange?.Invoke();
+                }
+            }
+        };
         this.Ingredients.Input.CollectionChanged += (_, args) =>
         {
             if (args.NewItems is not null)
@@ -58,13 +72,17 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
         => this._mapper.Map<CreateRecipeInputPort>(this);
 
     public bool IsValid()
-        => this.Name.IsValid() && this.Steps.IsValid() && this.Ingredients.IsValid();
+        => this.Name.IsValid()
+            && this.Steps.IsValid()
+            && this.Ingredients.IsValid()
+            && this.Images.All(i => i.IsValid());
 
     public void ResetToDefault()
     {
         this.Name.ResetToDefault();
         this.Steps.ResetToDefault();
         this.Ingredients.ResetToDefault();
+        this.Images.Clear();
     }
 
     private static bool ValidateIngredients(ObservableCollection<CreateRecipeFormModelIngredient> ingredients)

@@ -1,5 +1,4 @@
 @using CocktailCollator.Web.FormModels.Recipes
-@using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Helpers
@@ -20,6 +19,13 @@
             <InputField Input="this.CreateRecipeFormModel.Name"
                         InvalidMessage="Name requires a value."
                         Title="Recipe Name" />
+
+            <DocumentUpload @ref="this._documentUpload"
+                            Accept="image/*"
+                            Documents="this.CreateRecipeFormModel.Images"
+                            Multiple="true"
+                            Title="Recipe Images"
+                            class="mb-3" />
 
             <h4>Ingredients</h4>
 
@@ -96,6 +102,7 @@
 </Modal>
 
 @code {
+    private DocumentUpload _documentUpload = default!;
     private Modal _modal = default!;
 
     [Parameter]
@@ -134,6 +141,7 @@
     {
         await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
         this.CreateRecipeFormModel.ResetToDefault();
+        this._documentUpload.Reset();
         await this.OnAfterCreation.InvokeAsync();
     }
 
@@ -151,4 +159,5 @@
         _ = this.CreateRecipeFormModel.Steps.Input.Remove(stepIndex);
         this.RecalculateSteps();
     }
+
 }

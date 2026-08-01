@@ -1,7 +1,10 @@
+using CocktailCollator.Application.Models;
+
 namespace CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 
 public class UpdateRecipeInputPort
 {
+    public List<DocumentModel> Images { get; set; } = [];
     public List<UpdateRecipeInputPortRecipeIngredient> Ingredients { get; set; } = [];
     public required string Name { get; set; }
     public required Guid RecipeId { get; set; }
