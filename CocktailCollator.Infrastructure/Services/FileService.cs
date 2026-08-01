@@ -33,6 +33,8 @@ public class FileService(IOptions<FileStorageOptions> fileStorageOptions) : IFil
         if (!string.IsNullOrEmpty(_TotalFilePathDirectory) && !Directory.Exists(_TotalFilePathDirectory))
             _ = Directory.CreateDirectory(_TotalFilePathDirectory);
 
-        await file.CopyToAsync(new FileStream(_TotalFilePath, FileMode.Create, FileAccess.Write), cancellationToken);
+        // FileStream must be disposed after use, so that the file is released to the file system.
+        using var stream = new FileStream(_TotalFilePath, FileMode.Create, FileAccess.Write);
+        await file.CopyToAsync(stream, cancellationToken);
     }
 }
