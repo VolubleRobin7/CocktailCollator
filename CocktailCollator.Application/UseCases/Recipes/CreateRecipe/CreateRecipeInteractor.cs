@@ -14,7 +14,7 @@ public class CreateRecipeInteractor(ICocktailDbContext dbContext, IMapper mapper
 
         foreach (var _Image in inputPort.Images)
         {
-            var _DocumentId = dbContext.QueueAddDocument(_Image, _Recipe, cancellationToken);
+            var _DocumentId = dbContext.QueueAddDocument(_Image, _Recipe);
 
             var recipeImage = new RecipeDocument
             {

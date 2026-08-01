@@ -77,7 +77,7 @@ public class UpdateRecipeInteractor(ICocktailDbContext dbContext)
 
         foreach (var _NewDocument in _NewDocuments)
         {
-            var _NewDocumentId = dbContext.QueueAddDocument(_NewDocument, _Recipe, cancellationToken);
+            var _NewDocumentId = dbContext.QueueAddDocument(_NewDocument, _Recipe);
             _Recipe.Images ??= [];
             _Recipe.Images.Add(new RecipeDocument
             {

@@ -8,7 +8,8 @@ public class CommonMappingsProfile : Profile
 {
     public CommonMappingsProfile()
     {
-        _ = this.CreateMap<DocumentInputProperty, IFormFile>().ConstructUsing(input => input.Output!);
+        _ = this.CreateMap<DocumentInputProperty, IFormFile>()
+            .ConstructUsing(input => input.Output!);
 
         _ = this.CreateMap<DocumentInputProperty, DocumentModel>()
             .ForMember(d => d.ExistingDocumentId, o => o.MapFrom(s => s.Existing!.Id))

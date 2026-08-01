@@ -1,7 +1,7 @@
 using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
-using Microsoft.AspNetCore.Http;
 using CocktailCollator.Infrastructure.Persistence.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,7 +59,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
         }
     }
 
-    Guid ICocktailDbContext.QueueAddDocument<TEntity>(IFormFile file, TEntity relatedEntity, CancellationToken cancellationToken)
+    Guid ICocktailDbContext.QueueAddDocument<TEntity>(IFormFile file, TEntity relatedEntity)
     {
         var _NewDocument = new Document
         {
@@ -88,12 +88,13 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
         documentInfo.Entity.FilePath = _FilePath;
     }
 
-    private string GenerateUniqueDirectoryPath<TEntity>(TEntity relatedEntity)
+    private string GenerateUniqueDirectoryPath<TEntity>(TEntity relatedEntity) where TEntity : class
     {
         var _RelatedEntityDatabaseEntry = this.Entry(relatedEntity);
         var _RelatedEntityTypeName = _RelatedEntityDatabaseEntry.Metadata.ClrType.Name;
         var _RelatedEntityId = _RelatedEntityDatabaseEntry.CurrentValues
-            .GetValue<Guid>(_RelatedEntityDatabaseEntry.Metadata.FindPrimaryKey().Properties.Single())
+            .GetValue<Guid>(_RelatedEntityDatabaseEntry.Metadata.FindPrimaryKey()?.Properties.Single()
+                ?? throw new KeyNotFoundException("Primary key not found for the related entity."))
             .ToString();
 
         if (_RelatedEntityId == Guid.Empty.ToString())

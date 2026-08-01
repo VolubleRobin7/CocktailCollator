@@ -186,6 +186,8 @@
     private async Task OnClickUpdateAsync()
     {
         await this.RecipesViewModel.UpdateCommand.ExecuteAsync(this.UpdateRecipeFormModel.ExtractToInputPort());
+        this._documentUpload.Reset();
+        this.UpdateRecipeFormModel.ResetToDefault();
         await this.OnAfterUpdate.InvokeAsync();
     }
 
