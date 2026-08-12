@@ -11,7 +11,7 @@ public class RecipeFormModelProfile : Profile
         // automapper needs further research into generics to avoid this sillyness
         _ = this.CreateMap<CreateRecipeFormModel, CreateRecipeInputPort>()
             .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input))
-            .ForMember(d => d.Steps, o => o.MapFrom(s => s.Steps.Input))
+            .ForMember(d => d.Steps, o => o.MapFrom(s => s.Steps.Select(step => step.Input)))
             .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients.Input))
             .ForMember(d => d.Images, o => o.MapFrom(s => s.Images.Where(i => i.Output != null)));
 

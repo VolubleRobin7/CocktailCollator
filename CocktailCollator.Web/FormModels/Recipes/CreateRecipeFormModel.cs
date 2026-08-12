@@ -23,8 +23,9 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
         = new(() => [], ValidateIngredients);
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
-    public InputProperty<ObservableCollection<CreateRecipeFormModelStep>> Steps { get; set; }
-        = new(() => [], (inputList) => inputList.All(step => step.Instruction.IsValid() && step.Order.IsValid()));
+    public InputPropertyList<CreateRecipeFormModelStep> Steps { get; set; }
+        = new(itemValidationFunc: (step) => step.Instruction.IsValid() && step.Order.IsValid(),
+            onAddOnChange: CreateRecipeFormModelStep.OnChangeHookup);
 
     public Action? OnChange { get; set; }
 
@@ -55,17 +56,7 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
             }
         };
         this.Name.OnChange = () => OnChange?.Invoke();
-        this.Steps.Input.CollectionChanged += (_, args) =>
-        {
-            if (args.NewItems is not null)
-            {
-                foreach (CreateRecipeFormModelStep step in args.NewItems)
-                {
-                    step.Instruction.OnChange = () => OnChange?.Invoke();
-                    step.Order.OnChange = () => OnChange?.Invoke();
-                }
-            }
-        };
+        this.Steps.OnChange = () => OnChange?.Invoke();
     }
 
     public CreateRecipeInputPort ExtractToInputPort()
@@ -113,4 +104,10 @@ public class CreateRecipeFormModelStep
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputProperty<int> Order { get; set; }
         = new(() => 0, (input) => true);
+
+    public static void OnChangeHookup(CreateRecipeFormModelStep step, Action? onChange)
+    {
+        step.Instruction.OnChange = () => onChange?.Invoke();
+        step.Order.OnChange = () => onChange?.Invoke();
+    }
 }
