@@ -246,8 +246,6 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
         this.OnItemChanged();
     }
 
-    // TODO: Method to allow movement up and down the list. (MoveLower, MoveHigher)
-    //       This would also be useful in helping to reduce the number of events raised.
     /// <summary>
     /// Moves an item from one index to another within the collection.
     /// Will clamp to the bounds of the collection (0 -> Count).
@@ -268,7 +266,24 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
         var _Property = this._items[oldIndex];
         this._items.RemoveAt(oldIndex);
         this._items.Insert(newIndex, _Property);
-        this.OnChange?.Invoke();
+        this.OnItemChanged();
+    }
+
+    /// <summary>
+    /// Moves the first occurrence of an entity up the list by the given amount, if it exists in the collection.
+    /// Will clamp to the bounds of the collection (0 -> Count).
+    /// </summary>
+    /// <param name="entity">The entity to match and move.</param>
+    /// <param name="moveAmount">The number of positions to move the entity.</param>
+    /// <remarks>
+    /// A positive <paramref name="moveAmount"/> moves the entity away from index 0, 
+    /// while a negative <paramref name="moveAmount"/> moves it towards index 0.
+    /// </remarks>
+    public void Move(TEntity entity, int moveAmount = 1)
+    {
+        var _Index = this.IndexOf(entity);
+        if (_Index >= 0)
+            this.Move(_Index, _Index + moveAmount);
     }
 
     /// <summary>

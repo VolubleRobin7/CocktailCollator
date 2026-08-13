@@ -120,8 +120,7 @@
         if (step.Order.Input >= this.CreateRecipeFormModel.Steps.Count - 1)
             return;
 
-        var stepIndex = this.CreateRecipeFormModel.Steps.IndexOf(step);
-        this.CreateRecipeFormModel.Steps.Move(stepIndex, stepIndex + 1);
+        this.CreateRecipeFormModel.Steps.Move(step, 1);
         this.RecalculateSteps();
     }
 
@@ -130,8 +129,7 @@
         if (step.Order.Input <= 0)
             return;
 
-        var stepIndex = this.CreateRecipeFormModel.Steps.IndexOf(step);
-        this.CreateRecipeFormModel.Steps.Move(stepIndex, stepIndex - 1);
+        this.CreateRecipeFormModel.Steps.Move(step, -1);
         this.RecalculateSteps();
     }
 
