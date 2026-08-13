@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace CocktailCollator.Web.Common.Generics;
 
-public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
+public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>, IInputInteraction
 {
 
     #region Fields
@@ -43,23 +43,61 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
     public TEntity this[int index]
     {
         get => this._items[index].Input;
-        set => this._items[index].Input = value;
+        set
+        {
+            this._items[index].Input = value;
+            this._onAddOnChange?.Invoke(value, this._items[index].OnChange);
+        }
     }
 
     #endregion
 
     #region Constructors
 
-    // TODO: I want to be able construct by passing in a list of internal inputs.
-    //       This will likely require creating a IInputProperty (or IInputInteraction?) interface.
+    /// <summary>
+    /// Creates a new <see cref="InputPropertyList{TEntity}"/> with optional initial entities, custom item <see cref="ValidationResult"/> validation, and custom collection <see cref="ValidationResult"/> validation.
+    /// </summary>
+    /// <param name="internalInputsFunc">An array of functions returning an <see cref="IInputInteraction"/> for each entity.</param>
+    /// <param name="initialEntitiesFunc">Function returning the default initial entities for the collection.</param>
+    /// <param name="itemValidationFunc">Function to validate each individual item with a custom <see cref="ValidationResult"/>.</param>
+    /// <param name="collectionValidationFunc">Function to validate the entire collection with a custom <see cref="ValidationResult"/>.</param>
+    /// <remarks>
+    /// Defaults to an empty list, each item being valid if all their internal inputs are valid, and collection valid if all items are valid.
+    /// Note that by default this does skip reading the error messages from the internal inputs.
+    /// </remarks>
+    public InputPropertyList(
+        Func<TEntity, IInputInteraction>[] internalInputsFunc,
+        Func<IEnumerable<TEntity>>? initialEntitiesFunc = null,
+        Func<TEntity, ValidationResult>? itemValidationFunc = null,
+        Func<IEnumerable<InputProperty<TEntity>>, ValidationResult>? collectionValidationFunc = null)
+    {
+        this._defaultEntitiesFunc = initialEntitiesFunc ?? (() => []);
+
+        this._itemValidationFunc = itemValidationFunc
+            ?? ((item) => new ValidationResult(internalInputsFunc.All(inputFunc => inputFunc(item).IsValid())));
+
+        this._collectionValidationFunc = collectionValidationFunc
+            ?? ((items) => new ValidationResult(items.All(item => item.IsValid())));
+
+        this._onAddOnChange = (item, onChange) =>
+        {
+            foreach (var inputFunc in internalInputsFunc)
+                inputFunc(item).OnChange = () => onChange?.Invoke();
+        };
+
+        this.InitializeDefaultItems();
+    }
 
     /// <summary>
     /// Creates a new <see cref="InputPropertyList{TEntity}"/> with optional initial entities, item validation, and collection validation.
     /// </summary>
     /// <param name="initialEntitiesFunc">Function returning the default initial entities for the collection.</param>
     /// <param name="itemValidationFunc">Function to validate each individual item.</param>
-    /// <param name="collectionValidationFunc">Function to validate the entire collection. Defaults to checking that all items are valid.</param>
+    /// <param name="collectionValidationFunc">Function to validate the entire collection.</param>
     /// <param name="onAddOnChange">Action to assign internal change handlers.</param>
+    /// <remarks>
+    /// Defaults to an empty list, each item always valid, and collection valid if all items are valid.
+    /// </remarks>
     public InputPropertyList(
         Func<IEnumerable<TEntity>>? initialEntitiesFunc = null,
         Func<TEntity, bool>? itemValidationFunc = null,
@@ -76,9 +114,9 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
             ? (items) => new ValidationResult(items.All(item => item.IsValid()))
             : (items) => new ValidationResult(collectionValidationFunc(items));
 
-        this._onAddOnChange = onAddOnChange is not null
-            ? onAddOnChange
-            : (_, _) => { };
+        this._onAddOnChange = onAddOnChange is null
+            ? ((_, _) => { })
+            : onAddOnChange;
 
         this.InitializeDefaultItems();
     }
@@ -88,8 +126,11 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
     /// </summary>
     /// <param name="initialEntitiesFunc">Function returning the default initial entities for the collection.</param>
     /// <param name="itemValidationFunc">Function to validate each individual item with a custom <see cref="ValidationResult"/>.</param>
-    /// <param name="collectionValidationFunc">Function to validate the entire collection with a custom <see cref="ValidationResult"/>. Defaults to checking that all items are valid.</param>
+    /// <param name="collectionValidationFunc">Function to validate the entire collection with a custom <see cref="ValidationResult"/>.</param>
     /// <param name="onAddOnChange">Action to assign internal change handlers.</param>
+    /// <remarks>
+    /// Defaults to an empty list, each item always valid, and collection valid if all items are valid.
+    /// </remarks>
     public InputPropertyList(
         Func<IEnumerable<TEntity>>? initialEntitiesFunc,
         Func<TEntity, ValidationResult>? itemValidationFunc,
@@ -102,9 +143,7 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
 
         this._collectionValidationFunc = collectionValidationFunc ?? ((items) => new ValidationResult(items.All(item => item.IsValid())));
 
-        this._onAddOnChange = onAddOnChange is not null
-            ? onAddOnChange
-            : (_, _) => { };
+        this._onAddOnChange = onAddOnChange is null ? ((_, _) => { }) : onAddOnChange;
 
         this.InitializeDefaultItems();
     }

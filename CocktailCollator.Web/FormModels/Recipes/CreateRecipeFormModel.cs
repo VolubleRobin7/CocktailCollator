@@ -24,8 +24,7 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputPropertyList<CreateRecipeFormModelStep> Steps { get; set; }
-        = new(itemValidationFunc: (step) => step.Instruction.IsValid() && step.Order.IsValid(),
-            onAddOnChange: CreateRecipeFormModelStep.OnChangeHookup);
+        = new([(step) => step.Instruction, (step) => step.Order]);
 
     public Action? OnChange { get; set; }
 
@@ -104,10 +103,4 @@ public class CreateRecipeFormModelStep
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputProperty<int> Order { get; set; }
         = new(() => 0, (input) => true);
-
-    public static void OnChangeHookup(CreateRecipeFormModelStep step, Action? onChange)
-    {
-        step.Instruction.OnChange = () => onChange?.Invoke();
-        step.Order.OnChange = () => onChange?.Invoke();
-    }
 }
