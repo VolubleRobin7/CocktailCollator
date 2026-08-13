@@ -57,7 +57,7 @@
 
             <div>
                 <ul class="list-group">
-                    @foreach (var step in this.CreateRecipeFormModel.Steps.Select(input => input.Input))
+                    @foreach (var step in this.CreateRecipeFormModel.Steps)
                     {
                         <li class="list-group-item">
                             <InputField Input="step.Instruction"
@@ -149,7 +149,7 @@
     private void RecalculateSteps()
     {
         for (int i = 0; i < this.CreateRecipeFormModel.Steps.Count; i++)
-            this.CreateRecipeFormModel.Steps[i].Input.Order.Input = i;
+            this.CreateRecipeFormModel.Steps[i].Order.Input = i;
     }
 
     private void RemoveStep(CreateRecipeFormModelStep stepIndex)

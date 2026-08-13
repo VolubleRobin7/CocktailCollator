@@ -2,17 +2,8 @@ using System.Collections;
 
 namespace CocktailCollator.Web.Common.Generics;
 
-public class InputPropertyList<TEntity> : IReadOnlyList<InputProperty<TEntity>>
+public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
 {
-
-    // TODO: Test implementing IList<> instead of this.
-
-    // TODO: Test implementing generic type TEntity instead of InputProperty<TEntity>.
-    //       See if this removes alot of the weird duplication issues.
-    //       To handle consumers wanting to directly access their validations and resets,
-    //       overload the IsValid and ResetToDefault methods to accept a TEntity and find
-    //       the matching InputProperty<TEntity> to call the methods on.
-    //       This could possibly cause issues with components that want a single InputProperty.
 
     #region Fields
 
@@ -46,7 +37,14 @@ public class InputPropertyList<TEntity> : IReadOnlyList<InputProperty<TEntity>>
     public int Count => this._items.Count;
 
     /// <inheritdoc/>
-    public InputProperty<TEntity> this[int index] => this._items[index];
+    public bool IsReadOnly => false;
+
+    /// <inheritdoc/>
+    public TEntity this[int index]
+    {
+        get => this._items[index].Input;
+        set => this._items[index].Input = value;
+    }
 
     #endregion
 
@@ -119,22 +117,11 @@ public class InputPropertyList<TEntity> : IReadOnlyList<InputProperty<TEntity>>
     /// Creates an <see cref="InputProperty{TEntity}"/> for the given entity, adds it to the collection, and wires change notifications.
     /// </summary>
     /// <param name="entity">The entity to add.</param>
-    /// <returns>The created <see cref="InputProperty{TEntity}"/>.</returns>
-    public InputProperty<TEntity> Add(TEntity entity)
+    public void Add(TEntity entity)
     {
         var _Property = this.CreateInputProperty(entity);
-        this.Add(_Property);
-        return _Property;
-    }
-
-    /// <summary>
-    /// Adds an existing <see cref="InputProperty{TEntity}"/> to the collection and wires change notifications.
-    /// </summary>
-    /// <param name="property">The input property to add.</param>
-    public void Add(InputProperty<TEntity> property)
-    {
-        this.HookItem(property);
-        this._items.Add(property);
+        this.HookItem(_Property);
+        this._items.Add(_Property);
         this.OnItemChanged();
     }
 
@@ -148,20 +135,6 @@ public class InputPropertyList<TEntity> : IReadOnlyList<InputProperty<TEntity>>
         foreach (var _Entity in entities)
         {
             var _Property = this.CreateInputProperty(_Entity);
-            this.HookItem(_Property);
-            this._items.Add(_Property);
-        }
-        this.OnItemChanged();
-    }
-
-    /// <summary>
-    /// Adds a range of existing <see cref="InputProperty{TEntity}"/> items to the collection and wires change notifications.
-    /// </summary>
-    /// <param name="properties">The input properties to add.</param>
-    public void AddRange(IEnumerable<InputProperty<TEntity>> properties)
-    {
-        foreach (var _Property in properties)
-        {
             this.HookItem(_Property);
             this._items.Add(_Property);
         }
@@ -183,11 +156,12 @@ public class InputPropertyList<TEntity> : IReadOnlyList<InputProperty<TEntity>>
         this.OnItemChanged();
     }
 
-    /// <summary>
-    /// Determines whether the collection contains the specified <see cref="InputProperty{TEntity}"/>.
-    /// </summary>
-    public bool Contains(InputProperty<TEntity> property)
-        => this._items.Contains(property);
+    /// <inheritdoc/>
+    public void CopyTo(TEntity[] array, int arrayIndex)
+    {
+        for (int i = 0; i < this._items.Count; i++)
+            array[arrayIndex + i] = this._items[i].Input;
+    }
 
     /// <summary>
     /// Determines whether the collection contains an item whose <see cref="InputProperty{TEntity}.Input"/> matches the specified entity.
@@ -196,21 +170,12 @@ public class InputPropertyList<TEntity> : IReadOnlyList<InputProperty<TEntity>>
         => this.IndexOf(entity) >= 0;
 
     /// <inheritdoc/>
-    public IEnumerator<InputProperty<TEntity>> GetEnumerator()
-        => this._items.GetEnumerator();
+    public IEnumerator<TEntity> GetEnumerator()
+        => this._items.Select(item => item.Input).GetEnumerator();
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()
         => this.GetEnumerator();
-
-    /// <summary>
-    /// Returns the zero-based index of the first occurrence of the specified <see cref="InputProperty{TEntity}"/>.
-    /// </summary>
-    /// <returns>
-    /// The zero-based index of the first occurrence of the item within the collection, if found; otherwise, -1.
-    /// </returns>
-    public int IndexOf(InputProperty<TEntity> property)
-        => this._items.IndexOf(property);
 
     /// <summary>
     /// Returns the zero-based index of the first item whose <see cref="InputProperty{TEntity}.Input"/> matches the specified entity.
@@ -233,24 +198,12 @@ public class InputPropertyList<TEntity> : IReadOnlyList<InputProperty<TEntity>>
     /// Creates an <see cref="InputProperty{TEntity}"/> for the given entity, inserts it at the specified index, and wires change notifications.
     /// </summary>
     /// <param name="index">The zero-based index at which the entity should be inserted.</param>
-    /// <param name="entity">The entity to insert.</param>
-    /// <returns>The created <see cref="InputProperty{TEntity}"/>.</returns>
-    public InputProperty<TEntity> Insert(int index, TEntity entity)
+    /// <param name="entity">The entity to insert.</param> 
+    public void Insert(int index, TEntity entity)
     {
         var _Property = this.CreateInputProperty(entity);
-        this.Insert(index, _Property);
-        return _Property;
-    }
-
-    /// <summary>
-    /// Inserts an existing <see cref="InputProperty{TEntity}"/> at the specified index, and wires change notifications.
-    /// </summary>
-    /// <param name="index">The zero-based index at which the property should be inserted.</param>
-    /// <param name="property">The input property to insert.</param>
-    public void Insert(int index, InputProperty<TEntity> property)
-    {
-        this.HookItem(property);
-        this._items.Insert(index, property);
+        this.HookItem(_Property);
+        this._items.Insert(index, _Property);
         this.OnItemChanged();
     }
 
@@ -303,22 +256,6 @@ public class InputPropertyList<TEntity> : IReadOnlyList<InputProperty<TEntity>>
     }
 
     /// <summary>
-    /// Removes the specified <see cref="InputProperty{TEntity}"/> from the collection and unhooks change notifications.
-    /// </summary>
-    /// <param name="property">The input property to remove.</param>
-    /// <returns>True if the item was found and removed; otherwise, false.</returns>
-    public bool Remove(InputProperty<TEntity> property)
-    {
-        if (this._items.Remove(property))
-        {
-            this.UnhookItem(property);
-            this.OnItemChanged();
-            return true;
-        }
-        return false;
-    }
-
-    /// <summary>
     /// Removes the item at the specified index and unhooks change notifications.
     /// </summary>
     /// <param name="index">The zero-based index of the item to remove.</param>
@@ -333,6 +270,31 @@ public class InputPropertyList<TEntity> : IReadOnlyList<InputProperty<TEntity>>
     #endregion
 
     #region Public Input Interaction Methods
+
+    /// <summary>
+    /// The items in the list as <see cref="InputProperty{TEntity}"/>'s.
+    /// </summary>
+    /// <returns>A read-only list of <see cref="InputProperty{TEntity}"/> items.</returns>
+    public IReadOnlyList<InputProperty<TEntity>> AsInputs()
+        => this._items.AsReadOnly();
+
+    /// <summary>
+    /// Returns the <see cref="InputProperty{TEntity}"/> for the first item that matches the specified entity.
+    /// </summary>
+    /// <param name="entity">The entity to look for.</param>
+    /// <returns>The matching <see cref="InputProperty{TEntity}"/>, or null if not found.</returns>
+    public InputProperty<TEntity>? InputFor(TEntity entity)
+        => this.InputFor(this.IndexOf(entity));
+
+    /// <summary>
+    /// Returns the <see cref="InputProperty{TEntity}"/> for the first item at the specified index.
+    /// </summary>
+    /// <param name="index">The zero-based index of the item to retrieve.</param>
+    /// <returns>The <see cref="InputProperty{TEntity}"/> at the specified index, or null if the index is out of bounds.</returns>
+    public InputProperty<TEntity>? InputFor(int index)
+        => index >= 0 && index < this._items.Count
+            ? this._items[index]
+            : null;
 
     /// <summary>
     /// Uses the validation functions provided on construction to check whether all individual items and the collection as a whole are valid.
