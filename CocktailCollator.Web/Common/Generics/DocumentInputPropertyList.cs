@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using System.Collections;
-using static CocktailCollator.Web.Common.Generics.DocumentInputProperty;
 
 namespace CocktailCollator.Web.Common.Generics;
 
