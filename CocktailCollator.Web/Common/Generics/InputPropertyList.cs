@@ -97,6 +97,7 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
     /// <param name="onAddOnChange">Action to assign internal change handlers.</param>
     /// <remarks>
     /// Defaults to an empty list, each item always valid, and collection valid if all items are valid.
+    /// Note that by default this does skip reading the error messages from the internal inputs.
     /// </remarks>
     public InputPropertyList(
         Func<IEnumerable<TEntity>>? initialEntitiesFunc = null,
@@ -130,6 +131,7 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
     /// <param name="onAddOnChange">Action to assign internal change handlers.</param>
     /// <remarks>
     /// Defaults to an empty list, each item always valid, and collection valid if all items are valid.
+    /// Note that by default this does skip reading the error messages from the internal inputs.
     /// </remarks>
     public InputPropertyList(
         Func<IEnumerable<TEntity>>? initialEntitiesFunc,
@@ -351,34 +353,15 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
             : null;
 
     /// <summary>
-    /// Uses the validation functions provided on construction to check whether all individual items and the collection as a whole are valid.
+    /// Uses the validation functions provided on construction to check whether the collection is valid.
     /// </summary>
-    /// <returns>True if all items and the collection validation succeed.</returns>
-    public virtual bool IsValid()
+    /// <returns>True if the collection validation succeeds.</returns>
+    public bool IsValid()
     {
-        bool allItemsValid = true;
-        string? firstItemError = null;
-
-        foreach (var item in this._items)
-        {
-            if (!item.IsValid())
-            {
-                allItemsValid = false;
-                if (firstItemError is null && !string.IsNullOrEmpty(item.ErrorMessage))
-                    firstItemError = item.ErrorMessage;
-            }
-        }
-
         var collectionResult = this._collectionValidationFunc.Invoke(this._items);
         if (!collectionResult.IsValid)
         {
             this.ErrorMessage = collectionResult.ErrorMessage ?? DEFAULT_ERROR_MESSAGE;
-            return false;
-        }
-
-        if (!allItemsValid)
-        {
-            this.ErrorMessage = firstItemError ?? DEFAULT_ERROR_MESSAGE;
             return false;
         }
 
@@ -389,7 +372,7 @@ public class InputPropertyList<TEntity> : IList<TEntity>, IReadOnlyList<TEntity>
     /// <summary>
     /// Resets the collection to the original default entities defined during construction.
     /// </summary>
-    public virtual void ResetToDefault()
+    public void ResetToDefault()
     {
         foreach (var item in this._items)
             this.UnhookItem(item);
