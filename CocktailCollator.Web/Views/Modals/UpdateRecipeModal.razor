@@ -198,9 +198,8 @@
         this.UpdateRecipeFormModel.Name.Input = recipe.Name ?? string.Empty;
         this.UpdateRecipeFormModel.RecipeCategory.Input = recipe.Category;
 
-        this.UpdateRecipeFormModel.Images.Clear();
-        foreach (var _Image in recipe.Images ?? [])
-            this.UpdateRecipeFormModel.Images.Add(_Image.AsInputProperty());
+        this.UpdateRecipeFormModel.Images.ResetToDefault();
+        this.UpdateRecipeFormModel.Images.AddRange(recipe.Images?.Select(i => i.AsExistingDocument()) ?? []);
 
         this.UpdateRecipeFormModel.Ingredients.Input.Clear();
         foreach (var ingredient in recipe.Ingredients ?? [])

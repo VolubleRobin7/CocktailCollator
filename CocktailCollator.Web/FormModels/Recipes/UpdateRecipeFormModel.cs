@@ -12,7 +12,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
 {
     private readonly IMapper _mapper;
 
-    public ObservableCollection<DocumentInputProperty> Images { get; set; } = [];
+    public DocumentInputPropertyList Images { get; set; } = [];
     public InputProperty<ObservableCollection<UpdateRecipeFormModelIngredient>> Ingredients { get; set; }
         = new(() => [], ValidateIngredients);
     public InputProperty<string> Name { get; set; }
@@ -30,16 +30,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
     {
         this._mapper = mapper;
 
-        this.Images.CollectionChanged += (_, args) =>
-        {
-            if (args.NewItems is not null)
-            {
-                foreach (DocumentInputProperty image in args.NewItems)
-                {
-                    image.OnChange = () => OnChange?.Invoke();
-                }
-            }
-        };
+        this.Images.OnChange = () => OnChange?.Invoke();
         this.Ingredients.Input.CollectionChanged += (_, args) =>
         {
             if (args.NewItems is not null)
@@ -77,7 +68,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         => this.Name.IsValid()
             && this.Steps.IsValid()
             && this.Ingredients.IsValid()
-            && this.Images.All(i => i.IsValid());
+            && this.Images.IsValid();
 
     public void ResetToDefault()
     {
@@ -85,6 +76,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this.Name.ResetToDefault();
         this.Ingredients.ResetToDefault();
         this.Steps.ResetToDefault();
+        this.Images.ResetToDefault();
     }
 
     private static bool ValidateIngredients(ObservableCollection<UpdateRecipeFormModelIngredient> ingredients)

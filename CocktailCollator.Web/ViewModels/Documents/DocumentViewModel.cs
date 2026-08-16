@@ -1,4 +1,5 @@
 ﻿using CocktailCollator.Web.Common.Generics;
+using static CocktailCollator.Web.Common.Generics.DocumentInputProperty;
 
 namespace CocktailCollator.Web.ViewModels.Documents;
 
@@ -17,5 +18,13 @@ public class DocumentViewModel
                 FileName = this.FileName,
                 Url = this.Url,
             }
+        };
+
+    public ExistingDocument AsExistingDocument()
+        => new()
+        {
+            Id = this.DocumentId,
+            FileName = this.FileName,
+            Url = this.Url,
         };
 }
