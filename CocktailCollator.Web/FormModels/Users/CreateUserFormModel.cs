@@ -3,7 +3,6 @@ using CocktailCollator.Web.Common.Generics;
 using CocktailCollator.Web.Common.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using System.Collections.ObjectModel;
 
 namespace CocktailCollator.Web.FormModels.Users;
 
@@ -13,8 +12,8 @@ public class CreateUserFormModel : IFormModel<CreateUserInputPort>
     private readonly PasswordOptions _passwordOptions;
 
     public InputProperty<string> Password { get; set; }
-    public InputProperty<ObservableCollection<CreateUserFormModelRole>> Roles { get; set; }
-        = new(() => [], input => input.Count > 0);
+    public InputPropertyList<CreateUserFormModelRole> Roles { get; set; }
+        = new(collectionValidationFunc: (roles) => roles.Any());
     public InputProperty<string> Username { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
 
@@ -30,7 +29,6 @@ public class CreateUserFormModel : IFormModel<CreateUserInputPort>
             OnChange = () => OnChange?.Invoke()
         };
         this.Roles.OnChange = () => OnChange?.Invoke();
-        this.Roles.Input.CollectionChanged += (_, _) => OnChange?.Invoke();
         this.Username.OnChange = () => OnChange?.Invoke();
     }
 

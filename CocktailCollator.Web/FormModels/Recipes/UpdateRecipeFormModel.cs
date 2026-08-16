@@ -4,7 +4,6 @@ using CocktailCollator.Web.Common.Generics;
 using CocktailCollator.Web.Common.Interfaces;
 using CocktailCollator.Web.ViewModels.Measurements;
 using CocktailCollator.Web.ViewModels.RecipeCategories;
-using System.Collections.ObjectModel;
 
 namespace CocktailCollator.Web.FormModels.Recipes;
 
@@ -13,16 +12,16 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
     private readonly IMapper _mapper;
 
     public DocumentInputPropertyList Images { get; set; } = [];
-    public InputProperty<ObservableCollection<UpdateRecipeFormModelIngredient>> Ingredients { get; set; }
-        = new(() => [], ValidateIngredients);
+    public InputPropertyList<UpdateRecipeFormModelIngredient> Ingredients { get; set; }
+        = new([(ingredient) => ingredient.Amount, (ingredient) => ingredient.Measurement, (ingredient) => ingredient.Name]);
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputProperty<Guid> RecipeId { get; set; }
         = new(() => Guid.Empty, (input) => input != Guid.Empty);
     public InputProperty<RecipeCategoryViewModel?> RecipeCategory { get; set; }
         = new(() => null, (input) => true);
-    public InputProperty<ObservableCollection<UpdateRecipeFormModelStep>> Steps { get; set; }
-        = new(() => [], (inputList) => inputList.All(step => step.Instruction.IsValid() && step.Order.IsValid()));
+    public InputPropertyList<UpdateRecipeFormModelStep> Steps { get; set; }
+        = new([(step) => step.Instruction, (step) => step.Order]);
 
     public Action? OnChange { get; set; }
 
@@ -31,30 +30,11 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this._mapper = mapper;
 
         this.Images.OnChange = () => OnChange?.Invoke();
-        this.Ingredients.Input.CollectionChanged += (_, args) =>
-        {
-            if (args.NewItems is not null)
-            {
-                foreach (UpdateRecipeFormModelIngredient ingredient in args.NewItems)
-                {
-                    ingredient.Amount.OnChange = () => OnChange?.Invoke();
-                    ingredient.Measurement.OnChange = () => OnChange?.Invoke();
-                    ingredient.Name.OnChange = () => OnChange?.Invoke();
-                }
-            }
-        };
+        this.Ingredients.OnChange = () => OnChange?.Invoke();
         this.Name.OnChange = () => OnChange?.Invoke();
-        this.Steps.Input.CollectionChanged += (_, args) =>
-        {
-            if (args.NewItems is not null)
-            {
-                foreach (UpdateRecipeFormModelStep step in args.NewItems)
-                {
-                    step.Instruction.OnChange = () => OnChange?.Invoke();
-                    step.Order.OnChange = () => OnChange?.Invoke();
-                }
-            }
-        };
+        this.RecipeId.OnChange = () => OnChange?.Invoke();
+        this.RecipeCategory.OnChange = () => OnChange?.Invoke();
+        this.Steps.OnChange = () => OnChange?.Invoke();
     }
 
     public UpdateRecipeInputPort ExtractToInputPort()
@@ -74,16 +54,10 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
     {
         this.RecipeId.ResetToDefault();
         this.Name.ResetToDefault();
+        this.RecipeCategory.ResetToDefault();
         this.Ingredients.ResetToDefault();
         this.Steps.ResetToDefault();
         this.Images.ResetToDefault();
-    }
-
-    private static bool ValidateIngredients(ObservableCollection<UpdateRecipeFormModelIngredient> ingredients)
-    {
-        return ingredients.All(ingredient => ingredient.Name.IsValid()
-            && ingredient.Amount.IsValid()
-            && ingredient.Measurement.IsValid());
     }
 }
 
@@ -97,8 +71,7 @@ public class UpdateRecipeFormModelIngredient
     public MeasurementViewModel? MeasurementModel { get; set; }
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
-    public InputProperty<bool> UsingExistingIngredient { get; set; }
-        = new(() => true, (_) => true);
+    public bool UsingExistingIngredient { get; set; } = true;
 }
 
 public class UpdateRecipeFormModelStep

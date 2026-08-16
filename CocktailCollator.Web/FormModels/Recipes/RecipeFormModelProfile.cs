@@ -10,14 +10,12 @@ public class RecipeFormModelProfile : Profile
     {
         // automapper needs further research into generics to avoid this sillyness
         _ = this.CreateMap<CreateRecipeFormModel, CreateRecipeInputPort>()
-            .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input))
-            .ForMember(d => d.Steps, o => o.MapFrom(s => s.Steps))
-            .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients.Input));
+            .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input));
 
         _ = this.CreateMap<CreateRecipeFormModelIngredient, CreateRecipeInputPortRecipeIngredient>()
             .ForMember(d => d.Amount, o => o.MapFrom(s => s.Amount.Input))
-            .ForMember(d => d.Ingredient, o => o.MapFrom(s => s.UsingExistingIngredient.Input ? null : s))
-            .ForMember(d => d.IngredientId, o => o.MapFrom(s => s.UsingExistingIngredient.Input ? s.ExistingIngredientId : Guid.Empty))
+            .ForMember(d => d.Ingredient, o => o.MapFrom(s => s.UsingExistingIngredient ? null : s))
+            .ForMember(d => d.IngredientId, o => o.MapFrom(s => s.UsingExistingIngredient ? s.ExistingIngredientId : Guid.Empty))
             .ForMember(d => d.MeasurementId, o => o.MapFrom(s => s.Measurement.Input));
 
         _ = this.CreateMap<CreateRecipeFormModelIngredient, CreateRecipeInputPortIngredient>()
@@ -30,14 +28,12 @@ public class RecipeFormModelProfile : Profile
         _ = this.CreateMap<UpdateRecipeFormModel, UpdateRecipeInputPort>()
             .ForMember(d => d.RecipeId, o => o.MapFrom(s => s.RecipeId.Input))
             .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input))
-            .ForMember(d => d.RecipeCategoryId, o => o.Ignore())
-            .ForMember(d => d.Ingredients, o => o.MapFrom(s => s.Ingredients.Input))
-            .ForMember(d => d.Steps, o => o.MapFrom(s => s.Steps.Input));
+            .ForMember(d => d.RecipeCategoryId, o => o.Ignore());
 
         _ = this.CreateMap<UpdateRecipeFormModelIngredient, UpdateRecipeInputPortRecipeIngredient>()
             .ForMember(d => d.Amount, o => o.MapFrom(s => s.Amount.Input))
-            .ForMember(d => d.Ingredient, o => o.MapFrom(s => s.UsingExistingIngredient.Input ? null : s))
-            .ForMember(d => d.IngredientId, o => o.MapFrom(s => s.UsingExistingIngredient.Input ? s.ExistingIngredientId : Guid.Empty))
+            .ForMember(d => d.Ingredient, o => o.MapFrom(s => s.UsingExistingIngredient ? null : s))
+            .ForMember(d => d.IngredientId, o => o.MapFrom(s => s.UsingExistingIngredient ? s.ExistingIngredientId : Guid.Empty))
             .ForMember(d => d.MeasurementId, o => o.MapFrom(s => s.Measurement.Input));
 
         _ = this.CreateMap<UpdateRecipeFormModelIngredient, UpdateRecipeInputPortIngredient>()

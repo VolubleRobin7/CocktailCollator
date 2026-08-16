@@ -1,7 +1,6 @@
 using AutoMapper;
 using CocktailCollator.Web.Common.Generics;
 using CocktailCollator.Web.Common.Interfaces;
-using System.Collections.ObjectModel;
 
 namespace CocktailCollator.Web.FormModels.Users;
 
@@ -9,8 +8,8 @@ public class UpdateRolesFormModel : IFormModel<UpdateRolesInputPort>
 {
     private readonly IMapper _mapper;
 
-    public InputProperty<ObservableCollection<UpdateRolesFormModelRole>> Roles { get; set; }
-        = new(() => [], input => input.Count > 0);
+    public InputPropertyList<UpdateRolesFormModelRole> Roles { get; set; }
+        = new(collectionValidationFunc: (roles) => roles.Any());
     public Guid UserId { get; set; } = Guid.Empty;
 
     public Action? OnChange { get; set; }
@@ -20,7 +19,6 @@ public class UpdateRolesFormModel : IFormModel<UpdateRolesInputPort>
         this._mapper = mapper;
 
         this.Roles.OnChange = () => OnChange?.Invoke();
-        this.Roles.Input.CollectionChanged += (_, _) => OnChange?.Invoke();
     }
 
     public UpdateRolesInputPort ExtractToInputPort()

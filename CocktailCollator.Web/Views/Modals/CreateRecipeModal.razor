@@ -29,17 +29,17 @@
 
             <h4>Ingredients</h4>
 
-            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
+            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Add(new())"
                     Theme="ButtonTheme.Primary"
                     Text="Add Ingredient" />
 
             <div>
                 <ul class="list-group">
-                    @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients.Input)
+                    @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients)
                     {
                         <li class="list-group-item">
                             <CreateRecipeIngredientSelector Ingredient="ingredient" />
-                            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
+                            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Remove(ingredient)"
                                     Size="ButtonSize.Small"
                                     Theme="ButtonTheme.Danger"
                                     Text="Remove"

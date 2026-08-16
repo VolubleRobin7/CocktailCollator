@@ -21,7 +21,7 @@
                 @foreach (var _Role in this.RolesViewModel.Roles)
                 {
                     <div class="form-check">
-                        <input @bind:get="this.FormModel.Roles.Input.Any(r => r.RoleId == _Role.RoleId)" 
+                        <input @bind:get="this.FormModel.Roles.Any(r => r.RoleId == _Role.RoleId)" 
                                @bind:set="value => this.OnRoleSelectionChanged(_Role, value)"
                                class="form-check-input"
                                id="role_@_Role.RoleId" 
@@ -70,23 +70,23 @@
     {
         if (isChecked)
         {
-            if (!this.FormModel.Roles.Input.Any(r => r.RoleId == role.RoleId))
-                this.FormModel.Roles.Input.Add(new UpdateRolesFormModelRole { RoleId = role.RoleId, Name = role.Name });
+            if (!this.FormModel.Roles.Any(r => r.RoleId == role.RoleId))
+                this.FormModel.Roles.Add(new UpdateRolesFormModelRole { RoleId = role.RoleId, Name = role.Name });
         }
         else
         {
-            var _RoleToRemove = this.FormModel.Roles.Input.FirstOrDefault(r => r.RoleId == role.RoleId);
+            var _RoleToRemove = this.FormModel.Roles.FirstOrDefault(r => r.RoleId == role.RoleId);
             if (_RoleToRemove is not null)
-                this.FormModel.Roles.Input.Remove(_RoleToRemove);
+                this.FormModel.Roles.Remove(_RoleToRemove);
         }
     }
 
     public Task OpenModalAsync(Guid userId, List<RoleViewModel> currentRoles)
     {
         this.FormModel.UserId = userId;
-        this.FormModel.Roles.Input.Clear();
+        this.FormModel.Roles.Clear();
         foreach (var _Role in currentRoles)
-            this.FormModel.Roles.Input.Add(new UpdateRolesFormModelRole { RoleId = _Role.RoleId, Name = _Role.Name });
+            this.FormModel.Roles.Add(new UpdateRolesFormModelRole { RoleId = _Role.RoleId, Name = _Role.Name });
 
         return this._modal.OpenModalAsync();
     }
