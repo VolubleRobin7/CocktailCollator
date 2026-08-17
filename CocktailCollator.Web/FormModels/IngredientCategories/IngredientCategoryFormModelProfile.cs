@@ -7,7 +7,6 @@ public class IngredientCategoryFormModelProfile : Profile
 {
     public IngredientCategoryFormModelProfile()
     {
-        _ = this.CreateMap<CreateIngredientCategoryFormModel, CreateIngredientCategoryInputPort>()
-            .ForMember(d => d.Name, o => o.MapFrom(s => s.Name.Input));
+        _ = this.CreateMap<CreateIngredientCategoryFormModel, CreateIngredientCategoryInputPort>();
     }
 }
