@@ -1,6 +1,7 @@
 using AutoMapper;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web.Common.Services;
+using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.FormModels.Roles;
 using CocktailCollator.Web.Infrastructure.Authentication;
 using CocktailCollator.Web.Views.Components.Toasts;
@@ -16,6 +17,7 @@ public class RolesViewModel
     private readonly IMapper _mapper;
     private readonly RoleManager<CocktailRole> _roleManager;
     private readonly UserManager<CocktailUser> _userManager;
+    private readonly IViewModelStore _store;
     private readonly ToastService _toastService;
 
     public IAsyncRelayCommand<CreateRoleInputPort> CreateCommand { get; }
@@ -31,11 +33,13 @@ public class RolesViewModel
         RoleManager<CocktailRole> roleManager,
         UserManager<CocktailUser> userManager,
         IMapper mapper,
+        IViewModelStore store,
         ToastService toastService)
     {
         this._mapper = mapper;
         this._roleManager = roleManager;
         this._userManager = userManager;
+        this._store = store;
         this._toastService = toastService;
 
         this.CreateCommand = new AsyncRelayCommand<CreateRoleInputPort>(this.CreateRoleAsync);
@@ -73,7 +77,7 @@ public class RolesViewModel
                         _RoleViewModel.Claims.Add(_Claim);
                 }
 
-                this.Roles.Add(_RoleViewModel);
+                this.Roles.Add(this._store.UpdateOrRegister(_RoleViewModel.RoleId, _RoleViewModel));
 
                 if (_ClaimResults.Any(r => !r.Succeeded))
                 {
@@ -138,28 +142,27 @@ public class RolesViewModel
             {
                 var _ClaimResults = new List<IdentityResult>();
 
-                var _ExistingRole = this.Roles.FirstOrDefault(r => r.RoleId == _Role.Id);
-                if (_ExistingRole != null)
-                    _ExistingRole.Name = _Role.Name;
-
                 // Remove all existing permission claims and then add the claims they should have.
                 var _CurrentClaims = await this._roleManager.GetClaimsAsync(_Role);
                 foreach (var _Claim in _CurrentClaims.Where(c => c.Type == Infrastructure.Authentication.ClaimTypes.Permission))
                 {
                     var _ClaimResult = await this._roleManager.RemoveClaimAsync(_Role, _Claim);
                     _ClaimResults.Add(_ClaimResult);
-                    if (_ClaimResult.Succeeded && _ExistingRole != null)
-                        _ = _ExistingRole.Claims.Remove(_Claim.Value);
                 }
 
                 var _ClaimsToAdd = inputPort.HasEveryPermissionClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
+                var _AddedClaims = new List<string>();
                 foreach (var _Claim in _ClaimsToAdd)
                 {
                     var _ClaimResult = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
                     _ClaimResults.Add(_ClaimResult);
-                    if (_ClaimResult.Succeeded && _ExistingRole != null)
-                        _ExistingRole.Claims.Add(_Claim);
+                    if (_ClaimResult.Succeeded)
+                        _AddedClaims.Add(_Claim);
                 }
+
+                var _UpdatedRole = this._mapper.Map<RoleViewModel>(_Role);
+                _UpdatedRole.Claims = _AddedClaims;
+                _ = this._store.UpdateOrRegister(_UpdatedRole.RoleId, _UpdatedRole);
 
                 if (_ClaimResults.Any(r => !r.Succeeded))
                 {
@@ -213,6 +216,7 @@ public class RolesViewModel
             if (_Result.Succeeded)
             {
                 _ = this.Roles.RemoveAll(r => r.RoleId == roleId);
+                this._store.Remove<RoleViewModel>(roleId);
                 this._toastService.ShowToast(ToastType.Info, "Role Deleted", $"{_Role.Name} deleted successfully");
             }
             else
@@ -284,7 +288,7 @@ public class RolesViewModel
                 var _RoleViewModel = this._mapper.Map<RoleViewModel>(_Role);
                 var _Claims = await this._roleManager.GetClaimsAsync(_Role);
                 _RoleViewModel.Claims = [.. _Claims.Select(claim => claim.Value)];
-                _RoleViewModels.Add(_RoleViewModel);
+                _RoleViewModels.Add(this._store.UpdateOrRegister(_RoleViewModel.RoleId, _RoleViewModel));
             }
             this.Roles = _RoleViewModels;
         }

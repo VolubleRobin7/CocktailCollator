@@ -1,6 +1,7 @@
 using AutoMapper;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web.Common.Services;
+using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.FormModels.Users;
 using CocktailCollator.Web.ViewModels.Roles;
 using CocktailCollator.Web.Views.Components.Toasts;
@@ -16,6 +17,7 @@ public class UsersViewModel
     private readonly IMapper _mapper;
     private readonly RolesViewModel _rolesViewModel;
     private readonly UserManager<CocktailUser> _userManager;
+    private readonly IViewModelStore _store;
     private readonly ToastService _toastService;
 
     public IAsyncRelayCommand<CreateUserInputPort> CreateCommand { get; }
@@ -32,12 +34,14 @@ public class UsersViewModel
         RolesViewModel rolesViewModel,
         AuthenticationStateProvider authenticationStateProvider,
         IMapper mapper,
+        IViewModelStore store,
         ToastService toastService)
     {
         this._authenticationStateProvider = authenticationStateProvider;
         this._mapper = mapper;
         this._userManager = userManager;
         this._rolesViewModel = rolesViewModel;
+        this._store = store;
         this._toastService = toastService;
 
         this.CreateCommand = new AsyncRelayCommand<CreateUserInputPort>(this.CreateUserAsync);
@@ -115,7 +119,7 @@ public class UsersViewModel
 
                 var _UserViewModel = this._mapper.Map<UserViewModel>(_User);
                 _UserViewModel.Roles = [.. this._rolesViewModel.Roles.Where(r => _TargetRoleNames.Contains(r.Name))];
-                this.Users.Add(_UserViewModel);
+                this.Users.Add(this._store.UpdateOrRegister(_UserViewModel.UserId, _UserViewModel));
                 this._toastService.ShowToast(ToastType.Success, "User Created", $"{_User.UserName} created successfully");
             }
             else
@@ -147,6 +151,7 @@ public class UsersViewModel
             if (_Result.Succeeded)
             {
                 _ = this.Users.RemoveAll(u => u.UserId == userId);
+                this._store.Remove<UserViewModel>(userId);
                 this._toastService.ShowToast(ToastType.Info, "User Deleted", $"{_User.UserName} deleted successfully");
             }
             else
@@ -165,9 +170,6 @@ public class UsersViewModel
     {
         try
         {
-            var _AuthState = await this._authenticationStateProvider.GetAuthenticationStateAsync();
-            this.CurrentUser = this._mapper.Map<UserViewModel>(await this._userManager.GetUserAsync(_AuthState.User));
-
             await this._rolesViewModel.GetCommand.ExecuteAsync(null);
 
             var _Users = new List<UserViewModel>();
@@ -176,10 +178,16 @@ public class UsersViewModel
                 var _User = this._mapper.Map<UserViewModel>(_DomainUser);
                 var roleNames = await this._userManager.GetRolesAsync(_DomainUser);
                 _User.Roles = [.. this._rolesViewModel.Roles.Where(r => roleNames.Contains(r.Name))];
-                _Users.Add(_User);
+                _Users.Add(this._store.UpdateOrRegister(_User.UserId, _User));
             }
 
             this.Users = _Users;
+
+            var _AuthState = await this._authenticationStateProvider.GetAuthenticationStateAsync();
+            var _DomainCurrentUser = await this._userManager.GetUserAsync(_AuthState.User);
+            this.CurrentUser = _DomainCurrentUser is not null
+                ? this._store.Get<UserViewModel>(_DomainCurrentUser.Id)
+                : null;
         }
         catch (Exception ex)
         {
@@ -221,6 +229,10 @@ public class UsersViewModel
                 _ = await this._userManager.RemoveFromRolesAsync(_User, _RolesToRemove);
 
             _ = await this._userManager.UpdateSecurityStampAsync(_User);
+
+            var _UpdatedUser = this._mapper.Map<UserViewModel>(_User);
+            _UpdatedUser.Roles = [.. this._rolesViewModel.Roles.Where(r => _TargetRoleNames.Contains(r.Name))];
+            _ = this._store.UpdateOrRegister(_UpdatedUser.UserId, _UpdatedUser);
 
             this._toastService.ShowToast(ToastType.Success, "User Updated", $"Roles for {_User.UserName} updated successfully");
         }
