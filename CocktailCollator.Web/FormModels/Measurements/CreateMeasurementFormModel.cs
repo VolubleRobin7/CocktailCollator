@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CocktailCollator.Application.UseCases.Measurements.CreateMeasurement;
-using CocktailCollator.Web.Common.Generics;
-using CocktailCollator.Web.Common.Interfaces;
+using CocktailCollator.Web.Common.Inputs;
 
 namespace CocktailCollator.Web.FormModels.Measurements;
 

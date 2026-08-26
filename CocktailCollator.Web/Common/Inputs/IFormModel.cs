@@ -1,4 +1,4 @@
-﻿namespace CocktailCollator.Web.Common.Interfaces;
+﻿namespace CocktailCollator.Web.Common.Inputs;
 
 public interface IFormModel<TInputPort> where TInputPort : class
 {

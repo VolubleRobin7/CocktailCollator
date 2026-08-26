@@ -1,4 +1,3 @@
-@using CocktailCollator.Web.Common.Generics
 @using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.RecipeCategories
 @using CocktailCollator.Web.ViewModels.Recipes
@@ -73,17 +72,17 @@
 
             <h4>Ingredients</h4>
 
-            <Button @onclick="() => this.UpdateRecipeFormModel.Ingredients.Input.Add(new())"
+            <Button @onclick="() => this.UpdateRecipeFormModel.Ingredients.Add(new())"
                     Theme="ButtonTheme.Primary"
                     Text="Add Ingredient" />
 
             <div>
                 <ul class="list-group">
-                    @foreach (var ingredient in this.UpdateRecipeFormModel.Ingredients.Input)
+                    @foreach (var ingredient in this.UpdateRecipeFormModel.Ingredients)
                     {
                         <li class="list-group-item">
                             <UpdateRecipeIngredientSelector Ingredient="ingredient" />
-                            <Button @onclick="() => this.UpdateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
+                            <Button @onclick="() => this.UpdateRecipeFormModel.Ingredients.Remove(ingredient)"
                                     Size="ButtonSize.Small"
                                     Theme="ButtonTheme.Danger"
                                     Text="Remove"
@@ -101,7 +100,7 @@
 
             <div>
                 <ul class="list-group">
-                    @foreach (var step in this.UpdateRecipeFormModel.Steps.Input)
+                    @foreach (var step in this.UpdateRecipeFormModel.Steps)
                     {
                         <li class="list-group-item">
                             <InputField Input="step.Instruction"
@@ -119,7 +118,7 @@
                                         Size="ButtonSize.Small"
                                         Theme="ButtonTheme.Secondary"
                                         Text="▼"
-                                        disabled="@(step.Order.Input >= this.UpdateRecipeFormModel.Steps.Input.Count - 1)" />
+                                        disabled="@(step.Order.Input >= this.UpdateRecipeFormModel.Steps.Count - 1)" />
                             </div>
 
                             <Button @onclick="() => this.RemoveStep(step)"
@@ -157,18 +156,16 @@
     private void AddStep()
     {
         var step = new UpdateRecipeFormModelStep();
-        step.Order.Input = this.UpdateRecipeFormModel.Steps.Input.Count;
-        this.UpdateRecipeFormModel.Steps.Input.Add(step);
+        step.Order.Input = this.UpdateRecipeFormModel.Steps.Count;
+        this.UpdateRecipeFormModel.Steps.Add(step);
     }
 
     private void MoveStepDown(UpdateRecipeFormModelStep step)
     {
-        if (step.Order.Input >= this.UpdateRecipeFormModel.Steps.Input.Count - 1)
+        if (step.Order.Input >= this.UpdateRecipeFormModel.Steps.Count - 1)
             return;
 
-        var stepIndex = this.UpdateRecipeFormModel.Steps.Input.IndexOf(step);
-        this.UpdateRecipeFormModel.Steps.Input.RemoveAt(stepIndex);
-        this.UpdateRecipeFormModel.Steps.Input.Insert(stepIndex + 1, step);
+        this.UpdateRecipeFormModel.Steps.Move(step, 1);
         this.RecalculateSteps();
     }
 
@@ -177,9 +174,7 @@
         if (step.Order.Input <= 0)
             return;
 
-        var stepIndex = this.UpdateRecipeFormModel.Steps.Input.IndexOf(step);
-        this.UpdateRecipeFormModel.Steps.Input.Insert(stepIndex - 1, step);
-        this.UpdateRecipeFormModel.Steps.Input.RemoveAt(stepIndex + 1);
+        this.UpdateRecipeFormModel.Steps.Move(step, -1);
         this.RecalculateSteps();
     }
 
@@ -198,11 +193,10 @@
         this.UpdateRecipeFormModel.Name.Input = recipe.Name ?? string.Empty;
         this.UpdateRecipeFormModel.RecipeCategory.Input = recipe.Category;
 
-        this.UpdateRecipeFormModel.Images.Clear();
-        foreach (var _Image in recipe.Images ?? [])
-            this.UpdateRecipeFormModel.Images.Add(_Image.AsInputProperty());
+        this.UpdateRecipeFormModel.Images.ResetToDefault();
+        this.UpdateRecipeFormModel.Images.AddRange(recipe.Images?.Select(i => i.AsExistingDocument()) ?? []);
 
-        this.UpdateRecipeFormModel.Ingredients.Input.Clear();
+        this.UpdateRecipeFormModel.Ingredients.Clear();
         foreach (var ingredient in recipe.Ingredients ?? [])
         {
             var newIngredient = new UpdateRecipeFormModelIngredient();
@@ -211,16 +205,16 @@
             newIngredient.Name.Input = ingredient.Ingredient.Name;
             newIngredient.Measurement.Input = ingredient.MeasurementId;
             newIngredient.MeasurementModel = ingredient.Measurement;
-            this.UpdateRecipeFormModel.Ingredients.Input.Add(newIngredient);
+            this.UpdateRecipeFormModel.Ingredients.Add(newIngredient);
         }
 
-        this.UpdateRecipeFormModel.Steps.Input.Clear();
+        this.UpdateRecipeFormModel.Steps.Clear();
         foreach (var step in recipe.Steps ?? [])
         {
             var newStep = new UpdateRecipeFormModelStep();
             newStep.Instruction.Input = step.Instruction;
             newStep.Order.Input = step.Order.Value;
-            this.UpdateRecipeFormModel.Steps.Input.Add(newStep);
+            this.UpdateRecipeFormModel.Steps.Add(newStep);
         }
 
         await this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync(default);
@@ -230,13 +224,13 @@
 
     private void RecalculateSteps()
     {
-        for (int i = 0; i < this.UpdateRecipeFormModel.Steps.Input.Count; i++)
-            this.UpdateRecipeFormModel.Steps.Input[i].Order.Input = i;
+        for (int i = 0; i < this.UpdateRecipeFormModel.Steps.Count; i++)
+            this.UpdateRecipeFormModel.Steps[i].Order.Input = i;
     }
 
     private void RemoveStep(UpdateRecipeFormModelStep stepIndex)
     {
-        _ = this.UpdateRecipeFormModel.Steps.Input.Remove(stepIndex);
+        _ = this.UpdateRecipeFormModel.Steps.Remove(stepIndex);
         this.RecalculateSteps();
     }
 

@@ -1,6 +1,5 @@
 using AutoMapper;
-using CocktailCollator.Web.Common.Generics;
-using CocktailCollator.Web.Common.Interfaces;
+using CocktailCollator.Web.Common.Inputs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 

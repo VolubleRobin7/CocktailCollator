@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace CocktailCollator.Web.Common.Generics;
+namespace CocktailCollator.Web.Common.Inputs;
 
 public class DocumentInputProperty(bool isRequired = false, bool isOnlyValidIfUploaded = true)
     : InputProperty<IBrowserFile?>(() => null, (input) => false)
@@ -92,12 +92,12 @@ public class DocumentInputProperty(bool isRequired = false, bool isOnlyValidIfUp
         // Set the correct ErrorMessage
         return this.IsValid();
     }
+}
 
-    // This is theoretically just a copy of DocumentViewModel, but separated so that a generic does not rely on a specific VM.
-    public class ExistingDocument
-    {
-        public string? FileName { get; set; }
-        public required Guid Id { get; set; }
-        public string? Url { get; set; } // This should be how to access the existing file.
-    }
+// This is theoretically just a copy of DocumentViewModel, but separated so that a generic does not rely on a specific VM.
+public class ExistingDocument
+{
+    public string? FileName { get; set; }
+    public required Guid Id { get; set; }
+    public string? Url { get; set; } // This should be how to access the existing file.
 }

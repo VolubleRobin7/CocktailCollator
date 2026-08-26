@@ -29,17 +29,17 @@
 
             <h4>Ingredients</h4>
 
-            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Add(new())"
+            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Add(new())"
                     Theme="ButtonTheme.Primary"
                     Text="Add Ingredient" />
 
             <div>
                 <ul class="list-group">
-                    @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients.Input)
+                    @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients)
                     {
                         <li class="list-group-item">
                             <CreateRecipeIngredientSelector Ingredient="ingredient" />
-                            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Input.Remove(ingredient)"
+                            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Remove(ingredient)"
                                     Size="ButtonSize.Small"
                                     Theme="ButtonTheme.Danger"
                                     Text="Remove"
@@ -57,7 +57,7 @@
 
             <div>
                 <ul class="list-group">
-                    @foreach (var step in this.CreateRecipeFormModel.Steps.Input)
+                    @foreach (var step in this.CreateRecipeFormModel.Steps)
                     {
                         <li class="list-group-item">
                             <InputField Input="step.Instruction"
@@ -75,7 +75,7 @@
                                         Size="ButtonSize.Small"
                                         Text="▼"
                                         Theme="ButtonTheme.Secondary"
-                                        disabled="@(step.Order.Input >= this.CreateRecipeFormModel.Steps.Input.Count - 1)" />
+                                        disabled="@(step.Order.Input >= this.CreateRecipeFormModel.Steps.Count - 1)" />
                             </div>
 
                             <Button @onclick="() => this.RemoveStep(step)"
@@ -111,18 +111,16 @@
     private void AddStep()
     {
         var step = new CreateRecipeFormModelStep();
-        step.Order.Input = this.CreateRecipeFormModel.Steps.Input.Count;
-        this.CreateRecipeFormModel.Steps.Input.Add(step);
+        step.Order.Input = this.CreateRecipeFormModel.Steps.Count;
+        this.CreateRecipeFormModel.Steps.Add(step);
     }
 
     private void MoveStepDown(CreateRecipeFormModelStep step)
     {
-        if (step.Order.Input >= this.CreateRecipeFormModel.Steps.Input.Count - 1)
+        if (step.Order.Input >= this.CreateRecipeFormModel.Steps.Count - 1)
             return;
 
-        var stepIndex = this.CreateRecipeFormModel.Steps.Input.IndexOf(step);
-        this.CreateRecipeFormModel.Steps.Input.RemoveAt(stepIndex);
-        this.CreateRecipeFormModel.Steps.Input.Insert(stepIndex + 1, step);
+        this.CreateRecipeFormModel.Steps.Move(step, 1);
         this.RecalculateSteps();
     }
 
@@ -131,9 +129,7 @@
         if (step.Order.Input <= 0)
             return;
 
-        var stepIndex = this.CreateRecipeFormModel.Steps.Input.IndexOf(step);
-        this.CreateRecipeFormModel.Steps.Input.Insert(stepIndex - 1, step);
-        this.CreateRecipeFormModel.Steps.Input.RemoveAt(stepIndex + 1);
+        this.CreateRecipeFormModel.Steps.Move(step, -1);
         this.RecalculateSteps();
     }
 
@@ -150,13 +146,13 @@
 
     private void RecalculateSteps()
     {
-        for (int i = 0; i < this.CreateRecipeFormModel.Steps.Input.Count; i++)
-            this.CreateRecipeFormModel.Steps.Input[i].Order.Input = i;
+        for (int i = 0; i < this.CreateRecipeFormModel.Steps.Count; i++)
+            this.CreateRecipeFormModel.Steps[i].Order.Input = i;
     }
 
     private void RemoveStep(CreateRecipeFormModelStep stepIndex)
     {
-        _ = this.CreateRecipeFormModel.Steps.Input.Remove(stepIndex);
+        _ = this.CreateRecipeFormModel.Steps.Remove(stepIndex);
         this.RecalculateSteps();
     }
 

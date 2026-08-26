@@ -1,7 +1,5 @@
 using AutoMapper;
-using CocktailCollator.Web.Common.Generics;
-using CocktailCollator.Web.Common.Interfaces;
-using System.Collections.ObjectModel;
+using CocktailCollator.Web.Common.Inputs;
 
 namespace CocktailCollator.Web.FormModels.Roles;
 
@@ -9,7 +7,7 @@ public class UpdateRoleFormModel : IFormModel<UpdateRoleInputPort>
 {
     private readonly IMapper _mapper;
 
-    public InputProperty<ObservableCollection<string>> Claims { get; set; }
+    public InputPropertyList<string> Claims { get; set; }
     public InputProperty<bool> HasEveryPermissionClaim { get; set; }
         = new(() => false, input => true);
     public InputProperty<string> Name { get; set; }
@@ -23,11 +21,10 @@ public class UpdateRoleFormModel : IFormModel<UpdateRoleInputPort>
     {
         this._mapper = mapper;
 
-        this.Claims = new(() => [], this.IsClaimsValid)
+        this.Claims = new(collectionValidationFunc: (claims) => claims.Any() || this.HasEveryPermissionClaim.Input)
         {
             OnChange = () => OnChange?.Invoke()
         };
-        this.Claims.Input.CollectionChanged += (_, _) => OnChange?.Invoke();
         this.HasEveryPermissionClaim.OnChange = () => OnChange?.Invoke();
         this.Name.OnChange = () => OnChange?.Invoke();
         this.RoleId.OnChange = () => OnChange?.Invoke();
@@ -46,7 +43,4 @@ public class UpdateRoleFormModel : IFormModel<UpdateRoleInputPort>
         this.Claims.ResetToDefault();
         this.HasEveryPermissionClaim.ResetToDefault();
     }
-
-    private bool IsClaimsValid(ObservableCollection<string> claims)
-        => claims.Count > 0 || this.HasEveryPermissionClaim.Input;
 }

@@ -36,7 +36,7 @@
                 @foreach (var claim in this._allClaims)
                 {
                     <div class="form-check">
-                        <input @bind:get="this.CreateRoleFormModel.Claims.Input.Contains(claim)"
+                        <input @bind:get="this.CreateRoleFormModel.Claims.Contains(claim)"
                                @bind:set="(value) => this.OnClaimSet(claim, value)"
                                class="form-check-input"
                                disabled="@this.CreateRoleFormModel.HasEveryPermissionClaim.Input"
@@ -78,10 +78,10 @@
 
     private void OnClaimSet(string claim, bool value)
     {
-        if (value && !this.CreateRoleFormModel.Claims.Input.Contains(claim))
-            this.CreateRoleFormModel.Claims.Input.Add(claim);
-        else if (!value && this.CreateRoleFormModel.Claims.Input.Contains(claim))
-            this.CreateRoleFormModel.Claims.Input.Remove(claim);
+        if (value && !this.CreateRoleFormModel.Claims.Contains(claim))
+            this.CreateRoleFormModel.Claims.Add(claim);
+        else if (!value && this.CreateRoleFormModel.Claims.Contains(claim))
+            this.CreateRoleFormModel.Claims.Remove(claim);
     }
 
     private async Task OnClickCreate()

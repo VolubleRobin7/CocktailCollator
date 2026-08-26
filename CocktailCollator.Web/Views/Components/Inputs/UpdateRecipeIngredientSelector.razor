@@ -59,7 +59,7 @@
             <input @bind-value="this.Ingredient.Name.Input"
                    @bind-value:event="oninput"
                    class="form-control flex-grow-1 @(this.Ingredient.Name.IsValid() ? "is-valid" : "is-invalid")"
-                   disabled="@this.Ingredient.UsingExistingIngredient.Input"
+                   disabled="@this.Ingredient.UsingExistingIngredient"
                    placeholder="Select an ingredient..."
                    type="text" />
 
@@ -128,12 +128,12 @@
     {
         if (ingredient is null)
         {
-            this.Ingredient.UsingExistingIngredient.Input = false;
+            this.Ingredient.UsingExistingIngredient = false;
             this.Ingredient.Name.Input = "";
         }
         else
         {
-            this.Ingredient.UsingExistingIngredient.Input = true;
+            this.Ingredient.UsingExistingIngredient = true;
             this.Ingredient.Name.Input = ingredient.Name ?? "";
             this.Ingredient.ExistingIngredientId = ingredient.IngredientId;
         }
@@ -165,7 +165,7 @@
     {
         this._measurementSearchString = value ?? "";
 
-        if (this.Ingredient.UsingExistingIngredient.Input)
+        if (this.Ingredient.UsingExistingIngredient)
         {
             var _SelectedIngredient = this.IngredientsViewModel.Ingredients.First(i => i.IngredientId == this.Ingredient.ExistingIngredientId);
             this._measurementSearchResults = _SelectedIngredient.Measurements?

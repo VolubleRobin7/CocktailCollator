@@ -1,7 +1,6 @@
 using AutoMapper;
 using CocktailCollator.Application.UseCases.Ingredients.UpdateIngredient;
-using CocktailCollator.Web.Common.Generics;
-using CocktailCollator.Web.Common.Interfaces;
+using CocktailCollator.Web.Common.Inputs;
 using CocktailCollator.Web.ViewModels.IngredientCategories;
 
 namespace CocktailCollator.Web.FormModels.Ingredients;
@@ -10,11 +9,11 @@ public class UpdateIngredientFormModel : IFormModel<UpdateIngredientInputPort>
 {
     private readonly IMapper _mapper;
 
-    public InputProperty<IngredientCategoryViewModel?> IngredientCategory { get; set; } 
+    public InputProperty<IngredientCategoryViewModel?> IngredientCategory { get; set; }
         = new(() => null, (input) => true);
-    public InputProperty<Guid> IngredientId { get; set; } 
+    public InputProperty<Guid> IngredientId { get; set; }
         = new(() => Guid.Empty, (input) => input != Guid.Empty);
-    public InputProperty<string> Name { get; set; } 
+    public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
 
     public Action? OnChange { get; set; }
