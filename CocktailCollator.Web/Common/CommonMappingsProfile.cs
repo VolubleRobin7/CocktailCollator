@@ -1,6 +1,6 @@
 using AutoMapper;
 using CocktailCollator.Application.Models;
-using CocktailCollator.Web.Common.Generics;
+using CocktailCollator.Web.Common.Inputs;
 
 namespace CocktailCollator.Web.Common;
 

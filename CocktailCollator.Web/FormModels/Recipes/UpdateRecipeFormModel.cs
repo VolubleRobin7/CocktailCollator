@@ -1,7 +1,6 @@
 using AutoMapper;
 using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
-using CocktailCollator.Web.Common.Generics;
-using CocktailCollator.Web.Common.Interfaces;
+using CocktailCollator.Web.Common.Inputs;
 using CocktailCollator.Web.ViewModels.Measurements;
 using CocktailCollator.Web.ViewModels.RecipeCategories;
 

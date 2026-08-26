@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace CocktailCollator.Web.Common.Generics;
+namespace CocktailCollator.Web.Common.Inputs;
 
 public abstract class InputPropertyListBase<TEntity, TProperty>
     : IList<TEntity>, IReadOnlyList<TEntity>, IInputInteraction

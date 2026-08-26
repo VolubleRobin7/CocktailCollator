@@ -1,4 +1,4 @@
-﻿namespace CocktailCollator.Web.Common.Generics;
+﻿namespace CocktailCollator.Web.Common.Inputs;
 
 public interface IInputInteraction
 {

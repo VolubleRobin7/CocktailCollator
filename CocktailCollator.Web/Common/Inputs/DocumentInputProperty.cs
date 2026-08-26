@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace CocktailCollator.Web.Common.Generics;
+namespace CocktailCollator.Web.Common.Inputs;
 
 public class DocumentInputProperty(bool isRequired = false, bool isOnlyValidIfUploaded = true)
     : InputProperty<IBrowserFile?>(() => null, (input) => false)

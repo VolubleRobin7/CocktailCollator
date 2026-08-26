@@ -1,4 +1,4 @@
-﻿using CocktailCollator.Web.Common.Generics;
+﻿using CocktailCollator.Web.Common.Inputs;
 
 namespace CocktailCollator.Web.ViewModels.Documents;
 
