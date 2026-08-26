@@ -283,10 +283,10 @@ public abstract class InputPropertyListBase<TEntity, TProperty>
     /// <returns>True if the collection validation succeeds.</returns>
     public virtual bool IsValid()
     {
-        var collectionResult = this._collectionValidationFunc.Invoke(this._items);
-        if (!collectionResult.IsValid)
+        var _CollectionResult = this._collectionValidationFunc.Invoke(this._items);
+        if (!_CollectionResult.IsValid)
         {
-            this.ErrorMessage = collectionResult.ErrorMessage ?? DEFAULT_ERROR_MESSAGE;
+            this.ErrorMessage = _CollectionResult.ErrorMessage ?? DEFAULT_ERROR_MESSAGE;
             return false;
         }
 

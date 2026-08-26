@@ -30,26 +30,26 @@ public class CommonMappingsProfile : Profile
     /// </summary>
     private void RegisterInputPropertyMappings()
     {
-        var inputPropertyTypes = typeof(CommonMappingsProfile).Assembly.GetTypes()
+        var _InputPropertyTypes = typeof(CommonMappingsProfile).Assembly.GetTypes()
             .SelectMany(t => t.GetProperties())
             .Select(p => p.PropertyType)
             .Where(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(InputProperty<>))
             .Distinct();
 
-        var createMapMethod = typeof(Profile).GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)
+        var _CreateMapMethod = typeof(Profile).GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)
             .First(m => m.Name == nameof(CreateMap) && m.IsGenericMethod && m.GetParameters().Length == 0);
 
-        var configureMethod = typeof(CommonMappingsProfile).GetMethod(nameof(ConfigureConvertUsing), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        var _ConfigureMethod = typeof(CommonMappingsProfile).GetMethod(nameof(ConfigureConvertUsing), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
 
-        foreach (var type in inputPropertyTypes)
+        foreach (var _Type in _InputPropertyTypes)
         {
-            var innerType = type.GetGenericArguments()[0];
+            var _InnerType = _Type.GetGenericArguments()[0];
 
-            var genericCreateMap = createMapMethod.MakeGenericMethod(type, innerType);
-            var map = genericCreateMap.Invoke(this, null);
+            var _GenericCreateMap = _CreateMapMethod.MakeGenericMethod(_Type, _InnerType);
+            var _Map = _GenericCreateMap.Invoke(this, null);
 
-            var genericConfigure = configureMethod!.MakeGenericMethod(innerType);
-            genericConfigure.Invoke(null, new[] { map });
+            var _GenericConfigure = _ConfigureMethod!.MakeGenericMethod(_InnerType);
+            _GenericConfigure.Invoke(null, new[] { _Map });
         }
     }
 

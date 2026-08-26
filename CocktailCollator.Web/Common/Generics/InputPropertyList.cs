@@ -84,9 +84,7 @@ public class InputPropertyList<TEntity> : InputPropertyListBase<TEntity, InputPr
             ? (_) => new ValidationResult(true)
             : (entity) => new ValidationResult(itemValidationFunc(entity));
 
-        this._onAddOnChange = onAddOnChange is null
-            ? ((_, _) => { })
-            : onAddOnChange;
+        this._onAddOnChange = onAddOnChange ?? ((_, _) => { });
 
         this.InitializeDefaultItems();
     }
@@ -113,7 +111,7 @@ public class InputPropertyList<TEntity> : InputPropertyListBase<TEntity, InputPr
 
         this._itemValidationFunc = itemValidationFunc ?? ((_) => new ValidationResult(true));
 
-        this._onAddOnChange = onAddOnChange is null ? ((_, _) => { }) : onAddOnChange;
+        this._onAddOnChange = onAddOnChange ?? ((_, _) => { });
 
         this.InitializeDefaultItems();
     }
