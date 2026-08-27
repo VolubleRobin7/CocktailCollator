@@ -4,6 +4,7 @@ using CocktailCollator.Application.UseCases.Ingredients.GetIngredients;
 using CocktailCollator.Application.UseCases.Ingredients.UpdateIngredient;
 using CocktailCollator.Domain.Entities;
 using CocktailCollator.Web.Common.Services;
+using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 
@@ -23,27 +24,28 @@ public class IngredientsViewModel
         GetIngredientsInteractor getIngredientsInteractor,
         UpdateIngredientInteractor updateIngredientInteractor,
         IMapper mapper,
+        IViewModelStore store,
         ToastService toastService)
     {
         this.DeleteCommand = new AsyncRelayCommand<Guid>((ingredientId, cancellationToken)
             => deleteIngredientInteractor.Interact(
                 new() { IngredientId = ingredientId },
-                new DeleteIngredientPresenter(toastService, this),
+                new DeleteIngredientPresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
             => getIngredientsInteractor.Interact(
-                new GetIngredientsPresenter(mapper, this),
+                new GetIngredientsPresenter(mapper, store, this),
                 cancellationToken));
 
         this.UpdateCommand = new AsyncRelayCommand<UpdateIngredientInputPort>((inputPort, cancellationToken)
             => updateIngredientInteractor.Interact(
                 inputPort,
-                new UpdateIngredientPresenter(mapper, toastService, this),
+                new UpdateIngredientPresenter(mapper, store, toastService),
                 cancellationToken));
     }
 
-    private class DeleteIngredientPresenter(ToastService toastService, IngredientsViewModel viewModel) : IDeleteIngredientOutputPort
+    private class DeleteIngredientPresenter(IViewModelStore store, ToastService toastService, IngredientsViewModel viewModel) : IDeleteIngredientOutputPort
     {
         Task IDeleteIngredientOutputPort.Failure(string reason, Ingredient? ingredient, CancellationToken cancellationToken)
         {
@@ -54,21 +56,22 @@ public class IngredientsViewModel
         Task IDeleteIngredientOutputPort.Success(Ingredient deletedIngredient, CancellationToken cancellationToken)
         {
             _ = viewModel.Ingredients.RemoveAll(ingredient => ingredient.IngredientId == deletedIngredient.IngredientId);
+            store.Remove<IngredientViewModel>(deletedIngredient.IngredientId);
             toastService.ShowToast(ToastType.Info, "Ingredient Deleted", $"{deletedIngredient.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }
 
-    private class GetIngredientsPresenter(IMapper mapper, IngredientsViewModel viewModel) : IGetIngredientsOutputPort
+    private class GetIngredientsPresenter(IMapper mapper, IViewModelStore store, IngredientsViewModel viewModel) : IGetIngredientsOutputPort
     {
         Task IGetIngredientsOutputPort.Success(List<Ingredient> ingredients, CancellationToken cancellationToken)
         {
-            viewModel.Ingredients = mapper.Map<List<IngredientViewModel>>(ingredients);
+            viewModel.Ingredients = [.. mapper.Map<List<IngredientViewModel>>(ingredients).Select(i => store.UpdateOrRegister(i.IngredientId, i))];
             return Task.CompletedTask;
         }
     }
 
-    private class UpdateIngredientPresenter(IMapper mapper, ToastService toastService, IngredientsViewModel viewModel) : IUpdateIngredientOutputPort
+    private class UpdateIngredientPresenter(IMapper mapper, IViewModelStore store, ToastService toastService) : IUpdateIngredientOutputPort
     {
         Task IUpdateIngredientOutputPort.Failure(string failureReason, Ingredient? ingredient, CancellationToken cancellationToken)
         {
@@ -78,14 +81,8 @@ public class IngredientsViewModel
 
         Task IUpdateIngredientOutputPort.Success(Ingredient ingredient, CancellationToken cancellationToken)
         {
-            var _Existing = viewModel.Ingredients.FirstOrDefault(i => i.IngredientId == ingredient.IngredientId);
-            if (_Existing is not null)
-            {
-                var _Updated = mapper.Map<IngredientViewModel>(ingredient);
-                _Existing.Name = _Updated.Name;
-                _Existing.Measurements = _Updated.Measurements;
-                _Existing.Category = _Updated.Category;
-            }
+            var _Ingredient = mapper.Map<IngredientViewModel>(ingredient);
+            _ = store.UpdateOrRegister(_Ingredient.IngredientId, _Ingredient);
             toastService.ShowToast(ToastType.Success, "Ingredient Updated", $"{ingredient.Name} updated successfully");
             return Task.CompletedTask;
         }

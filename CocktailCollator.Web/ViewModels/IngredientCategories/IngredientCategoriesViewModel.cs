@@ -4,6 +4,7 @@ using CocktailCollator.Application.UseCases.IngredientCategories.DeleteIngredien
 using CocktailCollator.Application.UseCases.IngredientCategories.GetIngredientCategories;
 using CocktailCollator.Domain.Entities;
 using CocktailCollator.Web.Common.Services;
+using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 
@@ -23,37 +24,39 @@ public class IngredientCategoriesViewModel
         DeleteIngredientCategoryInteractor deleteIngredientCategoryInteractor,
         GetIngredientCategoriesInteractor getIngredientCategoriesInteractor,
         IMapper mapper,
+        IViewModelStore store,
         ToastService toastService)
     {
         this.CreateCommand = new AsyncRelayCommand<CreateIngredientCategoryInputPort>((inputPort, cancellationToken)
             => createIngredientCategoryInteractor.Interact(
                 inputPort,
-                new CreateIngredientCategoryPresenter(mapper, toastService, this),
+                new CreateIngredientCategoryPresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>((categoryId, cancellationToken)
             => deleteIngredientCategoryInteractor.Interact(
                 new() { IngredientCategoryId = categoryId },
-                new DeleteIngredientCategoryPresenter(toastService, this),
+                new DeleteIngredientCategoryPresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
             => getIngredientCategoriesInteractor.Interact(
-                new GetIngredientCategoriesPresenter(mapper, this),
+                new GetIngredientCategoriesPresenter(mapper, store, this),
                 cancellationToken));
     }
 
-    private class CreateIngredientCategoryPresenter(IMapper mapper, ToastService toastService, IngredientCategoriesViewModel viewModel) : ICreateIngredientCategoryOutputPort
+    private class CreateIngredientCategoryPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, IngredientCategoriesViewModel viewModel) : ICreateIngredientCategoryOutputPort
     {
         Task ICreateIngredientCategoryOutputPort.Success(IngredientCategory ingredientCategory, CancellationToken cancellationToken)
         {
-            viewModel.IngredientCategories.Add(mapper.Map<IngredientCategoryViewModel>(ingredientCategory));
+            var _Category = mapper.Map<IngredientCategoryViewModel>(ingredientCategory);
+            viewModel.IngredientCategories.Add(store.UpdateOrRegister(_Category.IngredientCategoryId, _Category));
             toastService.ShowToast(ToastType.Success, "Category Created", $"{ingredientCategory.Name} created successfully");
             return Task.CompletedTask;
         }
     }
 
-    private class DeleteIngredientCategoryPresenter(ToastService toastService, IngredientCategoriesViewModel viewModel) : IDeleteIngredientCategoryOutputPort
+    private class DeleteIngredientCategoryPresenter(IViewModelStore store, ToastService toastService, IngredientCategoriesViewModel viewModel) : IDeleteIngredientCategoryOutputPort
     {
         Task IDeleteIngredientCategoryOutputPort.Failure(string reason, IngredientCategory? category, CancellationToken cancellationToken)
         {
@@ -64,16 +67,17 @@ public class IngredientCategoriesViewModel
         Task IDeleteIngredientCategoryOutputPort.Success(IngredientCategory deletedCategory, CancellationToken cancellationToken)
         {
             _ = viewModel.IngredientCategories.RemoveAll(c => c.IngredientCategoryId == deletedCategory.IngredientCategoryId);
+            store.Remove<IngredientCategoryViewModel>(deletedCategory.IngredientCategoryId);
             toastService.ShowToast(ToastType.Info, "Category Deleted", $"{deletedCategory.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }
 
-    private class GetIngredientCategoriesPresenter(IMapper mapper, IngredientCategoriesViewModel viewModel) : IGetIngredientCategoriesOutputPort
+    private class GetIngredientCategoriesPresenter(IMapper mapper, IViewModelStore store, IngredientCategoriesViewModel viewModel) : IGetIngredientCategoriesOutputPort
     {
         Task IGetIngredientCategoriesOutputPort.Success(List<IngredientCategory> ingredientCategories, CancellationToken cancellationToken)
         {
-            viewModel.IngredientCategories = mapper.Map<List<IngredientCategoryViewModel>>(ingredientCategories);
+            viewModel.IngredientCategories = [.. mapper.Map<List<IngredientCategoryViewModel>>(ingredientCategories).Select(c => store.UpdateOrRegister(c.IngredientCategoryId, c))];
             return Task.CompletedTask;
         }
     }

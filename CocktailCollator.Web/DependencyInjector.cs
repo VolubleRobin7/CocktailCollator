@@ -1,5 +1,7 @@
 using CocktailCollator.Infrastructure.Persistence;
 using CocktailCollator.Infrastructure.Persistence.Models;
+using CocktailCollator.Web.Common.Services;
+using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.FormModels.IngredientCategories;
 using CocktailCollator.Web.FormModels.Ingredients;
 using CocktailCollator.Web.FormModels.Measurements;
@@ -17,7 +19,6 @@ using CocktailCollator.Web.ViewModels.Roles;
 using CocktailCollator.Web.ViewModels.Users;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using CocktailCollator.Web.Common.Services;
 
 namespace CocktailCollator.Web;
 
@@ -75,6 +76,7 @@ public static class DependencyInjector
 
     private static IServiceCollection AddViewModels(this IServiceCollection services)
         => services
+            .AddScoped<IViewModelStore, ViewModelStore>()
             .AddScoped<RecipesViewModel>()
             .AddScoped<IngredientsViewModel>()
             .AddScoped<MeasurementsViewModel>()
