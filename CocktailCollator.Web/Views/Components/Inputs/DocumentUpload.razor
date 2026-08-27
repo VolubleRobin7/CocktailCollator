@@ -1,4 +1,4 @@
-@using CocktailCollator.Web.Common.Generics
+@using CocktailCollator.Web.Common.Inputs
 @using CocktailCollator.Web.Views.Components.Buttons
 
 <div @attributes="this.AdditionalAttributes">
@@ -58,7 +58,7 @@
     public DocumentInputProperty? Document { get; set; }
 
     [Parameter]
-    public ICollection<DocumentInputProperty>? Documents { get; set; }
+    public DocumentInputPropertyList? Documents { get; set; }
 
     [Parameter]
     public bool Multiple { get; set; } = false;
@@ -72,7 +72,7 @@
     private IEnumerable<DocumentInputProperty> GetAllDocuments()
     {
         if (this.Multiple && this.Documents is not null)
-            return this.Documents;
+            return this.Documents.AsInputs();
 
         if (!this.Multiple && this.Document is not null)
             return [this.Document];
@@ -101,20 +101,9 @@
     {
         if (this.Multiple && this.Documents is not null)
         {
-            var _ExistingDocuments = this.Documents.Where(d => d.Existing is not null).ToList(); // Must be a list so that they are not lost in the clear.
-            this.Documents.Clear();
-            foreach (var _Document in _ExistingDocuments)
-                this.Documents.Add(_Document);
-
-            var _UploadTasks = new List<Task>();
-            foreach (var _File in args.GetMultipleFiles())
-            {
-                var _DocumentInput = new DocumentInputProperty();
-                _DocumentInput.Input = _File;
-                this.Documents.Add(_DocumentInput);
-                _UploadTasks.Add(_DocumentInput.UploadFileAsync());
-            }
-            await Task.WhenAll(_UploadTasks);
+            this.Documents.ClearNew();
+            this.Documents.AddRange(args.GetMultipleFiles());
+            await this.Documents.UploadAllAsync();
         }
         else if (!this.Multiple && this.Document is not null)
         {

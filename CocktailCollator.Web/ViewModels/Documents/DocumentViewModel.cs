@@ -1,4 +1,4 @@
-using CocktailCollator.Web.Common.Generics;
+using CocktailCollator.Web.Common.Inputs;
 using CocktailCollator.Web.Common.State;
 
 namespace CocktailCollator.Web.ViewModels.Documents;
@@ -18,6 +18,14 @@ public class DocumentViewModel : IStoreableViewModel<DocumentViewModel>
                 FileName = this.FileName,
                 Url = this.Url,
             }
+        };
+
+    public ExistingDocument AsExistingDocument()
+        => new()
+        {
+            Id = this.DocumentId,
+            FileName = this.FileName,
+            Url = this.Url,
         };
 
     public void ApplyChanges(DocumentViewModel source, IViewModelStore store)

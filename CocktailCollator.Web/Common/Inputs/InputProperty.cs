@@ -1,6 +1,6 @@
-namespace CocktailCollator.Web.Common.Generics;
+namespace CocktailCollator.Web.Common.Inputs;
 
-public class InputProperty<TEntity>
+public class InputProperty<TEntity> : IInputInteraction
 {
     private const string DEFAULT_ERROR_MESSAGE = "Please review your input.";
 

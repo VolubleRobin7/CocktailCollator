@@ -36,7 +36,7 @@
                 @foreach (var claim in this._allClaims)
                 {
                     <div class="form-check">
-                        <input @bind:get="this.UpdateRoleFormModel.Claims.Input.Contains(claim)"
+                        <input @bind:get="this.UpdateRoleFormModel.Claims.Contains(claim)"
                                @bind:set="(value) => this.OnClaimSet(claim, value)"
                                class="form-check-input"
                                disabled="@this.UpdateRoleFormModel.HasEveryPermissionClaim.Input"
@@ -78,10 +78,10 @@
 
     private void OnClaimSet(string claim, bool value)
     {
-        if (value && !this.UpdateRoleFormModel.Claims.Input.Contains(claim))
-            this.UpdateRoleFormModel.Claims.Input.Add(claim);
-        else if (!value && this.UpdateRoleFormModel.Claims.Input.Contains(claim))
-            this.UpdateRoleFormModel.Claims.Input.Remove(claim);
+        if (value && !this.UpdateRoleFormModel.Claims.Contains(claim))
+            this.UpdateRoleFormModel.Claims.Add(claim);
+        else if (!value && this.UpdateRoleFormModel.Claims.Contains(claim))
+            this.UpdateRoleFormModel.Claims.Remove(claim);
     }
 
     private async Task OnClickUpdate()
@@ -97,9 +97,9 @@
         this.UpdateRoleFormModel.RoleId.Input = role.RoleId;
         this.UpdateRoleFormModel.Name.Input = role.Name;
         this.UpdateRoleFormModel.HasEveryPermissionClaim.Input = role.HasEveryPermissionClaim;
-        this.UpdateRoleFormModel.Claims.Input.Clear();
+        this.UpdateRoleFormModel.Claims.Clear();
         foreach (var claim in role.Claims)
-            this.UpdateRoleFormModel.Claims.Input.Add(claim);
+            this.UpdateRoleFormModel.Claims.Add(claim);
 
         return this._modal.OpenModalAsync();
     }

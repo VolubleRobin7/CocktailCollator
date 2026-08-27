@@ -30,7 +30,7 @@
                 @foreach (var _Role in this.RolesViewModel.Roles)
                 {
                     <div class="form-check">
-                        <input @bind:get="this.CreateUserFormModel.Roles.Input.Any(r => r.RoleId == _Role.RoleId)" 
+                        <input @bind:get="this.CreateUserFormModel.Roles.Any(r => r.RoleId == _Role.RoleId)" 
                                @bind:set="value => this.OnRoleSelectionChanged(_Role, value)"
                                class="form-check-input"
                                id="create_role_@_Role.RoleId" 
@@ -79,22 +79,22 @@
     {
         if (isChecked)
         {
-            if (!this.CreateUserFormModel.Roles.Input.Any(r => r.RoleId == role.RoleId))
-                this.CreateUserFormModel.Roles.Input.Add(new CreateUserFormModelRole { RoleId = role.RoleId, Name = role.Name });
+            if (!this.CreateUserFormModel.Roles.Any(r => r.RoleId == role.RoleId))
+                this.CreateUserFormModel.Roles.Add(new CreateUserFormModelRole { RoleId = role.RoleId, Name = role.Name });
         }
         else
         {
-            var _RoleToRemove = this.CreateUserFormModel.Roles.Input.FirstOrDefault(r => r.RoleId == role.RoleId);
+            var _RoleToRemove = this.CreateUserFormModel.Roles.FirstOrDefault(r => r.RoleId == role.RoleId);
             if (_RoleToRemove is not null)
-                this.CreateUserFormModel.Roles.Input.Remove(_RoleToRemove);
+                this.CreateUserFormModel.Roles.Remove(_RoleToRemove);
         }
     }
 
     public Task OpenModalAsync()
     {
         var _DefaultRole = this.RolesViewModel.Roles.FirstOrDefault(r => r.IsDefaultRole);
-        if (_DefaultRole is not null && this.CreateUserFormModel.Roles.Input.Count == 0)
-            this.CreateUserFormModel.Roles.Input.Add(new CreateUserFormModelRole { RoleId = _DefaultRole.RoleId, Name = _DefaultRole.Name });
+        if (_DefaultRole is not null && this.CreateUserFormModel.Roles.Count == 0)
+            this.CreateUserFormModel.Roles.Add(new CreateUserFormModelRole { RoleId = _DefaultRole.RoleId, Name = _DefaultRole.Name });
         
         return this._modal.OpenModalAsync();
     }
