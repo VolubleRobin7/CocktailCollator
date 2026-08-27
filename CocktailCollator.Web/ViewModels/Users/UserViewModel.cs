@@ -14,8 +14,6 @@ public class UserViewModel : IStoreableViewModel<UserViewModel>
     {
         this.Email = source.Email;
         this.UserName = source.UserName;
-
-        if (source.Roles is not null)
-            this.Roles = [.. source.Roles.Select(r => store.UpdateOrRegister(r.RoleId, r))];
+        this.Roles = [.. source.Roles.Select(r => store.UpdateOrRegister(r.RoleId, r))];
     }
 }

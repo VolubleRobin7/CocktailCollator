@@ -31,9 +31,9 @@ public class UsersViewModel
 
     public UsersViewModel(
         UserManager<CocktailUser> userManager,
-        RolesViewModel rolesViewModel,
         AuthenticationStateProvider authenticationStateProvider,
         IMapper mapper,
+        RolesViewModel rolesViewModel,
         IViewModelStore store,
         ToastService toastService)
     {

@@ -29,14 +29,14 @@ public class MeasurementsViewModel
     {
         this.CreateCommand = new AsyncRelayCommand<CreateMeasurementInputPort>((inputPort, cancellationToken)
             => createMeasurementInteractor.Interact(
-                inputPort,
-                new CreateMeasurementPresenter(mapper, toastService, store, this),
+                 inputPort,
+                new CreateMeasurementPresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>((measurementId, cancellationToken)
             => deleteMeasurementInteractor.Interact(
                 new() { MeasurementId = measurementId },
-                new DeleteMeasurementPresenter(toastService, store, this),
+                new DeleteMeasurementPresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
@@ -45,7 +45,7 @@ public class MeasurementsViewModel
                 cancellationToken));
     }
 
-    private class CreateMeasurementPresenter(IMapper mapper, ToastService toastService, IViewModelStore store, MeasurementsViewModel viewModel) : ICreateMeasurementOutputPort
+    private class CreateMeasurementPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, MeasurementsViewModel viewModel) : ICreateMeasurementOutputPort
     {
         Task ICreateMeasurementOutputPort.Success(Measurement measurement, CancellationToken cancellationToken)
         {
@@ -56,7 +56,7 @@ public class MeasurementsViewModel
         }
     }
 
-    private class DeleteMeasurementPresenter(ToastService toastService, IViewModelStore store, MeasurementsViewModel viewModel) : IDeleteMeasurementOutputPort
+    private class DeleteMeasurementPresenter(IViewModelStore store, ToastService toastService, MeasurementsViewModel viewModel) : IDeleteMeasurementOutputPort
     {
         Task IDeleteMeasurementOutputPort.Failure(string reason, Measurement? measurement, CancellationToken cancellationToken)
         {

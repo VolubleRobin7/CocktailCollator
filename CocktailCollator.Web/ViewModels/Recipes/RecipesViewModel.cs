@@ -32,14 +32,14 @@ public class RecipesViewModel
     {
         this.CreateCommand = new AsyncRelayCommand<CreateRecipeInputPort>((inputPort, cancellationToken)
             => createRecipeInteractor.Interact(
-                inputPort,
-                new CreateRecipePresenter(mapper, toastService, store, this),
+                 inputPort,
+                new CreateRecipePresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>((recipeId, cancellationToken)
             => deleteRecipeInteractor.Interact(
                 new() { RecipeId = recipeId },
-                new DeleteRecipePresenter(toastService, store, this),
+                new DeleteRecipePresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
@@ -50,11 +50,11 @@ public class RecipesViewModel
         this.UpdateCommand = new AsyncRelayCommand<UpdateRecipeInputPort>((inputPort, cancellationToken)
             => updateRecipeInteractor.InteractAsync(
                 inputPort,
-                new UpdateRecipePresenter(mapper, toastService, store),
+                new UpdateRecipePresenter(mapper, store, toastService),
                 cancellationToken));
     }
 
-    private class CreateRecipePresenter(IMapper mapper, ToastService toastService, IViewModelStore store, RecipesViewModel viewModel) : ICreateRecipeOutputPort
+    private class CreateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel) : ICreateRecipeOutputPort
     {
         Task ICreateRecipeOutputPort.Success(Recipe recipe, CancellationToken cancellationToken)
         {
@@ -65,7 +65,7 @@ public class RecipesViewModel
         }
     }
 
-    private class DeleteRecipePresenter(ToastService toastService, IViewModelStore store, RecipesViewModel viewModel) : IDeleteRecipeOutputPort
+    private class DeleteRecipePresenter(IViewModelStore store, ToastService toastService, RecipesViewModel viewModel) : IDeleteRecipeOutputPort
     {
         Task IDeleteRecipeOutputPort.Success(Recipe deletedRecipe, CancellationToken cancellationToken)
         {
@@ -85,7 +85,7 @@ public class RecipesViewModel
         }
     }
 
-    private class UpdateRecipePresenter(IMapper mapper, ToastService toastService, IViewModelStore store) : IUpdateRecipeOutputPort
+    private class UpdateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService) : IUpdateRecipeOutputPort
     {
         Task IUpdateRecipeOutputPort.Failure(string failureReason, Recipe? recipe, CancellationToken cancellationToken)
         {

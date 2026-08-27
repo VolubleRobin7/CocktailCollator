@@ -30,13 +30,13 @@ public class RecipeCategoriesViewModel
         this.CreateCommand = new AsyncRelayCommand<CreateRecipeCategoryInputPort>((inputPort, cancellationToken)
             => createRecipeCategoryInteractor.Interact(
                 inputPort,
-                new CreateRecipeCategoryPresenter(mapper, toastService, store, this),
+                new CreateRecipeCategoryPresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>((categoryId, cancellationToken)
             => deleteRecipeCategoryInteractor.Interact(
                 new() { RecipeCategoryId = categoryId },
-                new DeleteRecipeCategoryPresenter(toastService, store, this),
+                new DeleteRecipeCategoryPresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
@@ -45,7 +45,7 @@ public class RecipeCategoriesViewModel
                 cancellationToken));
     }
 
-    private class CreateRecipeCategoryPresenter(IMapper mapper, ToastService toastService, IViewModelStore store, RecipeCategoriesViewModel viewModel) : ICreateRecipeCategoryOutputPort
+    private class CreateRecipeCategoryPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipeCategoriesViewModel viewModel) : ICreateRecipeCategoryOutputPort
     {
         Task ICreateRecipeCategoryOutputPort.Success(RecipeCategory recipeCategory, CancellationToken cancellationToken)
         {
@@ -56,7 +56,7 @@ public class RecipeCategoriesViewModel
         }
     }
 
-    private class DeleteRecipeCategoryPresenter(ToastService toastService, IViewModelStore store, RecipeCategoriesViewModel viewModel) : IDeleteRecipeCategoryOutputPort
+    private class DeleteRecipeCategoryPresenter(IViewModelStore store, ToastService toastService, RecipeCategoriesViewModel viewModel) : IDeleteRecipeCategoryOutputPort
     {
         Task IDeleteRecipeCategoryOutputPort.Failure(string reason, RecipeCategory? category, CancellationToken cancellationToken)
         {

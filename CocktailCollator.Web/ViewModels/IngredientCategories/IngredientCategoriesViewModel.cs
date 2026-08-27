@@ -30,13 +30,13 @@ public class IngredientCategoriesViewModel
         this.CreateCommand = new AsyncRelayCommand<CreateIngredientCategoryInputPort>((inputPort, cancellationToken)
             => createIngredientCategoryInteractor.Interact(
                 inputPort,
-                new CreateIngredientCategoryPresenter(mapper, toastService, store, this),
+                new CreateIngredientCategoryPresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>((categoryId, cancellationToken)
             => deleteIngredientCategoryInteractor.Interact(
                 new() { IngredientCategoryId = categoryId },
-                new DeleteIngredientCategoryPresenter(toastService, store, this),
+                new DeleteIngredientCategoryPresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
@@ -45,7 +45,7 @@ public class IngredientCategoriesViewModel
                 cancellationToken));
     }
 
-    private class CreateIngredientCategoryPresenter(IMapper mapper, ToastService toastService, IViewModelStore store, IngredientCategoriesViewModel viewModel) : ICreateIngredientCategoryOutputPort
+    private class CreateIngredientCategoryPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, IngredientCategoriesViewModel viewModel) : ICreateIngredientCategoryOutputPort
     {
         Task ICreateIngredientCategoryOutputPort.Success(IngredientCategory ingredientCategory, CancellationToken cancellationToken)
         {
@@ -56,7 +56,7 @@ public class IngredientCategoriesViewModel
         }
     }
 
-    private class DeleteIngredientCategoryPresenter(ToastService toastService, IViewModelStore store, IngredientCategoriesViewModel viewModel) : IDeleteIngredientCategoryOutputPort
+    private class DeleteIngredientCategoryPresenter(IViewModelStore store, ToastService toastService, IngredientCategoriesViewModel viewModel) : IDeleteIngredientCategoryOutputPort
     {
         Task IDeleteIngredientCategoryOutputPort.Failure(string reason, IngredientCategory? category, CancellationToken cancellationToken)
         {

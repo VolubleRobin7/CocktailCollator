@@ -30,7 +30,7 @@ public class IngredientsViewModel
         this.DeleteCommand = new AsyncRelayCommand<Guid>((ingredientId, cancellationToken)
             => deleteIngredientInteractor.Interact(
                 new() { IngredientId = ingredientId },
-                new DeleteIngredientPresenter(toastService, store, this),
+                new DeleteIngredientPresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
@@ -41,11 +41,11 @@ public class IngredientsViewModel
         this.UpdateCommand = new AsyncRelayCommand<UpdateIngredientInputPort>((inputPort, cancellationToken)
             => updateIngredientInteractor.Interact(
                 inputPort,
-                new UpdateIngredientPresenter(mapper, toastService, store),
+                new UpdateIngredientPresenter(mapper, store, toastService),
                 cancellationToken));
     }
 
-    private class DeleteIngredientPresenter(ToastService toastService, IViewModelStore store, IngredientsViewModel viewModel) : IDeleteIngredientOutputPort
+    private class DeleteIngredientPresenter(IViewModelStore store, ToastService toastService, IngredientsViewModel viewModel) : IDeleteIngredientOutputPort
     {
         Task IDeleteIngredientOutputPort.Failure(string reason, Ingredient? ingredient, CancellationToken cancellationToken)
         {
@@ -71,7 +71,7 @@ public class IngredientsViewModel
         }
     }
 
-    private class UpdateIngredientPresenter(IMapper mapper, ToastService toastService, IViewModelStore store) : IUpdateIngredientOutputPort
+    private class UpdateIngredientPresenter(IMapper mapper, IViewModelStore store, ToastService toastService) : IUpdateIngredientOutputPort
     {
         Task IUpdateIngredientOutputPort.Failure(string failureReason, Ingredient? ingredient, CancellationToken cancellationToken)
         {
