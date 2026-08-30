@@ -186,7 +186,6 @@
         await this.OnAfterUpdate.InvokeAsync();
     }
 
-    // The situation with nullables needs to be improved
     public async Task OpenModalAsync(RecipeViewModel recipe)
     {
         this.UpdateRecipeFormModel.RecipeId.Input = recipe.RecipeId;
@@ -200,9 +199,9 @@
         foreach (var ingredient in recipe.Ingredients ?? [])
         {
             var newIngredient = new UpdateRecipeFormModelIngredient();
-            newIngredient.Amount.Input = ingredient.Amount.Value;
+            newIngredient.Amount.Input = ingredient.Amount ?? 0;
             newIngredient.ExistingIngredientId = ingredient.IngredientId;
-            newIngredient.Name.Input = ingredient.Ingredient.Name;
+            newIngredient.Name.Input = ingredient.Ingredient?.Name ?? "";
             newIngredient.Measurement.Input = ingredient.MeasurementId;
             newIngredient.MeasurementModel = ingredient.Measurement;
             this.UpdateRecipeFormModel.Ingredients.Add(newIngredient);
@@ -212,8 +211,8 @@
         foreach (var step in recipe.Steps ?? [])
         {
             var newStep = new UpdateRecipeFormModelStep();
-            newStep.Instruction.Input = step.Instruction;
-            newStep.Order.Input = step.Order.Value;
+            newStep.Instruction.Input = step.Instruction ?? "";
+            newStep.Order.Input = step.Order ?? 0;
             this.UpdateRecipeFormModel.Steps.Add(newStep);
         }
 
