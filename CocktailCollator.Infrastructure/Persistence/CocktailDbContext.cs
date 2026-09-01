@@ -145,5 +145,6 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
         _ = modelBuilder.Entity<RecipeCategory>();
         _ = modelBuilder.Entity<Document>();
         _ = modelBuilder.Entity<RecipeDocument>();
+        _ = modelBuilder.Entity<RecipeNote>();
     }
 }

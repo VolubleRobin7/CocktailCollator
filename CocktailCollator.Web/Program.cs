@@ -27,7 +27,7 @@ builder.Services.AddAutoMapper(
     typeof(CocktailCollator.Application.DependencyInjector));
 
 builder.Services.AddDbContext<CocktailDbContext>(options
-    => options.UseSqlServer(builder.Configuration.GetConnectionString("CocktailCollator")));
+    => options.UseSqlite(builder.Configuration.GetConnectionString("CocktailCollator")));
 
 var app = builder.Build();
 

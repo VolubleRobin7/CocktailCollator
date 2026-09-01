@@ -21,6 +21,8 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         = new(() => null, (input) => true);
     public InputPropertyList<UpdateRecipeFormModelStep> Steps { get; set; }
         = new([(step) => step.Instruction, (step) => step.Order]);
+    public InputProperty<string?> GlobalNote { get; set; }
+        = new(() => null, (input) => true);
 
     public Action? OnChange { get; set; }
 
@@ -34,6 +36,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this.RecipeId.OnChange = () => OnChange?.Invoke();
         this.RecipeCategory.OnChange = () => OnChange?.Invoke();
         this.Steps.OnChange = () => OnChange?.Invoke();
+        this.GlobalNote.OnChange = () => OnChange?.Invoke();
     }
 
     public UpdateRecipeInputPort ExtractToInputPort()
@@ -57,6 +60,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this.Ingredients.ResetToDefault();
         this.Steps.ResetToDefault();
         this.Images.ResetToDefault();
+        this.GlobalNote.ResetToDefault();
     }
 }
 

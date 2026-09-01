@@ -87,6 +87,15 @@
                 </ul>
             </div>
 
+            <h4 class="mt-4">Notes</h4>
+
+            <div class="mb-3">
+                <label class="form-label">Global Note</label>
+                <textarea class="form-control" rows="3" placeholder="Add a note that everyone can see..."
+                          @bind="this.CreateRecipeFormModel.GlobalNote.Input"
+                          @bind:event="oninput"></textarea>
+            </div>
+
             <FormChangeWrapper FormModel="this.CreateRecipeFormModel">
                 <Button @onclick="this.OnClickCreateAsync"
                         Size="ButtonSize.Large"

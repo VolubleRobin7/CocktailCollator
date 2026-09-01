@@ -2,6 +2,7 @@ using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.ViewModels.Documents;
 using CocktailCollator.Web.ViewModels.RecipeCategories;
 using CocktailCollator.Web.ViewModels.RecipeIngredients;
+using CocktailCollator.Web.ViewModels.RecipeNotes;
 using CocktailCollator.Web.ViewModels.RecipeSteps;
 
 namespace CocktailCollator.Web.ViewModels.Recipes;
@@ -14,6 +15,8 @@ public class RecipeViewModel : IStoreableViewModel<RecipeViewModel>
     public required Guid RecipeId { get; set; }
     public List<RecipeStepViewModel>? Steps { get; set; }
     public List<DocumentViewModel>? Images { get; set; }
+    public string? GlobalNote { get; set; }
+    public List<RecipeNoteViewModel>? RecipeNotes { get; set; }
 
     public void ApplyChanges(RecipeViewModel source, IViewModelStore store)
     {
@@ -30,5 +33,10 @@ public class RecipeViewModel : IStoreableViewModel<RecipeViewModel>
 
         if (source.Images is not null)
             this.Images = [.. source.Images.Select(i => store.UpdateOrRegister(i.DocumentId, i))];
+
+        this.GlobalNote = source.GlobalNote;
+
+        if (source.RecipeNotes is not null)
+            this.RecipeNotes = [.. source.RecipeNotes.Select(rn => store.UpdateOrRegister(rn.RecipeNoteId, rn))];
     }
 }

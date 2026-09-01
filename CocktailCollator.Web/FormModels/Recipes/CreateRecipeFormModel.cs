@@ -16,6 +16,8 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public InputPropertyList<CreateRecipeFormModelStep> Steps { get; set; }
         = new([(step) => step.Instruction, (step) => step.Order]);
+    public InputProperty<string?> GlobalNote { get; set; }
+        = new(() => null, (input) => true);
 
     public Action? OnChange { get; set; }
 
@@ -27,6 +29,7 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
         this.Ingredients.OnChange = () => OnChange?.Invoke();
         this.Name.OnChange = () => OnChange?.Invoke();
         this.Steps.OnChange = () => OnChange?.Invoke();
+        this.GlobalNote.OnChange = () => OnChange?.Invoke();
     }
 
     public CreateRecipeInputPort ExtractToInputPort()
@@ -44,6 +47,7 @@ public class CreateRecipeFormModel : IFormModel<CreateRecipeInputPort>
         this.Steps.ResetToDefault();
         this.Ingredients.ResetToDefault();
         this.Images.ResetToDefault();
+        this.GlobalNote.ResetToDefault();
     }
 }
 

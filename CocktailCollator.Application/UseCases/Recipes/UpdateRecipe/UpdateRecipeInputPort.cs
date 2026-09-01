@@ -10,6 +10,7 @@ public class UpdateRecipeInputPort
     public required Guid RecipeId { get; set; }
     public Guid? RecipeCategoryId { get; set; }
     public List<UpdateRecipeInputPortStep> Steps { get; set; } = [];
+    public string? GlobalNote { get; set; }
 }
 
 public class UpdateRecipeInputPortRecipeIngredient

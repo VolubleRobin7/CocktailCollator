@@ -130,6 +130,15 @@
                 </ul> 
             </div>
 
+            <h4 class="mt-4">Notes</h4>
+
+            <div class="mb-3">
+                <label class="form-label">Global Note</label>
+                <textarea class="form-control" rows="3" placeholder="Add a note that everyone can see..."
+                          @bind="this.UpdateRecipeFormModel.GlobalNote.Input"
+                          @bind:event="oninput"></textarea>
+            </div>
+
             <FormChangeWrapper FormModel="this.UpdateRecipeFormModel">
                 <Button @onclick="this.OnClickUpdateAsync"
                         Size="ButtonSize.Large"
@@ -191,6 +200,7 @@
         this.UpdateRecipeFormModel.RecipeId.Input = recipe.RecipeId;
         this.UpdateRecipeFormModel.Name.Input = recipe.Name ?? string.Empty;
         this.UpdateRecipeFormModel.RecipeCategory.Input = recipe.Category;
+        this.UpdateRecipeFormModel.GlobalNote.Input = recipe.GlobalNote;
 
         this.UpdateRecipeFormModel.Images.ResetToDefault();
         this.UpdateRecipeFormModel.Images.AddRange(recipe.Images?.Select(i => i.AsExistingDocument()) ?? []);

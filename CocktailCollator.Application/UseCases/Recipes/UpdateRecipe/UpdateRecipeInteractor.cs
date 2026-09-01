@@ -12,6 +12,7 @@ public class UpdateRecipeInteractor(ICocktailDbContext dbContext)
         // Details
         _Recipe.Name = inputPort.Name;
         _Recipe.RecipeCategoryId = inputPort.RecipeCategoryId;
+        _Recipe.GlobalNote = inputPort.GlobalNote;
 
         // Steps
         _Recipe.Steps = [.. inputPort.Steps.Select(s => new RecipeStep

@@ -3,8 +3,10 @@
 @using CocktailCollator.Web.Infrastructure.Authentication
 @using CocktailCollator.Web.Views.Modals
 
+@using CocktailCollator.Web.ViewModels.Users
 @inject NavigationManager NavigationManager
 @inject RecipesViewModel ViewModel
+@inject UsersViewModel UsersViewModel
 
 @page "/recipe/{RecipeId:guid}"
 
@@ -107,6 +109,37 @@
                         </ol>
                     </div>
                 </div>
+
+                @if (!string.IsNullOrWhiteSpace(this._recipe.GlobalNote))
+                {
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4 class="mb-3 pb-2 border-bottom">Notes</h4>
+                            <p class="mb-0 text-muted" style="white-space: pre-wrap;">@this._recipe.GlobalNote</p>
+                        </div>
+                    </div>
+                }
+
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h4 class="mb-3 pb-2 border-bottom">Personal Note</h4>
+                                <div class="mb-3">
+                                    <textarea class="form-control" rows="4" placeholder="Add your personal notes here..."
+                                              @bind="this._personalNote"
+                                              @bind:event="oninput"></textarea>
+                                </div>
+                                @if (this._hasPersonalNoteChanged)
+                                {
+                                    <Button @onclick="this.SavePersonalNoteAsync"
+                                            Text="Save Note"
+                                            Theme="ButtonTheme.Success" />
+                                }
+                            </div>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
             </div>
         </div>
 
@@ -132,6 +165,21 @@
     private RecipeViewModel? _recipe;
     private UpdateRecipeModal _updateRecipeModal = default!;
 
+    private string _originalPersonalNote = string.Empty;
+    private string _currentPersonalNote = string.Empty;
+
+    private string _personalNote
+    {
+        get => this._currentPersonalNote;
+        set
+        {
+            this._currentPersonalNote = value;
+            this.StateHasChanged();
+        }
+    }
+
+    private bool _hasPersonalNoteChanged => this._currentPersonalNote != this._originalPersonalNote;
+
     [Parameter]
     public Guid RecipeId { get; set; }
 
@@ -140,8 +188,42 @@
         if (!this.ViewModel.Recipes.Any())
             await this.ViewModel.GetCommand.ExecuteAsync(null);
         
+        if (!this.UsersViewModel.Users.Any())
+            await this.UsersViewModel.GetCommand.ExecuteAsync(null);
+
+        if (this.UsersViewModel.CurrentUser is not null)
+        {
+            await this.ViewModel.GetRecipeNotesCommand.ExecuteAsync(new Application.UseCases.Recipes.GetRecipeNotes.GetRecipeNotesInputPort
+            {
+                UserId = this.UsersViewModel.CurrentUser.UserId
+            });
+        }
+
         this._recipe = this.ViewModel.Recipes.FirstOrDefault(r => r.RecipeId == this.RecipeId);
+
+        if (this._recipe is not null && this.UsersViewModel.CurrentUser is not null)
+        {
+            var userNote = this._recipe.RecipeNotes?.FirstOrDefault(rn => rn.UserId == this.UsersViewModel.CurrentUser.UserId);
+            this._originalPersonalNote = userNote?.Note ?? string.Empty;
+            this._currentPersonalNote = this._originalPersonalNote;
+        }
+
         this._isLoading = false;
+    }
+
+    private async Task SavePersonalNoteAsync()
+    {
+        if (this.UsersViewModel.CurrentUser is null || this._recipe is null) return;
+
+        await this.ViewModel.SaveRecipeNoteCommand.ExecuteAsync(new Application.UseCases.Recipes.SaveRecipeNote.SaveRecipeNoteInputPort
+        {
+            RecipeId = this._recipe.RecipeId,
+            UserId = this.UsersViewModel.CurrentUser.UserId,
+            Note = this._currentPersonalNote
+        });
+
+        this._originalPersonalNote = this._currentPersonalNote;
+        this.StateHasChanged();
     }
 
     private void GoBack()
