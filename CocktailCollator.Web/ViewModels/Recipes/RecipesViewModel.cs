@@ -4,6 +4,7 @@ using CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
 using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Infrastructure;
 using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.Views.Components.Toasts;
@@ -22,33 +23,34 @@ public class RecipesViewModel
 
 
     public RecipesViewModel(
-        CreateRecipeInteractor createRecipeInteractor,
-        DeleteRecipeInteractor deleteRecipeInteractor,
-        GetRecipesInteractor getRecipesInteractor,
-        UpdateRecipeInteractor updateRecipeInteractor,
+        IPipeline<CreateRecipeInputPort, ICreateRecipeOutputPort> createRecipePipeline,
+        IPipeline<DeleteRecipeInputPort, IDeleteRecipeOutputPort> deleteRecipePipeline,
+        IPipeline<GetRecipesInputPort, IGetRecipesOutputPort> getRecipesPipeline,
+        IPipeline<UpdateRecipeInputPort, IUpdateRecipeOutputPort> updateRecipePipeline,
         IMapper mapper,
         IViewModelStore store,
         ToastService toastService)
     {
         this.CreateCommand = new AsyncRelayCommand<CreateRecipeInputPort>((inputPort, cancellationToken)
-            => createRecipeInteractor.Interact(
-                 inputPort,
+            => createRecipePipeline.ExecuteAsync(
+                inputPort,
                 new CreateRecipePresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>((recipeId, cancellationToken)
-            => deleteRecipeInteractor.Interact(
+            => deleteRecipePipeline.ExecuteAsync(
                 new() { RecipeId = recipeId },
                 new DeleteRecipePresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
-            => getRecipesInteractor.Interact(
-                new GetRecipesPresenter(mapper, store, this),
+            => getRecipesPipeline.ExecuteAsync(
+                new GetRecipesInputPort(),
+                new GetRecipesPresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.UpdateCommand = new AsyncRelayCommand<UpdateRecipeInputPort>((inputPort, cancellationToken)
-            => updateRecipeInteractor.InteractAsync(
+            => updateRecipePipeline.ExecuteAsync(
                 inputPort,
                 new UpdateRecipePresenter(mapper, store, toastService),
                 cancellationToken));
@@ -63,6 +65,12 @@ public class RecipesViewModel
             toastService.ShowToast(ToastType.Success, "Recipe Created", $"{recipe.Name} created successfully");
             return Task.CompletedTask;
         }
+
+        Task ICreateRecipeOutputPort.Unauthorised(CancellationToken cancellationToken)
+        {
+            toastService.ShowToast(ToastType.Warning, "Access Denied", "You are not authorised to create recipes");
+            return Task.CompletedTask;
+        }
     }
 
     private class DeleteRecipePresenter(IViewModelStore store, ToastService toastService, RecipesViewModel viewModel) : IDeleteRecipeOutputPort
@@ -74,22 +82,34 @@ public class RecipesViewModel
             toastService.ShowToast(ToastType.Info, "Recipe Deleted", $"{deletedRecipe.Name} deleted successfully");
             return Task.CompletedTask;
         }
+
+        Task IDeleteRecipeOutputPort.Unauthorised(CancellationToken cancellationToken)
+        {
+            toastService.ShowToast(ToastType.Warning, "Access Denied", "You are not authorised to delete recipes");
+            return Task.CompletedTask;
+        }
     }
 
-    private class GetRecipesPresenter(IMapper mapper, IViewModelStore store, RecipesViewModel viewModel) : IGetRecipesOutputPort
+    private class GetRecipesPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel) : IGetRecipesOutputPort
     {
         Task IGetRecipesOutputPort.Success(List<Recipe> recipes, CancellationToken cancellationToken)
         {
             viewModel.Recipes = [.. mapper.Map<List<RecipeViewModel>>(recipes).Select(r => store.UpdateOrRegister(r.RecipeId, r))];
             return Task.CompletedTask;
         }
+
+        Task IGetRecipesOutputPort.Unauthorised(CancellationToken cancellationToken)
+        {
+            toastService.ShowToast(ToastType.Warning, "Access Denied", "You are not authorised to view recipes");
+            return Task.CompletedTask;
+        }
     }
 
     private class UpdateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService) : IUpdateRecipeOutputPort
     {
-        Task IUpdateRecipeOutputPort.Failure(string failureReason, Recipe? recipe, CancellationToken cancellationToken)
+        Task IUpdateRecipeOutputPort.NotFound(CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Danger, "Failed to Update", failureReason);
+            toastService.ShowToast(ToastType.Warning, "Recipe Not Found", "The recipe you are trying to update does not exist");
             return Task.CompletedTask;
         }
 
@@ -98,6 +118,12 @@ public class RecipesViewModel
             var _Recipe = mapper.Map<RecipeViewModel>(recipe);
             _ = store.UpdateOrRegister(_Recipe.RecipeId, _Recipe);
             toastService.ShowToast(ToastType.Success, "Recipe Updated", $"{recipe.Name} updated successfully");
+            return Task.CompletedTask;
+        }
+
+        Task IUpdateRecipeOutputPort.Unauthorised(CancellationToken cancellationToken)
+        {
+            toastService.ShowToast(ToastType.Warning, "Access Denied", "You are not authorised to update recipes");
             return Task.CompletedTask;
         }
     }

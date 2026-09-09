@@ -1,8 +1,9 @@
+using CocktailCollator.UseCasePipelines.Infrastructure;
 using Microsoft.AspNetCore.Http;
 
 namespace CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 
-public class CreateRecipeInputPort
+public class CreateRecipeInputPort : IInputPort<ICreateRecipeOutputPort>
 {
     public List<IFormFile> Images { get; set; } = [];
     public List<CreateRecipeInputPortRecipeIngredient> Ingredients { get; set; } = [];

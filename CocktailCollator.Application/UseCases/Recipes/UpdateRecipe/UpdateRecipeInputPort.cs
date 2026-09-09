@@ -1,8 +1,9 @@
 using CocktailCollator.Application.Models;
+using CocktailCollator.UseCasePipelines.Infrastructure;
 
 namespace CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 
-public class UpdateRecipeInputPort
+public class UpdateRecipeInputPort : IInputPort<IUpdateRecipeOutputPort>
 {
     public List<DocumentModel> Images { get; set; } = [];
     public List<UpdateRecipeInputPortRecipeIngredient> Ingredients { get; set; } = [];

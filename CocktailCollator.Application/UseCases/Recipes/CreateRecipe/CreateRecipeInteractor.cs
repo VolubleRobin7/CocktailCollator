@@ -1,12 +1,13 @@
 using AutoMapper;
 using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Infrastructure;
 
 namespace CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 
-public class CreateRecipeInteractor(ICocktailDbContext dbContext, IMapper mapper)
+public class CreateRecipeInteractor(ICocktailDbContext dbContext, IMapper mapper) : IInteractorPipe<CreateRecipeInputPort, ICreateRecipeOutputPort>
 {
-    public async Task Interact(CreateRecipeInputPort inputPort, ICreateRecipeOutputPort outputPort, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(CreateRecipeInputPort inputPort, ICreateRecipeOutputPort outputPort, CancellationToken cancellationToken)
     {
         var _Recipe = mapper.Map<Recipe>(inputPort);
 
