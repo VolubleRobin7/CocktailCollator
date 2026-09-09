@@ -1,11 +1,11 @@
 using AutoMapper;
-using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 using CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
 using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using CocktailCollator.Domain.Entities;
 using CocktailCollator.UseCasePipelines.Infrastructure;
+using CocktailCollator.Web.Common.Presenters;
 using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.Views.Components.Toasts;
@@ -57,7 +57,8 @@ public class RecipesViewModel
                 cancellationToken));
     }
 
-    private class CreateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel) : ICreateRecipeOutputPort
+    private class CreateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel)
+        : BasePresenter(toastService, "create recipes"), ICreateRecipeOutputPort
     {
         Task ICreateRecipeOutputPort.Success(Recipe recipe, CancellationToken cancellationToken)
         {
@@ -66,15 +67,10 @@ public class RecipesViewModel
             toastService.ShowToast(ToastType.Success, "Recipe Created", $"{recipe.Name} created successfully");
             return Task.CompletedTask;
         }
-
-        Task IAuthenticatableOutputPort.Unauthenticated(CancellationToken cancellationToken)
-        {
-            toastService.ShowToast(ToastType.Warning, "Permission Denied", "You must be logged in to create recipes");
-            return Task.CompletedTask;
-        }
     }
 
-    private class DeleteRecipePresenter(IViewModelStore store, ToastService toastService, RecipesViewModel viewModel) : IDeleteRecipeOutputPort
+    private class DeleteRecipePresenter(IViewModelStore store, ToastService toastService, RecipesViewModel viewModel)
+        : BasePresenter(toastService, "delete recipes"), IDeleteRecipeOutputPort
     {
         Task IDeleteRecipeOutputPort.Success(Recipe deletedRecipe, CancellationToken cancellationToken)
         {
@@ -83,30 +79,20 @@ public class RecipesViewModel
             toastService.ShowToast(ToastType.Info, "Recipe Deleted", $"{deletedRecipe.Name} deleted successfully");
             return Task.CompletedTask;
         }
-
-        Task IAuthenticatableOutputPort.Unauthenticated(CancellationToken cancellationToken)
-        {
-            toastService.ShowToast(ToastType.Warning, "Permission Denied", "You must be logged in to delete recipes");
-            return Task.CompletedTask;
-        }
     }
 
-    private class GetRecipesPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel) : IGetRecipesOutputPort
+    private class GetRecipesPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel)
+        : BasePresenter(toastService, "view recipes"), IGetRecipesOutputPort
     {
         Task IGetRecipesOutputPort.Success(List<Recipe> recipes, CancellationToken cancellationToken)
         {
             viewModel.Recipes = [.. mapper.Map<List<RecipeViewModel>>(recipes).Select(r => store.UpdateOrRegister(r.RecipeId, r))];
             return Task.CompletedTask;
         }
-
-        Task IAuthenticatableOutputPort.Unauthenticated(CancellationToken cancellationToken)
-        {
-            toastService.ShowToast(ToastType.Warning, "Permission Denied", "You must be logged in to view recipes");
-            return Task.CompletedTask;
-        }
     }
 
-    private class UpdateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService) : IUpdateRecipeOutputPort
+    private class UpdateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService)
+        : BasePresenter(toastService, "update recipes"), IUpdateRecipeOutputPort
     {
         Task IUpdateRecipeOutputPort.NotFound(CancellationToken cancellationToken)
         {
@@ -119,12 +105,6 @@ public class RecipesViewModel
             var _Recipe = mapper.Map<RecipeViewModel>(recipe);
             _ = store.UpdateOrRegister(_Recipe.RecipeId, _Recipe);
             toastService.ShowToast(ToastType.Success, "Recipe Updated", $"{recipe.Name} updated successfully");
-            return Task.CompletedTask;
-        }
-
-        Task IAuthenticatableOutputPort.Unauthenticated(CancellationToken cancellationToken)
-        {
-            toastService.ShowToast(ToastType.Warning, "Permission Denied", "You must be logged in to update recipes");
             return Task.CompletedTask;
         }
     }
