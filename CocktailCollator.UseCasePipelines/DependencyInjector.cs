@@ -11,7 +11,7 @@ public static class DependencyInjector
     // Default execution order of pipeline stages (from outermost to innermost decorator).
     private static readonly Type[] s_defaultPipelineStageDefinitions =
     [
-        typeof(IAuthorisationPipe<,>),
+        typeof(IAuthenticationPipe<,>),
         typeof(IExistencePipe<,>)
     ];
 
@@ -28,7 +28,7 @@ public static class DependencyInjector
     /// </summary>
     /// <param name="pipelineStages">
     /// The decorator pipeline stages to apply on top of the interactor, in execution order (outermost to innermost).
-    /// <para>Example: <c>[typeof(IAuthorisationPipe&lt;,&gt;), typeof(IExistencePipe&lt;,&gt;)]</c></para>
+    /// <para>Example: <c>[typeof(IAuthenticationPipe&lt;,&gt;), typeof(IExistencePipe&lt;,&gt;)]</c></para>
     /// </param>
     public static IServiceCollection AddUseCasePipelines(
         this IServiceCollection services,
@@ -41,13 +41,13 @@ public static class DependencyInjector
 
         var _CandidateTypes = _AssemblyList
             .SelectMany(a => a.GetExportedTypes())
-            .Where(t => t is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: false })
+            .Where(t => t is { IsClass: true, IsAbstract: false })
             .ToList();
 
         // 1. Find all classes implementing IInteractorPipe<TInputPort, TOutputPort>
         var _InteractorRegistrations = new List<InteractorRegistration>();
 
-        foreach (var _CandidateType in _CandidateTypes)
+        foreach (var _CandidateType in _CandidateTypes.Where(t => !t.IsGenericTypeDefinition))
         {
             var _InteractorInterfaces = _CandidateType.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IInteractorPipe<,>))
@@ -90,9 +90,29 @@ public static class DependencyInjector
             foreach (var _StageDef in pipelineStages.Reverse())
             {
                 var _ClosedStageInterface = _StageDef.MakeGenericType(_Interactor.InputType, _Interactor.OutputType);
-                var _MatchingDecorators = _CandidateTypes
-                    .Where(t => _ClosedStageInterface.IsAssignableFrom(t))
-                    .ToList();
+                var _MatchingDecorators = new List<Type>();
+
+                foreach (var _CandidateType in _CandidateTypes)
+                {
+                    if (_CandidateType.IsGenericTypeDefinition)
+                    {
+                        if (_CandidateType.GetGenericArguments().Length == 2)
+                        {
+                            try
+                            {
+                                var _ClosedCandidate = _CandidateType.MakeGenericType(_Interactor.InputType, _Interactor.OutputType);
+                                if (_ClosedStageInterface.IsAssignableFrom(_ClosedCandidate))
+                                    _MatchingDecorators.Add(_ClosedCandidate);
+                            }
+                            catch (ArgumentException)
+                            {
+                                // Type constraints not met for this use case
+                            }
+                        }
+                    }
+                    else if (_ClosedStageInterface.IsAssignableFrom(_CandidateType))
+                        _MatchingDecorators.Add(_CandidateType);
+                }
 
                 if (_MatchingDecorators.Count > 1)
                 {

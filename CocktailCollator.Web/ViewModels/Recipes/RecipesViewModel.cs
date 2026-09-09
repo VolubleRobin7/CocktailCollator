@@ -1,4 +1,5 @@
 using AutoMapper;
+using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 using CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
@@ -66,9 +67,9 @@ public class RecipesViewModel
             return Task.CompletedTask;
         }
 
-        Task ICreateRecipeOutputPort.Unauthorised(CancellationToken cancellationToken)
+        Task IAuthenticatableOutputPort.Unauthenticated(CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Warning, "Access Denied", "You are not authorised to create recipes");
+            toastService.ShowToast(ToastType.Warning, "Permission Denied", "You must be logged in to create recipes");
             return Task.CompletedTask;
         }
     }
@@ -83,9 +84,9 @@ public class RecipesViewModel
             return Task.CompletedTask;
         }
 
-        Task IDeleteRecipeOutputPort.Unauthorised(CancellationToken cancellationToken)
+        Task IAuthenticatableOutputPort.Unauthenticated(CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Warning, "Access Denied", "You are not authorised to delete recipes");
+            toastService.ShowToast(ToastType.Warning, "Permission Denied", "You must be logged in to delete recipes");
             return Task.CompletedTask;
         }
     }
@@ -98,9 +99,9 @@ public class RecipesViewModel
             return Task.CompletedTask;
         }
 
-        Task IGetRecipesOutputPort.Unauthorised(CancellationToken cancellationToken)
+        Task IAuthenticatableOutputPort.Unauthenticated(CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Warning, "Access Denied", "You are not authorised to view recipes");
+            toastService.ShowToast(ToastType.Warning, "Permission Denied", "You must be logged in to view recipes");
             return Task.CompletedTask;
         }
     }
@@ -121,9 +122,9 @@ public class RecipesViewModel
             return Task.CompletedTask;
         }
 
-        Task IUpdateRecipeOutputPort.Unauthorised(CancellationToken cancellationToken)
+        Task IAuthenticatableOutputPort.Unauthenticated(CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Warning, "Access Denied", "You are not authorised to update recipes");
+            toastService.ShowToast(ToastType.Warning, "Permission Denied", "You must be logged in to update recipes");
             return Task.CompletedTask;
         }
     }
