@@ -4,11 +4,18 @@ using CocktailCollator.Web.Views.Components.Toasts;
 
 namespace CocktailCollator.Web.Common.Presenters;
 
-public abstract class BasePresenter(ToastService toastService, string actionDescription = "perform this action") : IAuthenticatableOutputPort
+public abstract class BasePresenter(ToastService toastService, string actionDescription = "perform this action")
+    : IAuthenticatableOutputPort, IAuthorisableOutputPort
 {
     public virtual Task Unauthenticated(CancellationToken cancellationToken)
     {
-        toastService.ShowToast(ToastType.Warning, "Access Denied", $"You must be logged in to {actionDescription}.");
+        toastService.ShowToast(ToastType.Danger, "Access Denied", $"You must be logged in to {actionDescription}.");
+        return Task.CompletedTask;
+    }
+
+    public virtual Task Unauthorised(CancellationToken cancellationToken)
+    {
+        toastService.ShowToast(ToastType.Danger, "Permission Denied", $"You do not have permission to {actionDescription}.");
         return Task.CompletedTask;
     }
 }

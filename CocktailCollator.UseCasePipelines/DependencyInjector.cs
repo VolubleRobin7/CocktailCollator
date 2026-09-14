@@ -12,6 +12,7 @@ public static class DependencyInjector
     private static readonly Type[] s_defaultPipelineStageDefinitions =
     [
         typeof(IAuthenticationPipe<,>),
+        typeof(IAuthorisationPipe<,>),
         typeof(IExistencePipe<,>)
     ];
 

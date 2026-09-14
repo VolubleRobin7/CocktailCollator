@@ -3,7 +3,7 @@ using CocktailCollator.Domain.Entities;
 
 namespace CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 
-public interface IUpdateRecipeOutputPort : IAuthenticatableOutputPort
+public interface IUpdateRecipeOutputPort : IAuthenticatableOutputPort, IAuthorisableOutputPort
 {
     Task NotFound(CancellationToken cancellationToken);
 

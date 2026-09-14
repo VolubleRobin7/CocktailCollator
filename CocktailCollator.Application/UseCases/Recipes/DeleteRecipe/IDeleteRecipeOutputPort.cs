@@ -3,7 +3,7 @@ using CocktailCollator.Domain.Entities;
 
 namespace CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 
-public interface IDeleteRecipeOutputPort : IAuthenticatableOutputPort
+public interface IDeleteRecipeOutputPort : IAuthenticatableOutputPort, IAuthorisableOutputPort
 {
     Task Success(Recipe recipe, CancellationToken cancellationToken);
 }
