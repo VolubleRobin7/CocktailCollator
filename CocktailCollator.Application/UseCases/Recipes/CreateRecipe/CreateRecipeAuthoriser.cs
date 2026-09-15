@@ -1,3 +1,4 @@
+using CocktailCollator.Application.Common.Authorisation;
 using CocktailCollator.Application.Common.Pipes;
 using CocktailCollator.UseCasePipelines.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
@@ -13,4 +14,4 @@ public class CreateRecipeAuthoriser(
         innerPipe,
         authenticationStateProvider,
         authorisationService,
-        "ManageRecipes");
+        Policies.ManageRecipes);

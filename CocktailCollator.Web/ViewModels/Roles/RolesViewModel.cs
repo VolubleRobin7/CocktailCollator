@@ -1,9 +1,9 @@
 using AutoMapper;
+using CocktailCollator.Application.Common.Authorisation;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.FormModels.Roles;
-using CocktailCollator.Web.Infrastructure.Authentication;
 using CocktailCollator.Web.Views.Components.Toasts;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.AspNetCore.Identity;
@@ -71,7 +71,7 @@ public class RolesViewModel
                 var _ClaimsToAdd = inputPort.HasEveryPermissionClaim ? ClaimValues.Permissions.GetAll() : inputPort.Claims;
                 foreach (var _Claim in _ClaimsToAdd)
                 {
-                    var _ClaimResult = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
+                    var _ClaimResult = await this._roleManager.AddClaimAsync(_Role, new Claim(Application.Common.Authorisation.ClaimTypes.Permission, _Claim));
                     _ClaimResults.Add(_ClaimResult);
                     if (_ClaimResult.Succeeded)
                         _RoleViewModel.Claims.Add(_Claim);
@@ -144,7 +144,7 @@ public class RolesViewModel
 
                 // Remove all existing permission claims and then add the claims they should have.
                 var _CurrentClaims = await this._roleManager.GetClaimsAsync(_Role);
-                foreach (var _Claim in _CurrentClaims.Where(c => c.Type == Infrastructure.Authentication.ClaimTypes.Permission))
+                foreach (var _Claim in _CurrentClaims.Where(c => c.Type == Application.Common.Authorisation.ClaimTypes.Permission))
                 {
                     var _ClaimResult = await this._roleManager.RemoveClaimAsync(_Role, _Claim);
                     _ClaimResults.Add(_ClaimResult);
@@ -154,7 +154,7 @@ public class RolesViewModel
                 var _AddedClaims = new List<string>();
                 foreach (var _Claim in _ClaimsToAdd)
                 {
-                    var _ClaimResult = await this._roleManager.AddClaimAsync(_Role, new Claim(Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
+                    var _ClaimResult = await this._roleManager.AddClaimAsync(_Role, new Claim(Application.Common.Authorisation.ClaimTypes.Permission, _Claim));
                     _ClaimResults.Add(_ClaimResult);
                     if (_ClaimResult.Succeeded)
                         _AddedClaims.Add(_Claim);
