@@ -1,0 +1,8 @@
+using CocktailCollator.UseCasePipelines.InputPorts;
+
+namespace CocktailCollator.UseCasePipelines.Pipes;
+
+public interface IPipeline<in TInputPort, in TOutputPort> where TInputPort : IInputPort<TOutputPort>
+{
+    Task ExecuteAsync(TInputPort inputPort, TOutputPort outputPort, CancellationToken cancellationToken);
+}

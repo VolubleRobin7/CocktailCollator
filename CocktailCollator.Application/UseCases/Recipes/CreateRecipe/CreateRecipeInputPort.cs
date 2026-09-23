@@ -1,4 +1,4 @@
-using CocktailCollator.UseCasePipelines.Infrastructure;
+using CocktailCollator.UseCasePipelines.InputPorts;
 using Microsoft.AspNetCore.Http;
 
 namespace CocktailCollator.Application.UseCases.Recipes.CreateRecipe;

@@ -1,4 +1,6 @@
-using CocktailCollator.UseCasePipelines.Infrastructure;
+using CocktailCollator.UseCasePipelines.InputPorts;
+using CocktailCollator.UseCasePipelines.OutputPorts;
+using CocktailCollator.UseCasePipelines.Pipes;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -7,33 +9,43 @@ namespace CocktailCollator.UseCasePipelines;
 public static class DependencyInjector
 {
     private sealed record InteractorRegistration(Type InteractorType, Type InputType, Type OutputType);
+    public sealed record PipelineStage(
+        Type OutputPortInterface,
+        Type PipeInterface,
+        Type? DefaultPipeImplementation = null);
 
-    // Default execution order of pipeline stages (from outermost to innermost decorator).
-    private static readonly Type[] s_defaultPipelineStageDefinitions =
+    // Default execution order of pipeline stages (from first to last).
+    private static readonly PipelineStage[] s_defaultPipelineStageDefinitions =
     [
-        typeof(IAuthenticationPipe<,>),
-        typeof(IAuthorisationPipe<,>),
-        typeof(IExistencePipe<,>)
+        new(typeof(IAuthenticatableOutputPort), typeof(IAuthenticationPipe<,>)),
+        new(typeof(IAuthorisableOutputPort), typeof(IAuthorisationPipe<,>)),
+        new(typeof(IExistenceOutputPort), typeof(IExistencePipe<,>))
     ];
 
     /// <summary>
     /// Discovers all the use case pipelines in the provided assemblies, registering each use case 
     /// as <see cref="IPipeline{TInputPort, TOutputPort}"/>.
     /// </summary>
+    /// <remarks>
+    /// Pipeline pipes are included based on the interfaces implemented by each use case's output port.
+    /// </remarks>
     public static IServiceCollection AddUseCasePipelines(this IServiceCollection services, params Assembly[] assemblies)
-        => services.AddUseCasePipelines(s_defaultPipelineStageDefinitions, [.. assemblies]);
+        => services.AddUseCasePipelines(s_defaultPipelineStageDefinitions, assemblies);
 
     /// <summary>
     /// Discovers all the use case pipelines in the provided assemblies, registering each use case 
-    /// as <see cref="IPipeline{TInputPort, TOutputPort}"/> with the configured decorator pipeline.
+    /// as <see cref="IPipeline{TInputPort, TOutputPort}"/> with the configured pipeline order.
     /// </summary>
+    /// <remarks>
+    /// Pipeline pipes are included based on the interfaces implemented by each use case's output port.
+    /// </remarks>
     /// <param name="pipelineStages">
-    /// The decorator pipeline stages to apply on top of the interactor, in execution order (outermost to innermost).
-    /// <para>Example: <c>[typeof(IAuthenticationPipe&lt;,&gt;), typeof(IExistencePipe&lt;,&gt;)]</c></para>
+    /// The pipeline order to apply on top of the interactor, in execution order.
+    /// <para>Example: <c>[new(typeof(IAuthenticatableOutputPort), typeof(IAuthenticationPipe&lt;,&gt;)), new(typeof(IExistenceOutputPort), typeof(IExistencePipe&lt;,&gt;))]</c></para>
     /// </param>
     public static IServiceCollection AddUseCasePipelines(
         this IServiceCollection services,
-        Type[] pipelineStages,
+        PipelineStage[] pipelineStages,
         params Assembly[] assemblies)
     {
         var _AssemblyList = assemblies.ToList();
@@ -78,21 +90,22 @@ public static class DependencyInjector
         // 2. Build the pipeline for each use case
         foreach (var _Interactor in _InteractorRegistrations)
         {
-            var _PipelineInterfaceType = typeof(IPipeline<,>).MakeGenericType(_Interactor.InputType, _Interactor.OutputType);
-
             // Register concrete interactor type in DI
             _ = services.AddScoped(_Interactor.InteractorType);
 
-            // Find matching decorators according to the defined pipeline stages.
-            // pipelineStages is in execution order (outermost to innermost).
-            // To wrap the core interactor, we wrap in reverse order (innermost decorator first, outermost decorator last).
-            var _DecoratorsInWrappingOrder = new List<Type>();
+            // Find matching pipes according to the defined pipeline stages.
+            var _ActivePipeTypes = new List<Type>();
 
-            foreach (var _StageDef in pipelineStages.Reverse())
+            foreach (var _StageDef in pipelineStages)
             {
-                var _ClosedStageInterface = _StageDef.MakeGenericType(_Interactor.InputType, _Interactor.OutputType);
-                var _MatchingDecorators = new List<Type>();
+                // Only include this stage if TOutputPort implements the stage's marker interface
+                if (!_StageDef.OutputPortInterface.IsAssignableFrom(_Interactor.OutputType))
+                    continue;
 
+                var _ClosedPipeInterface = _StageDef.PipeInterface.MakeGenericType(_Interactor.InputType, _Interactor.OutputType);
+                var _MatchingPipeTypes = new List<Type>();
+
+                // Attempt to find a matching pipe implementation for this stage
                 foreach (var _CandidateType in _CandidateTypes)
                 {
                     if (_CandidateType.IsGenericTypeDefinition)
@@ -102,8 +115,8 @@ public static class DependencyInjector
                             try
                             {
                                 var _ClosedCandidate = _CandidateType.MakeGenericType(_Interactor.InputType, _Interactor.OutputType);
-                                if (_ClosedStageInterface.IsAssignableFrom(_ClosedCandidate))
-                                    _MatchingDecorators.Add(_ClosedCandidate);
+                                if (_ClosedPipeInterface.IsAssignableFrom(_ClosedCandidate))
+                                    _MatchingPipeTypes.Add(_ClosedCandidate);
                             }
                             catch (ArgumentException)
                             {
@@ -111,46 +124,74 @@ public static class DependencyInjector
                             }
                         }
                     }
-                    else if (_ClosedStageInterface.IsAssignableFrom(_CandidateType))
-                        _MatchingDecorators.Add(_CandidateType);
+                    else if (_ClosedPipeInterface.IsAssignableFrom(_CandidateType))
+                        _MatchingPipeTypes.Add(_CandidateType);
                 }
 
-                if (_MatchingDecorators.Count > 1)
+                // Attempt to use the default pipe implementation if no matching pipes were found
+                if (_MatchingPipeTypes.Count == 0 && _StageDef.DefaultPipeImplementation != null)
+                {
+                    if (_StageDef.DefaultPipeImplementation.IsGenericTypeDefinition)
+                    {
+                        try
+                        {
+                            var _ClosedDefault = _StageDef.DefaultPipeImplementation.MakeGenericType(_Interactor.InputType, _Interactor.OutputType);
+                            if (_ClosedPipeInterface.IsAssignableFrom(_ClosedDefault))
+                                _MatchingPipeTypes.Add(_ClosedDefault);
+                        }
+                        catch (ArgumentException)
+                        {
+                            // Type constraints not satisfied
+                        }
+                    }
+                    else if (_ClosedPipeInterface.IsAssignableFrom(_StageDef.DefaultPipeImplementation))
+                        _MatchingPipeTypes.Add(_StageDef.DefaultPipeImplementation);
+                }
+
+                if (_MatchingPipeTypes.Count > 1)
                 {
                     throw new InvalidOperationException(
-                        $"Multiple implementations of {_ClosedStageInterface.Name} found for use case {_Interactor.InputType.Name} -> {_Interactor.OutputType.Name}: " +
-                        $"{string.Join(", ", _MatchingDecorators.Select(t => t.FullName))}");
+                        $"Multiple implementations of {_ClosedPipeInterface.Name} found for use case {_Interactor.InputType.Name} -> {_Interactor.OutputType.Name}: " +
+                        $"{string.Join(", ", _MatchingPipeTypes.Select(t => t.FullName))}");
                 }
 
-                if (_MatchingDecorators.Count == 1)
+                if (_MatchingPipeTypes.Count == 0)
                 {
-                    var _DecoratorType = _MatchingDecorators[0];
-                    _DecoratorsInWrappingOrder.Add(_DecoratorType);
-                    // Register concrete decorator type in DI
-                    _ = services.AddScoped(_DecoratorType);
+                    throw new InvalidOperationException(
+                        $"Output port '{_Interactor.OutputType.Name}' implements '{_StageDef.OutputPortInterface.Name}', " +
+                        $"but no matching pipe implementing '{_ClosedPipeInterface.Name}' was found for use case {_Interactor.InputType.Name} -> {_Interactor.OutputType.Name}.");
                 }
+
+                var _PipeType = _MatchingPipeTypes[0];
+                _ = services.AddScoped(_PipeType);
+                _ActivePipeTypes.Add(_PipeType);
             }
 
-            // Precompile factories at startup using ActivatorUtilities for zero runtime reflection overhead
-            var _CoreFactory = ActivatorUtilities.CreateFactory(_Interactor.InteractorType, Type.EmptyTypes);
-            var _StageFactories = _DecoratorsInWrappingOrder
-                .Select(decType => ActivatorUtilities.CreateFactory(decType, [_PipelineInterfaceType]))
-                .ToList();
+            // 3. Register IPipeline<TInputPort, TOutputPort>
+            var _RegisterMethod = typeof(DependencyInjector)
+                .GetMethod(nameof(RegisterPipeline), BindingFlags.NonPublic | BindingFlags.Static)!
+                .MakeGenericMethod(_Interactor.InputType, _Interactor.OutputType);
 
-            // Register IPipeline<TInputPort, TOutputPort> factory
-            _ = services.AddScoped(_PipelineInterfaceType, sp =>
-            {
-                var _CurrentPipe = _CoreFactory(sp, null);
-
-                foreach (var _Factory in _StageFactories)
-                {
-                    _CurrentPipe = _Factory(sp, [_CurrentPipe]);
-                }
-
-                return _CurrentPipe;
-            });
+            _ = _RegisterMethod.Invoke(null, [services, _Interactor.InteractorType, _ActivePipeTypes.ToArray()]);
         }
 
         return services;
+    }
+
+    private static void RegisterPipeline<TInputPort, TOutputPort>(
+        IServiceCollection services,
+        Type interactorType,
+        Type[] pipeTypes)
+        where TInputPort : IInputPort<TOutputPort>
+    {
+        _ = services.AddScoped<IPipeline<TInputPort, TOutputPort>>(sp =>
+        {
+            var _Interactor = (IInteractorPipe<TInputPort, TOutputPort>)sp.GetRequiredService(interactorType);
+            var _Pipes = new IPipe<TInputPort, TOutputPort>[pipeTypes.Length];
+            for (var i = 0; i < pipeTypes.Length; i++)
+                _Pipes[i] = (IPipe<TInputPort, TOutputPort>)sp.GetRequiredService(pipeTypes[i]);
+
+            return new UseCasePipeline<TInputPort, TOutputPort>(_Pipes, _Interactor);
+        });
     }
 }

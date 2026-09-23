@@ -1,5 +1,5 @@
 using CocktailCollator.Application.Models;
-using CocktailCollator.UseCasePipelines.Infrastructure;
+using CocktailCollator.UseCasePipelines.InputPorts;
 
 namespace CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 

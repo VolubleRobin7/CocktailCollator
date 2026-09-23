@@ -1,6 +1,6 @@
 using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
-using CocktailCollator.UseCasePipelines.Infrastructure;
+using CocktailCollator.UseCasePipelines.Pipes;
 
 namespace CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 

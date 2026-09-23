@@ -1,4 +1,4 @@
-using CocktailCollator.UseCasePipelines.Infrastructure;
+using CocktailCollator.UseCasePipelines.InputPorts;
 
 namespace CocktailCollator.Application.UseCases.Recipes.GetRecipes;
 

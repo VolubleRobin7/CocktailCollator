@@ -4,7 +4,7 @@ using CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
 using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using CocktailCollator.Domain.Entities;
-using CocktailCollator.UseCasePipelines.Infrastructure;
+using CocktailCollator.UseCasePipelines.Pipes;
 using CocktailCollator.Web.Common.Presenters;
 using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Common.State;
@@ -94,7 +94,7 @@ public class RecipesViewModel
     private class UpdateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService)
         : BasePresenter(toastService, "update recipes"), IUpdateRecipeOutputPort
     {
-        Task IUpdateRecipeOutputPort.NotFound(CancellationToken cancellationToken)
+        public override Task NotFound(CancellationToken cancellationToken)
         {
             toastService.ShowToast(ToastType.Warning, "Recipe Not Found", "The recipe you are trying to update does not exist");
             return Task.CompletedTask;
