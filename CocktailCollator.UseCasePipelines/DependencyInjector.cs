@@ -48,6 +48,8 @@ public static class DependencyInjector
         PipelineStage[] pipelineStages,
         params Assembly[] assemblies)
     {
+        ValidatePipelineStages(pipelineStages);
+
         var _AssemblyList = assemblies.ToList();
         if (_AssemblyList.Count == 0)
             throw new ArgumentException("At least one assembly must be provided to scan for use cases.", nameof(assemblies));
@@ -105,26 +107,10 @@ public static class DependencyInjector
                 var _ClosedPipeInterface = _StageDef.PipeInterface.MakeGenericType(_Interactor.InputType, _Interactor.OutputType);
                 var _MatchingPipeTypes = new List<Type>();
 
-                // Attempt to find a matching pipe implementation for this stage
+                // Attempt to find a matching specific pipe implementation for this stage
                 foreach (var _CandidateType in _CandidateTypes)
                 {
-                    if (_CandidateType.IsGenericTypeDefinition)
-                    {
-                        if (_CandidateType.GetGenericArguments().Length == 2)
-                        {
-                            try
-                            {
-                                var _ClosedCandidate = _CandidateType.MakeGenericType(_Interactor.InputType, _Interactor.OutputType);
-                                if (_ClosedPipeInterface.IsAssignableFrom(_ClosedCandidate))
-                                    _MatchingPipeTypes.Add(_ClosedCandidate);
-                            }
-                            catch (ArgumentException)
-                            {
-                                // Type constraints not met for this use case
-                            }
-                        }
-                    }
-                    else if (_ClosedPipeInterface.IsAssignableFrom(_CandidateType))
+                    if (!_CandidateType.IsGenericTypeDefinition && _ClosedPipeInterface.IsAssignableFrom(_CandidateType))
                         _MatchingPipeTypes.Add(_CandidateType);
                 }
 
@@ -193,5 +179,49 @@ public static class DependencyInjector
 
             return new UseCasePipeline<TInputPort, TOutputPort>(_Pipes, _Interactor);
         });
+    }
+
+    private static void ValidatePipelineStages(PipelineStage[] pipelineStages)
+    {
+        foreach (var _StageDef in pipelineStages)
+        {
+            if (_StageDef.DefaultPipeImplementation == null)
+                continue;
+
+            var _DefaultType = _StageDef.DefaultPipeImplementation;
+            var _PipeInterface = _StageDef.PipeInterface;
+
+            if (!_DefaultType.IsClass || _DefaultType.IsAbstract)
+            {
+                throw new InvalidOperationException(
+                    $"Default pipe implementation '{_DefaultType.FullName}' for stage '{_StageDef.OutputPortInterface.Name}' must be a non-abstract class.");
+            }
+
+            if (_PipeInterface.IsGenericTypeDefinition)
+            {
+                if (!_DefaultType.IsGenericTypeDefinition || _DefaultType.GetGenericArguments().Length != _PipeInterface.GetGenericArguments().Length)
+                {
+                    throw new InvalidOperationException(
+                        $"Default pipe implementation '{_DefaultType.FullName}' must be an open-generic type definition with {_PipeInterface.GetGenericArguments().Length} type argument(s) to match '{_PipeInterface.FullName}'.");
+                }
+
+                var _ImplementsGeneric = _DefaultType.GetInterfaces().Any(i =>
+                    i.IsGenericType && i.GetGenericTypeDefinition() == _PipeInterface);
+
+                if (!_ImplementsGeneric)
+                {
+                    throw new InvalidOperationException(
+                        $"Default pipe implementation '{_DefaultType.FullName}' does not implement the required pipe interface '{_PipeInterface.FullName}' for stage '{_StageDef.OutputPortInterface.Name}'.");
+                }
+            }
+            else
+            {
+                if (!_PipeInterface.IsAssignableFrom(_DefaultType))
+                {
+                    throw new InvalidOperationException(
+                        $"Default pipe implementation '{_DefaultType.FullName}' does not implement the required pipe interface '{_PipeInterface.FullName}' for stage '{_StageDef.OutputPortInterface.Name}'.");
+                }
+            }
+        }
     }
 }
