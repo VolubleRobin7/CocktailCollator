@@ -71,7 +71,7 @@ public class IngredientsViewModel
     private class DeleteIngredientPresenter(IViewModelStore store, ToastService toastService, IngredientsViewModel viewModel)
         : BasePresenter(toastService, "delete ingredients"), IDeleteIngredientOutputPort
     {
-        Task IDeleteIngredientOutputPort.Failure(string reason, Ingredient? ingredient, CancellationToken cancellationToken)
+        Task IDeleteIngredientOutputPort.StillInUse(string reason, Ingredient? ingredient, CancellationToken cancellationToken)
         {
             toastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
             return Task.CompletedTask;

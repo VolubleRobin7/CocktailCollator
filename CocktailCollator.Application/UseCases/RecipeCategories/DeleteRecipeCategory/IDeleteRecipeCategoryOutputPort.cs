@@ -5,6 +5,6 @@ namespace CocktailCollator.Application.UseCases.RecipeCategories.DeleteRecipeCat
 
 public interface IDeleteRecipeCategoryOutputPort : IAuthenticatableOutputPort, IAuthorisableOutputPort
 {
-    Task Failure(string failureReason, RecipeCategory? recipeCategory, CancellationToken cancellationToken);
+    Task StillInUse(string failureReason, RecipeCategory? recipeCategory, CancellationToken cancellationToken);
     Task Success(RecipeCategory recipeCategory, CancellationToken cancellationToken);
 }

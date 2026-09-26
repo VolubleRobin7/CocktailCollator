@@ -12,7 +12,7 @@ public class DeleteMeasurementInteractor(ICocktailDbContext dbContext) : IIntera
 
         if (dbContext.GetEntities<Ingredient>().Any(i => i.Measurements!.Any(im => im.MeasurementId == inputPort.MeasurementId)))
         {
-            await outputPort.Failure("Ingredients are still using this measurement.", _Measurement, cancellationToken);
+            await outputPort.StillInUse("Ingredients are still using this measurement.", _Measurement, cancellationToken);
             return;
         }
 

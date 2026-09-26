@@ -12,7 +12,7 @@ public class DeleteIngredientInteractor(ICocktailDbContext dbContext) : IInterac
 
         if (dbContext.GetEntities<Recipe>().Any(r => r.Ingredients!.Any(ri => ri.IngredientId == inputPort.IngredientId)))
         {
-            await outputPort.Failure("Recipes are still using this ingredient.", _Ingredient, cancellationToken);
+            await outputPort.StillInUse("Recipes are still using this ingredient.", _Ingredient, cancellationToken);
             return;
         }
 

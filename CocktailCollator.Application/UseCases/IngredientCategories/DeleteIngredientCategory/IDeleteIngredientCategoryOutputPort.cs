@@ -5,7 +5,7 @@ namespace CocktailCollator.Application.UseCases.IngredientCategories.DeleteIngre
 
 public interface IDeleteIngredientCategoryOutputPort : IAuthenticatableOutputPort, IAuthorisableOutputPort
 {
-    Task Failure(string failureReason, IngredientCategory? ingredientCategory, CancellationToken cancellationToken);
+    Task StillInUse(string failureReason, IngredientCategory? ingredientCategory, CancellationToken cancellationToken);
 
     Task Success(IngredientCategory ingredientCategory, CancellationToken cancellationToken);
 }

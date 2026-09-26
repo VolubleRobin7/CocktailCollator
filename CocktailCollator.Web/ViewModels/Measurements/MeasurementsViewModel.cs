@@ -62,7 +62,7 @@ public class MeasurementsViewModel
     private class DeleteMeasurementPresenter(IViewModelStore store, ToastService toastService, MeasurementsViewModel viewModel)
         : BasePresenter(toastService, "delete measurements"), IDeleteMeasurementOutputPort
     {
-        Task IDeleteMeasurementOutputPort.Failure(string reason, Measurement? measurement, CancellationToken cancellationToken)
+        Task IDeleteMeasurementOutputPort.StillInUse(string reason, Measurement? measurement, CancellationToken cancellationToken)
         {
             toastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
             return Task.CompletedTask;

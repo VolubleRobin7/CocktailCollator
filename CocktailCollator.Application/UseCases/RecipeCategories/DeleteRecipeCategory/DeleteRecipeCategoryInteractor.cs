@@ -13,7 +13,7 @@ public class DeleteRecipeCategoryInteractor(ICocktailDbContext dbContext) : IInt
 
         if (dbContext.GetEntities<Recipe>().Any(i => i.RecipeCategoryId == inputPort.RecipeCategoryId))
         {
-            await outputPort.Failure("Recipes are still using this category.", _RecipeCategory, cancellationToken);
+            await outputPort.StillInUse("Recipes are still using this category.", _RecipeCategory, cancellationToken);
             return;
         }
 
