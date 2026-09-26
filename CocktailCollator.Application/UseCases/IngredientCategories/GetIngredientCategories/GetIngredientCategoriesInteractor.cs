@@ -4,8 +4,8 @@ using CocktailCollator.UseCasePipelines.Pipes;
 
 namespace CocktailCollator.Application.UseCases.IngredientCategories.GetIngredientCategories;
 
-public class GetIngredientCategoriesInteractor(ICocktailDbContext dbContext) : IInteractorPipe<GetIngredientCategoriesInputPort, IGetIngredientCategoriesOutputPort>
+public class GetIngredientCategoriesInteractor(ICocktailDbContext dbContext) : IInteractorPipe<IGetIngredientCategoriesOutputPort>
 {
-    public Task ExecuteAsync(GetIngredientCategoriesInputPort inputPort, IGetIngredientCategoriesOutputPort outputPort, CancellationToken cancellationToken)
+    public Task ExecuteAsync(IGetIngredientCategoriesOutputPort outputPort, CancellationToken cancellationToken)
         => outputPort.Success([.. dbContext.GetEntities<IngredientCategory>()], cancellationToken);
 }

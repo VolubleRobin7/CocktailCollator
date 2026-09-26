@@ -26,7 +26,7 @@ public class IngredientsViewModel
     public IngredientsViewModel(
         IPipeline<CreateIngredientInputPort, ICreateIngredientOutputPort> createIngredientPipeline,
         IPipeline<DeleteIngredientInputPort, IDeleteIngredientOutputPort> deleteIngredientPipeline,
-        IPipeline<GetIngredientsInputPort, IGetIngredientsOutputPort> getIngredientsPipeline,
+        IPipeline<IGetIngredientsOutputPort> getIngredientsPipeline,
         IPipeline<UpdateIngredientInputPort, IUpdateIngredientOutputPort> updateIngredientPipeline,
         IMapper mapper,
         IViewModelStore store,
@@ -46,7 +46,6 @@ public class IngredientsViewModel
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
             => getIngredientsPipeline.ExecuteAsync(
-                new GetIngredientsInputPort(),
                 new GetIngredientsPresenter(mapper, store, toastService, this),
                 cancellationToken));
 

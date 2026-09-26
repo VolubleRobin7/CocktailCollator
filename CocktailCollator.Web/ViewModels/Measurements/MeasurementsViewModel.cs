@@ -24,7 +24,7 @@ public class MeasurementsViewModel
     public MeasurementsViewModel(
         IPipeline<CreateMeasurementInputPort, ICreateMeasurementOutputPort> createMeasurementPipeline,
         IPipeline<DeleteMeasurementInputPort, IDeleteMeasurementOutputPort> deleteMeasurementPipeline,
-        IPipeline<GetMeasurementsInputPort, IGetMeasurementsOutputPort> getMeasurementsPipeline,
+        IPipeline<IGetMeasurementsOutputPort> getMeasurementsPipeline,
         IMapper mapper,
         IViewModelStore store,
         ToastService toastService)
@@ -43,7 +43,6 @@ public class MeasurementsViewModel
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
             => getMeasurementsPipeline.ExecuteAsync(
-                new GetMeasurementsInputPort(),
                 new GetMeasurementsPresenter(mapper, store, toastService, this),
                 cancellationToken));
     }

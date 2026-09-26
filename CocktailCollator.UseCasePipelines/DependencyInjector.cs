@@ -8,7 +8,7 @@ namespace CocktailCollator.UseCasePipelines;
 
 public static class DependencyInjector
 {
-    private sealed record InteractorRegistration(Type InteractorType, Type InputType, Type OutputType);
+    private sealed record InteractorRegistration(Type InteractorType, Type InputType, Type OutputType, bool IsParameterless = false);
     public sealed record PipelineStage(
         Type OutputPortInterface,
         Type PipeInterface,
@@ -59,20 +59,31 @@ public static class DependencyInjector
             .Where(t => t is { IsClass: true, IsAbstract: false })
             .ToList();
 
-        // 1. Find all classes implementing IInteractorPipe<TInputPort, TOutputPort>
+        // 1. Find all classes implementing IInteractorPipe<TInputPort, TOutputPort> or IInteractorPipe<TOutputPort>
         var _InteractorRegistrations = new List<InteractorRegistration>();
 
         foreach (var _CandidateType in _CandidateTypes.Where(t => !t.IsGenericTypeDefinition))
         {
-            var _InteractorInterfaces = _CandidateType.GetInterfaces()
+            var _Interactor2Interfaces = _CandidateType.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IInteractorPipe<,>))
                 .ToList();
 
-            foreach (var _InteractorInterface in _InteractorInterfaces)
+            foreach (var _InteractorInterface in _Interactor2Interfaces)
             {
                 var _InputType = _InteractorInterface.GenericTypeArguments[0];
                 var _OutputType = _InteractorInterface.GenericTypeArguments[1];
-                _InteractorRegistrations.Add(new InteractorRegistration(_CandidateType, _InputType, _OutputType));
+                _InteractorRegistrations.Add(new InteractorRegistration(_CandidateType, _InputType, _OutputType, false));
+            }
+
+            var _Interactor1Interfaces = _CandidateType.GetInterfaces()
+                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IInteractorPipe<>))
+                .ToList();
+
+            foreach (var _InteractorInterface in _Interactor1Interfaces)
+            {
+                var _OutputType = _InteractorInterface.GenericTypeArguments[0];
+                var _InputType = typeof(EmptyInputPort<>).MakeGenericType(_OutputType);
+                _InteractorRegistrations.Add(new InteractorRegistration(_CandidateType, _InputType, _OutputType, true));
             }
         }
 
@@ -153,12 +164,23 @@ public static class DependencyInjector
                 _ActivePipeTypes.Add(_PipeType);
             }
 
-            // 3. Register IPipeline<TInputPort, TOutputPort>
-            var _RegisterMethod = typeof(DependencyInjector)
-                .GetMethod(nameof(RegisterPipeline), BindingFlags.NonPublic | BindingFlags.Static)!
-                .MakeGenericMethod(_Interactor.InputType, _Interactor.OutputType);
+            // 3. Register IPipeline
+            if (_Interactor.IsParameterless)
+            {
+                var _RegisterMethod = typeof(DependencyInjector)
+                    .GetMethod(nameof(RegisterParameterlessPipeline), BindingFlags.NonPublic | BindingFlags.Static)!
+                    .MakeGenericMethod(_Interactor.OutputType);
 
-            _ = _RegisterMethod.Invoke(null, [services, _Interactor.InteractorType, _ActivePipeTypes.ToArray()]);
+                _ = _RegisterMethod.Invoke(null, [services, _Interactor.InteractorType, _ActivePipeTypes.ToArray()]);
+            }
+            else
+            {
+                var _RegisterMethod = typeof(DependencyInjector)
+                    .GetMethod(nameof(RegisterPipeline), BindingFlags.NonPublic | BindingFlags.Static)!
+                    .MakeGenericMethod(_Interactor.InputType, _Interactor.OutputType);
+
+                _ = _RegisterMethod.Invoke(null, [services, _Interactor.InteractorType, _ActivePipeTypes.ToArray()]);
+            }
         }
 
         return services;
@@ -179,6 +201,30 @@ public static class DependencyInjector
 
             return new UseCasePipeline<TInputPort, TOutputPort>(_Pipes, _Interactor);
         });
+    }
+
+    private static void RegisterParameterlessPipeline<TOutputPort>(
+        IServiceCollection services,
+        Type interactorType,
+        Type[] pipeTypes)
+    {
+        _ = services.AddScoped<IPipeline<TOutputPort>>(sp =>
+        {
+            var _RawInteractor = (IInteractorPipe<TOutputPort>)sp.GetRequiredService(interactorType);
+            var _AdaptedInteractor = new ParameterlessInteractorAdapter<TOutputPort>(_RawInteractor);
+            var _Pipes = new IPipe<EmptyInputPort<TOutputPort>, TOutputPort>[pipeTypes.Length];
+            for (var i = 0; i < pipeTypes.Length; i++)
+                _Pipes[i] = (IPipe<EmptyInputPort<TOutputPort>, TOutputPort>)sp.GetRequiredService(pipeTypes[i]);
+
+            return new ParameterlessUseCasePipeline<TOutputPort>(_Pipes, _AdaptedInteractor);
+        });
+    }
+
+    private sealed class ParameterlessInteractorAdapter<TOutputPort>(IInteractorPipe<TOutputPort> inner)
+        : IInteractorPipe<EmptyInputPort<TOutputPort>, TOutputPort>
+    {
+        public Task ExecuteAsync(EmptyInputPort<TOutputPort> inputPort, TOutputPort outputPort, CancellationToken cancellationToken)
+            => inner.ExecuteAsync(outputPort, cancellationToken);
     }
 
     private static void ValidatePipelineStages(PipelineStage[] pipelineStages)

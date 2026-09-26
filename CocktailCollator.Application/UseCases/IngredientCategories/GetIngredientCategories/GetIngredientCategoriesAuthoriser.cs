@@ -8,7 +8,7 @@ namespace CocktailCollator.Application.UseCases.IngredientCategories.GetIngredie
 public class GetIngredientCategoriesAuthoriser(
     AuthenticationStateProvider authenticationStateProvider,
     IAuthorizationService authorisationService)
-    : AuthorisationPipeBase<GetIngredientCategoriesInputPort, IGetIngredientCategoriesOutputPort>(
+    : AuthorisationPipeBase<IGetIngredientCategoriesOutputPort>(
         authenticationStateProvider,
         authorisationService,
         Policies.ViewIngredients);

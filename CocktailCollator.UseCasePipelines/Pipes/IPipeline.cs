@@ -6,3 +6,8 @@ public interface IPipeline<in TInputPort, in TOutputPort> where TInputPort : IIn
 {
     Task ExecuteAsync(TInputPort inputPort, TOutputPort outputPort, CancellationToken cancellationToken);
 }
+
+public interface IPipeline<in TOutputPort>
+{
+    Task ExecuteAsync(TOutputPort outputPort, CancellationToken cancellationToken);
+}

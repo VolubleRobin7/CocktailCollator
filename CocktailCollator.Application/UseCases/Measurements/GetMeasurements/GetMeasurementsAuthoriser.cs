@@ -8,7 +8,7 @@ namespace CocktailCollator.Application.UseCases.Measurements.GetMeasurements;
 public class GetMeasurementsAuthoriser(
     AuthenticationStateProvider authenticationStateProvider,
     IAuthorizationService authorisationService)
-    : AuthorisationPipeBase<GetMeasurementsInputPort, IGetMeasurementsOutputPort>(
+    : AuthorisationPipeBase<IGetMeasurementsOutputPort>(
         authenticationStateProvider,
         authorisationService,
         Policies.ViewMeasurements);

@@ -6,3 +6,8 @@ public interface IInteractorPipe<in TInputPort, in TOutputPort> where TInputPort
 {
     Task ExecuteAsync(TInputPort inputPort, TOutputPort outputPort, CancellationToken cancellationToken);
 }
+
+public interface IInteractorPipe<in TOutputPort>
+{
+    Task ExecuteAsync(TOutputPort outputPort, CancellationToken cancellationToken);
+}

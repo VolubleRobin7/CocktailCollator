@@ -24,7 +24,7 @@ public class RecipeCategoriesViewModel
     public RecipeCategoriesViewModel(
         IPipeline<CreateRecipeCategoryInputPort, ICreateRecipeCategoryOutputPort> createRecipeCategoryPipeline,
         IPipeline<DeleteRecipeCategoryInputPort, IDeleteRecipeCategoryOutputPort> deleteRecipeCategoryPipeline,
-        IPipeline<GetRecipeCategoriesInputPort, IGetRecipeCategoriesOutputPort> getRecipeCategoriesPipeline,
+        IPipeline<IGetRecipeCategoriesOutputPort> getRecipeCategoriesPipeline,
         IMapper mapper,
         IViewModelStore store,
         ToastService toastService)
@@ -43,7 +43,6 @@ public class RecipeCategoriesViewModel
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
             => getRecipeCategoriesPipeline.ExecuteAsync(
-                new GetRecipeCategoriesInputPort(),
                 new GetRecipeCategoriesPresenter(mapper, store, toastService, this),
                 cancellationToken));
     }

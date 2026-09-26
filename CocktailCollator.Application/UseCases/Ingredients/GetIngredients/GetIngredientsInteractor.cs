@@ -4,9 +4,9 @@ using CocktailCollator.UseCasePipelines.Pipes;
 
 namespace CocktailCollator.Application.UseCases.Ingredients.GetIngredients;
 
-public class GetIngredientsInteractor(ICocktailDbContext dbContext) : IInteractorPipe<GetIngredientsInputPort, IGetIngredientsOutputPort>
+public class GetIngredientsInteractor(ICocktailDbContext dbContext) : IInteractorPipe<IGetIngredientsOutputPort>
 {
-    public Task ExecuteAsync(GetIngredientsInputPort inputPort, IGetIngredientsOutputPort outputPort, CancellationToken cancellationToken)
+    public Task ExecuteAsync(IGetIngredientsOutputPort outputPort, CancellationToken cancellationToken)
     {
         var _Ingredients = dbContext.GetEntities<Ingredient>()
             .Select(i => new Ingredient()
