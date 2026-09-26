@@ -1,9 +1,9 @@
 using CocktailCollator.Application;
+using CocktailCollator.Application.Common.Authorisation;
 using CocktailCollator.Infrastructure;
 using CocktailCollator.Infrastructure.Persistence;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web;
-using CocktailCollator.Web.Infrastructure.Authentication;
 using CocktailCollator.Web.Views;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
@@ -88,8 +88,8 @@ using (var _Scope = app.Services.CreateScope())
 
         var userRole = new CocktailRole { Name = "User", DefaultRole = true };
         _ = await _RoleManager.CreateAsync(userRole);
-        _ = await _RoleManager.AddClaimAsync(userRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
-        _ = await _RoleManager.AddClaimAsync(userRole, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
+        _ = await _RoleManager.AddClaimAsync(userRole, new Claim(CocktailCollator.Application.Common.Authorisation.ClaimTypes.Permission, ClaimValues.Permissions.Ingredients.View));
+        _ = await _RoleManager.AddClaimAsync(userRole, new Claim(CocktailCollator.Application.Common.Authorisation.ClaimTypes.Permission, ClaimValues.Permissions.Measurements.View));
     }
 
     if (!_DbContext.Users.Any())
@@ -124,12 +124,12 @@ using (var _Scope = app.Services.CreateScope())
     foreach (var _Role in _RolesWithAllClaims)
     {
         var _CurrentClaims = await _RoleManager.GetClaimsAsync(_Role);
-        var _CurrentClaimValues = _CurrentClaims.Where(c => c.Type == CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission).Select(c => c.Value).ToList();
+        var _CurrentClaimValues = _CurrentClaims.Where(c => c.Type == CocktailCollator.Application.Common.Authorisation.ClaimTypes.Permission).Select(c => c.Value).ToList();
 
         var _MissingClaims = _AllPossibleClaims.Except(_CurrentClaimValues);
         foreach (var _Claim in _MissingClaims)
         {
-            await _RoleManager.AddClaimAsync(_Role, new Claim(CocktailCollator.Web.Infrastructure.Authentication.ClaimTypes.Permission, _Claim));
+            await _RoleManager.AddClaimAsync(_Role, new Claim(CocktailCollator.Application.Common.Authorisation.ClaimTypes.Permission, _Claim));
         }
     }
 }

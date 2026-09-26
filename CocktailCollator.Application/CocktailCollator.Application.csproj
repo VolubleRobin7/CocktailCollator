@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CocktailCollator.Domain\CocktailCollator.Domain.csproj" />
+    <ProjectReference Include="..\CocktailCollator.UseCasePipelines\CocktailCollator.UseCasePipelines.csproj" />
   </ItemGroup>
 
 </Project>

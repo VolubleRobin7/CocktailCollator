@@ -1,11 +1,12 @@
 using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Pipes;
 
 namespace CocktailCollator.Application.UseCases.Ingredients.UpdateIngredient;
 
-public class UpdateIngredientInteractor(ICocktailDbContext dbContext)
+public class UpdateIngredientInteractor(ICocktailDbContext dbContext) : IInteractorPipe<UpdateIngredientInputPort, IUpdateIngredientOutputPort>
 {
-    public async Task Interact(UpdateIngredientInputPort inputPort, IUpdateIngredientOutputPort outputPort, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(UpdateIngredientInputPort inputPort, IUpdateIngredientOutputPort outputPort, CancellationToken cancellationToken)
     {
         var _Ingredient = dbContext.GetEntities<Ingredient>().First(i => i.IngredientId == inputPort.IngredientId);
 

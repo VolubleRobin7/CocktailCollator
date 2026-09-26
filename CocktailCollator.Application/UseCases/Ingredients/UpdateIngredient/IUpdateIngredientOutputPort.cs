@@ -1,10 +1,9 @@
+using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
 
 namespace CocktailCollator.Application.UseCases.Ingredients.UpdateIngredient;
 
-public interface IUpdateIngredientOutputPort
+public interface IUpdateIngredientOutputPort : IAuthenticatableOutputPort, IAuthorisableOutputPort, IExistenceOutputPort
 {
-    Task Failure(string failureReason, Ingredient? ingredient, CancellationToken cancellationToken);
-
     Task Success(Ingredient ingredient, CancellationToken cancellationToken);
 }
