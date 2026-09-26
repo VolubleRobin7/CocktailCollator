@@ -1,11 +1,12 @@
-﻿using CocktailCollator.Application.Common.Interfaces;
+using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Pipes;
 
 namespace CocktailCollator.Application.UseCases.Measurements.DeleteMeasurement;
 
-public class DeleteMeasurementInteractor(ICocktailDbContext dbContext)
+public class DeleteMeasurementInteractor(ICocktailDbContext dbContext) : IInteractorPipe<DeleteMeasurementInputPort, IDeleteMeasurementOutputPort>
 {
-    public async Task Interact(DeleteMeasurementInputPort inputPort, IDeleteMeasurementOutputPort outputPort, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(DeleteMeasurementInputPort inputPort, IDeleteMeasurementOutputPort outputPort, CancellationToken cancellationToken)
     {
         var _Measurement = dbContext.GetEntities<Measurement>().First(measurement => measurement.MeasurementId == inputPort.MeasurementId);
 

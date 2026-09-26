@@ -1,11 +1,12 @@
 using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Pipes;
 
 namespace CocktailCollator.Application.UseCases.IngredientCategories.DeleteIngredientCategory;
 
-public class DeleteIngredientCategoryInteractor(ICocktailDbContext dbContext)
+public class DeleteIngredientCategoryInteractor(ICocktailDbContext dbContext) : IInteractorPipe<DeleteIngredientCategoryInputPort, IDeleteIngredientCategoryOutputPort>
 {
-    public async Task Interact(DeleteIngredientCategoryInputPort inputPort, IDeleteIngredientCategoryOutputPort outputPort, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(DeleteIngredientCategoryInputPort inputPort, IDeleteIngredientCategoryOutputPort outputPort, CancellationToken cancellationToken)
     {
         var _IngredientCategory = dbContext.GetEntities<IngredientCategory>()
             .First(category => category.IngredientCategoryId == inputPort.IngredientCategoryId);

@@ -3,6 +3,8 @@ using CocktailCollator.Application.UseCases.Measurements.CreateMeasurement;
 using CocktailCollator.Application.UseCases.Measurements.DeleteMeasurement;
 using CocktailCollator.Application.UseCases.Measurements.GetMeasurements;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Pipes;
+using CocktailCollator.Web.Common.Presenters;
 using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.Views.Components.Toasts;
@@ -20,32 +22,34 @@ public class MeasurementsViewModel
 
 
     public MeasurementsViewModel(
-        CreateMeasurementInteractor createMeasurementInteractor,
-        DeleteMeasurementInteractor deleteMeasurementInteractor,
-        GetMeasurementsInteractor getMeasurementsInteractor,
+        IPipeline<CreateMeasurementInputPort, ICreateMeasurementOutputPort> createMeasurementPipeline,
+        IPipeline<DeleteMeasurementInputPort, IDeleteMeasurementOutputPort> deleteMeasurementPipeline,
+        IPipeline<GetMeasurementsInputPort, IGetMeasurementsOutputPort> getMeasurementsPipeline,
         IMapper mapper,
         IViewModelStore store,
         ToastService toastService)
     {
         this.CreateCommand = new AsyncRelayCommand<CreateMeasurementInputPort>((inputPort, cancellationToken)
-            => createMeasurementInteractor.Interact(
+            => createMeasurementPipeline.ExecuteAsync(
                  inputPort,
                 new CreateMeasurementPresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>((measurementId, cancellationToken)
-            => deleteMeasurementInteractor.Interact(
+            => deleteMeasurementPipeline.ExecuteAsync(
                 new() { MeasurementId = measurementId },
                 new DeleteMeasurementPresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
-            => getMeasurementsInteractor.Interact(
-                new GetMeasurementsPresenter(mapper, store, this),
+            => getMeasurementsPipeline.ExecuteAsync(
+                new GetMeasurementsInputPort(),
+                new GetMeasurementsPresenter(mapper, store, toastService, this),
                 cancellationToken));
     }
 
-    private class CreateMeasurementPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, MeasurementsViewModel viewModel) : ICreateMeasurementOutputPort
+    private class CreateMeasurementPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, MeasurementsViewModel viewModel)
+        : BasePresenter(toastService, "create measurements"), ICreateMeasurementOutputPort
     {
         Task ICreateMeasurementOutputPort.Success(Measurement measurement, CancellationToken cancellationToken)
         {
@@ -56,7 +60,8 @@ public class MeasurementsViewModel
         }
     }
 
-    private class DeleteMeasurementPresenter(IViewModelStore store, ToastService toastService, MeasurementsViewModel viewModel) : IDeleteMeasurementOutputPort
+    private class DeleteMeasurementPresenter(IViewModelStore store, ToastService toastService, MeasurementsViewModel viewModel)
+        : BasePresenter(toastService, "delete measurements"), IDeleteMeasurementOutputPort
     {
         Task IDeleteMeasurementOutputPort.Failure(string reason, Measurement? measurement, CancellationToken cancellationToken)
         {
@@ -73,7 +78,8 @@ public class MeasurementsViewModel
         }
     }
 
-    private class GetMeasurementsPresenter(IMapper mapper, IViewModelStore store, MeasurementsViewModel viewModel) : IGetMeasurementsOutputPort
+    private class GetMeasurementsPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, MeasurementsViewModel viewModel)
+        : BasePresenter(toastService, "view measurements"), IGetMeasurementsOutputPort
     {
         Task IGetMeasurementsOutputPort.Success(List<Measurement> measurements, CancellationToken cancellationToken)
         {
