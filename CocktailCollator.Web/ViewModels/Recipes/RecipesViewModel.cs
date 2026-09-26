@@ -63,7 +63,7 @@ public class RecipesViewModel
         {
             var _Recipe = mapper.Map<RecipeViewModel>(recipe);
             viewModel.Recipes.Add(store.UpdateOrRegister(_Recipe.RecipeId, _Recipe));
-            toastService.ShowToast(ToastType.Success, "Recipe Created", $"{recipe.Name} created successfully");
+            this.ToastService.ShowToast(ToastType.Success, "Recipe Created", $"{recipe.Name} created successfully");
             return Task.CompletedTask;
         }
     }
@@ -75,7 +75,7 @@ public class RecipesViewModel
         {
             _ = viewModel.Recipes.RemoveAll(recipe => recipe.RecipeId == deletedRecipe.RecipeId);
             store.Remove<RecipeViewModel>(deletedRecipe.RecipeId);
-            toastService.ShowToast(ToastType.Info, "Recipe Deleted", $"{deletedRecipe.Name} deleted successfully");
+            this.ToastService.ShowToast(ToastType.Info, "Recipe Deleted", $"{deletedRecipe.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }
@@ -95,7 +95,7 @@ public class RecipesViewModel
     {
         public override Task NotFound(CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Warning, "Recipe Not Found", "The recipe you are trying to update does not exist");
+            this.ToastService.ShowToast(ToastType.Warning, "Recipe Not Found", "The recipe you are trying to update does not exist");
             return Task.CompletedTask;
         }
 
@@ -103,7 +103,7 @@ public class RecipesViewModel
         {
             var _Recipe = mapper.Map<RecipeViewModel>(recipe);
             _ = store.UpdateOrRegister(_Recipe.RecipeId, _Recipe);
-            toastService.ShowToast(ToastType.Success, "Recipe Updated", $"{recipe.Name} updated successfully");
+            this.ToastService.ShowToast(ToastType.Success, "Recipe Updated", $"{recipe.Name} updated successfully");
             return Task.CompletedTask;
         }
     }

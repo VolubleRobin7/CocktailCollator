@@ -63,7 +63,7 @@ public class IngredientsViewModel
         {
             var _Ingredient = mapper.Map<IngredientViewModel>(ingredient);
             viewModel.Ingredients.Add(store.UpdateOrRegister(_Ingredient.IngredientId, _Ingredient));
-            toastService.ShowToast(ToastType.Success, "Ingredient Created", $"{ingredient.Name} created successfully");
+            this.ToastService.ShowToast(ToastType.Success, "Ingredient Created", $"{ingredient.Name} created successfully");
             return Task.CompletedTask;
         }
     }
@@ -73,7 +73,7 @@ public class IngredientsViewModel
     {
         Task IDeleteIngredientOutputPort.StillInUse(string reason, Ingredient? ingredient, CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
+            this.ToastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
             return Task.CompletedTask;
         }
 
@@ -81,7 +81,7 @@ public class IngredientsViewModel
         {
             _ = viewModel.Ingredients.RemoveAll(ingredient => ingredient.IngredientId == deletedIngredient.IngredientId);
             store.Remove<IngredientViewModel>(deletedIngredient.IngredientId);
-            toastService.ShowToast(ToastType.Info, "Ingredient Deleted", $"{deletedIngredient.Name} deleted successfully");
+            this.ToastService.ShowToast(ToastType.Info, "Ingredient Deleted", $"{deletedIngredient.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }
@@ -101,7 +101,7 @@ public class IngredientsViewModel
     {
         public override Task NotFound(CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Warning, "Ingredient Not Found", "The ingredient you are trying to update does not exist");
+            this.ToastService.ShowToast(ToastType.Warning, "Ingredient Not Found", "The ingredient you are trying to update does not exist");
             return Task.CompletedTask;
         }
 
@@ -109,7 +109,7 @@ public class IngredientsViewModel
         {
             var _Ingredient = mapper.Map<IngredientViewModel>(ingredient);
             _ = store.UpdateOrRegister(_Ingredient.IngredientId, _Ingredient);
-            toastService.ShowToast(ToastType.Success, "Ingredient Updated", $"{ingredient.Name} updated successfully");
+            this.ToastService.ShowToast(ToastType.Success, "Ingredient Updated", $"{ingredient.Name} updated successfully");
             return Task.CompletedTask;
         }
     }

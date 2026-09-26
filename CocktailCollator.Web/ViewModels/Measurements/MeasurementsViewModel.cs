@@ -54,7 +54,7 @@ public class MeasurementsViewModel
         {
             var _Measurement = mapper.Map<MeasurementViewModel>(measurement);
             viewModel.Measurements.Add(store.UpdateOrRegister(_Measurement.MeasurementId, _Measurement));
-            toastService.ShowToast(ToastType.Success, "Measurement Created", $"{measurement.Name} created successfully");
+            this.ToastService.ShowToast(ToastType.Success, "Measurement Created", $"{measurement.Name} created successfully");
             return Task.CompletedTask;
         }
     }
@@ -64,7 +64,7 @@ public class MeasurementsViewModel
     {
         Task IDeleteMeasurementOutputPort.StillInUse(string reason, Measurement? measurement, CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
+            this.ToastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
             return Task.CompletedTask;
         }
 
@@ -72,7 +72,7 @@ public class MeasurementsViewModel
         {
             _ = viewModel.Measurements.RemoveAll(m => m.MeasurementId == deletedMeasurement.MeasurementId);
             store.Remove<MeasurementViewModel>(deletedMeasurement.MeasurementId);
-            toastService.ShowToast(ToastType.Info, "Measurement Deleted", $"{deletedMeasurement.Name} deleted successfully");
+            this.ToastService.ShowToast(ToastType.Info, "Measurement Deleted", $"{deletedMeasurement.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }

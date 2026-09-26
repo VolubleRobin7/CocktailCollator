@@ -54,7 +54,7 @@ public class IngredientCategoriesViewModel
         {
             var _Category = mapper.Map<IngredientCategoryViewModel>(ingredientCategory);
             viewModel.IngredientCategories.Add(store.UpdateOrRegister(_Category.IngredientCategoryId, _Category));
-            toastService.ShowToast(ToastType.Success, "Category Created", $"{ingredientCategory.Name} created successfully");
+            this.ToastService.ShowToast(ToastType.Success, "Category Created", $"{ingredientCategory.Name} created successfully");
             return Task.CompletedTask;
         }
     }
@@ -64,7 +64,7 @@ public class IngredientCategoriesViewModel
     {
         Task IDeleteIngredientCategoryOutputPort.StillInUse(string reason, IngredientCategory? category, CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
+            this.ToastService.ShowToast(ToastType.Danger, "Failed to Delete", reason);
             return Task.CompletedTask;
         }
 
@@ -72,7 +72,7 @@ public class IngredientCategoriesViewModel
         {
             _ = viewModel.IngredientCategories.RemoveAll(c => c.IngredientCategoryId == deletedCategory.IngredientCategoryId);
             store.Remove<IngredientCategoryViewModel>(deletedCategory.IngredientCategoryId);
-            toastService.ShowToast(ToastType.Info, "Category Deleted", $"{deletedCategory.Name} deleted successfully");
+            this.ToastService.ShowToast(ToastType.Info, "Category Deleted", $"{deletedCategory.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }
