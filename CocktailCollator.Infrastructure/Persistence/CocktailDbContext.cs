@@ -16,7 +16,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
     void ICocktailDbContext.Add<TEntity>(TEntity entity)
         => this.Add(entity);
 
-    bool ICocktailDbContext.Exists<TEntity>(Guid id) where TEntity : class
+    Task<bool> ICocktailDbContext.ExistsAsync<TEntity>(Guid id, CancellationToken cancellationToken) where TEntity : class
     {
         // 1. Locate the entity metadata and primary key configuration
         var entityType = Model.FindEntityType(typeof(TEntity))
@@ -34,7 +34,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
             throw new NotSupportedException($"Entity '{typeof(TEntity).Name}' has a primary key of type '{keyProperty.ClrType.Name}', but this method expects a Guid.");
 
         // 2. Execute the check using EF.Property to dynamically query the primary key column
-        return Set<TEntity>().Any(entity => EF.Property<Guid>(entity, keyProperty.Name) == id);
+        return Set<TEntity>().AnyAsync(entity => EF.Property<Guid>(entity, keyProperty.Name) == id, cancellationToken);
     }
 
     IQueryable<TEntity> ICocktailDbContext.GetEntities<TEntity>()

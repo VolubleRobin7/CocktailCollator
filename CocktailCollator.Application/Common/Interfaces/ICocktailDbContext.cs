@@ -7,7 +7,7 @@ public interface ICocktailDbContext
     // Database Methods
     void Add<TEntity>(TEntity entity) where TEntity : class;
 
-    bool Exists<TEntity>(Guid id) where TEntity : class;
+    Task<bool> ExistsAsync<TEntity>(Guid id, CancellationToken cancellationToken) where TEntity : class;
 
     IQueryable<TEntity> GetEntities<TEntity>() where TEntity : class;
 

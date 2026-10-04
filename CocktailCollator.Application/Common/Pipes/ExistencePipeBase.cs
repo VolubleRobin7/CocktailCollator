@@ -45,7 +45,8 @@ file static class ExistencePipeBaseHelper
         CancellationToken cancellationToken)
         where TDomainEntity : class
     {
-        if (dbContext.Exists<TDomainEntity>(id))
+        var _EntityExists = await dbContext.ExistsAsync<TDomainEntity>(id, cancellationToken);
+        if (_EntityExists)
             return true;
         else
         {
