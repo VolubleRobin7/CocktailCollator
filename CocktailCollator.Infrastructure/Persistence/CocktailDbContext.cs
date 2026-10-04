@@ -4,6 +4,7 @@ using CocktailCollator.Infrastructure.Persistence.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace CocktailCollator.Infrastructure.Persistence;
 
@@ -14,6 +15,27 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
 
     void ICocktailDbContext.Add<TEntity>(TEntity entity)
         => this.Add(entity);
+
+    bool ICocktailDbContext.Exists<TEntity>(Guid id) where TEntity : class
+    {
+        // 1. Locate the entity metadata and primary key configuration
+        var entityType = Model.FindEntityType(typeof(TEntity))
+            ?? throw new InvalidOperationException($"Entity '{typeof(TEntity).Name}' is not registered in this DbContext.");
+
+        var primaryKey = entityType.FindPrimaryKey()
+            ?? throw new MissingPrimaryKeyException($"Entity '{typeof(TEntity).Name}' does not have a primary key configured.");
+
+        if (primaryKey.Properties.Count > 1)
+            throw new NotSupportedException($"Entity '{typeof(TEntity).Name}' uses a composite primary key. This method only supports single-column keys.");
+
+        var keyProperty = primaryKey.Properties[0];
+
+        if (keyProperty.ClrType != typeof(Guid))
+            throw new NotSupportedException($"Entity '{typeof(TEntity).Name}' has a primary key of type '{keyProperty.ClrType.Name}', but this method expects a Guid.");
+
+        // 2. Execute the check using EF.Property to dynamically query the primary key column
+        return Set<TEntity>().Any(entity => EF.Property<Guid>(entity, keyProperty.Name) == id);
+    }
 
     IQueryable<TEntity> ICocktailDbContext.GetEntities<TEntity>()
         => this.Set<TEntity>();
@@ -94,7 +116,7 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
         var _RelatedEntityTypeName = _RelatedEntityDatabaseEntry.Metadata.ClrType.Name;
         var _RelatedEntityId = _RelatedEntityDatabaseEntry.CurrentValues
             .GetValue<Guid>(_RelatedEntityDatabaseEntry.Metadata.FindPrimaryKey()?.Properties.Single()
-                ?? throw new KeyNotFoundException("Primary key not found for the related entity."))
+                ?? throw new MissingPrimaryKeyException("Primary key not found for the related entity."))
             .ToString();
 
         if (_RelatedEntityId == Guid.Empty.ToString())

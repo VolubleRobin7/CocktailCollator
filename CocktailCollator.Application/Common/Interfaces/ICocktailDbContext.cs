@@ -7,6 +7,8 @@ public interface ICocktailDbContext
     // Database Methods
     void Add<TEntity>(TEntity entity) where TEntity : class;
 
+    bool Exists<TEntity>(Guid id) where TEntity : class;
+
     IQueryable<TEntity> GetEntities<TEntity>() where TEntity : class;
 
     void Remove<TEntity>(TEntity entity) where TEntity : class;
