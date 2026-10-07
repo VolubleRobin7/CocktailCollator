@@ -19,22 +19,22 @@ public class CocktailDbContext(DbContextOptions<CocktailDbContext> options, IFil
     Task<bool> ICocktailDbContext.ExistsAsync<TEntity>(Guid id, CancellationToken cancellationToken) where TEntity : class
     {
         // 1. Locate the entity metadata and primary key configuration
-        var entityType = Model.FindEntityType(typeof(TEntity))
+        var _EntityType = Model.FindEntityType(typeof(TEntity))
             ?? throw new InvalidOperationException($"Entity '{typeof(TEntity).Name}' is not registered in this DbContext.");
 
-        var primaryKey = entityType.FindPrimaryKey()
+        var _PrimaryKey = _EntityType.FindPrimaryKey()
             ?? throw new MissingPrimaryKeyException($"Entity '{typeof(TEntity).Name}' does not have a primary key configured.");
 
-        if (primaryKey.Properties.Count > 1)
+        if (_PrimaryKey.Properties.Count > 1)
             throw new NotSupportedException($"Entity '{typeof(TEntity).Name}' uses a composite primary key. This method only supports single-column keys.");
 
-        var keyProperty = primaryKey.Properties[0];
+        var _KeyProperty = _PrimaryKey.Properties[0];
 
-        if (keyProperty.ClrType != typeof(Guid))
-            throw new NotSupportedException($"Entity '{typeof(TEntity).Name}' has a primary key of type '{keyProperty.ClrType.Name}', but this method expects a Guid.");
+        if (_KeyProperty.ClrType != typeof(Guid))
+            throw new NotSupportedException($"Entity '{typeof(TEntity).Name}' has a primary key of type '{_KeyProperty.ClrType.Name}', but this method expects a Guid.");
 
         // 2. Execute the check using EF.Property to dynamically query the primary key column
-        return Set<TEntity>().AnyAsync(entity => EF.Property<Guid>(entity, keyProperty.Name) == id, cancellationToken);
+        return Set<TEntity>().AnyAsync(entity => EF.Property<Guid>(entity, _KeyProperty.Name) == id, cancellationToken);
     }
 
     IQueryable<TEntity> ICocktailDbContext.GetEntities<TEntity>()

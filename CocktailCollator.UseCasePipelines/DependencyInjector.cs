@@ -64,6 +64,7 @@ public static class DependencyInjector
 
         foreach (var _CandidateType in _CandidateTypes.Where(t => !t.IsGenericTypeDefinition))
         {
+            // Find all interfaces implemented with 2 generic type parameters (IInteractorPipe<TInputPort, TOutputPort>)
             var _Interactor2Interfaces = _CandidateType.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IInteractorPipe<,>))
                 .ToList();
@@ -75,6 +76,7 @@ public static class DependencyInjector
                 _InteractorRegistrations.Add(new InteractorRegistration(_CandidateType, _InputType, _OutputType, false));
             }
 
+            // Find all interfaces implemented with 1 generic type parameter (IInteractorPipe<TOutputPort>)
             var _Interactor1Interfaces = _CandidateType.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IInteractorPipe<>))
                 .ToList();

@@ -16,25 +16,7 @@ public abstract class ExistencePipeBase<TInputPort, TOutputPort, TDomainEntity>(
         => ExistencePipeBaseHelper.CheckExistenceAsync<TDomainEntity>(dbContext, inputPortIdSelector.Invoke(inputPort), outputPort, cancellationToken);
 }
 
-// TODO: Is it even possible for an existence check to not have an input port? If not, remove this class and just use the above one.
-public abstract class ExistencePipeBase<TOutputPort, TDomainEntity>(
-    ICocktailDbContext dbContext,
-    Guid id)
-    : IExistencePipe<EmptyInputPort<TOutputPort>, TOutputPort>
-    where TOutputPort : IExistenceOutputPort
-    where TDomainEntity : class
-{
-    public virtual Task<bool> ExecuteAsync(TOutputPort outputPort, CancellationToken cancellationToken)
-        => ExistencePipeBaseHelper.CheckExistenceAsync<TDomainEntity>(dbContext, id, outputPort, cancellationToken);
-
-    // Explicit interface implementation to satisfy the pipeline engine's 2-generic-parameter contract.
-    // Consumers will use ExecuteAsync() above.
-    Task<bool> IPipe<EmptyInputPort<TOutputPort>, TOutputPort>.ExecuteAsync(
-        EmptyInputPort<TOutputPort> inputPort,
-        TOutputPort outputPort,
-        CancellationToken cancellationToken)
-        => this.ExecuteAsync(outputPort, cancellationToken);
-}
+// There is no 1-generic-parameter interface implementation (output port only) as existence checks always require an input port to provide the entity ID.
 
 file static class ExistencePipeBaseHelper
 {
