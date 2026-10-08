@@ -212,21 +212,13 @@ public static class DependencyInjector
     {
         _ = services.AddScoped<IPipeline<TOutputPort>>(sp =>
         {
-            var _RawInteractor = (IInteractorPipe<TOutputPort>)sp.GetRequiredService(interactorType);
-            var _AdaptedInteractor = new ParameterlessInteractorAdapter<TOutputPort>(_RawInteractor);
+            var _Interactor = (IInteractorPipe<TOutputPort>)sp.GetRequiredService(interactorType);
             var _Pipes = new IPipe<EmptyInputPort<TOutputPort>, TOutputPort>[pipeTypes.Length];
             for (var i = 0; i < pipeTypes.Length; i++)
                 _Pipes[i] = (IPipe<EmptyInputPort<TOutputPort>, TOutputPort>)sp.GetRequiredService(pipeTypes[i]);
 
-            return new ParameterlessUseCasePipeline<TOutputPort>(_Pipes, _AdaptedInteractor);
+            return new ParameterlessUseCasePipeline<TOutputPort>(_Pipes, _Interactor);
         });
-    }
-
-    private sealed class ParameterlessInteractorAdapter<TOutputPort>(IInteractorPipe<TOutputPort> inner)
-        : IInteractorPipe<EmptyInputPort<TOutputPort>, TOutputPort>
-    {
-        public Task ExecuteAsync(EmptyInputPort<TOutputPort> inputPort, TOutputPort outputPort, CancellationToken cancellationToken)
-            => inner.ExecuteAsync(outputPort, cancellationToken);
     }
 
     private static void ValidatePipelineStages(PipelineStage[] pipelineStages)

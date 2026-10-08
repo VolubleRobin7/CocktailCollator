@@ -20,7 +20,7 @@ public class UseCasePipeline<TInputPort, TOutputPort>(IReadOnlyList<IPipe<TInput
 
 public class ParameterlessUseCasePipeline<TOutputPort>(
     IReadOnlyList<IPipe<EmptyInputPort<TOutputPort>, TOutputPort>> pipes,
-    IInteractorPipe<EmptyInputPort<TOutputPort>, TOutputPort> interactor)
+    IInteractorPipe<TOutputPort> interactor)
     : IPipeline<TOutputPort>
 {
     private static readonly EmptyInputPort<TOutputPort> s_empty = new();
@@ -34,6 +34,6 @@ public class ParameterlessUseCasePipeline<TOutputPort>(
                 return;
         }
 
-        await interactor.ExecuteAsync(s_empty, outputPort, cancellationToken);
+        await interactor.ExecuteAsync(outputPort, cancellationToken);
     }
 }
