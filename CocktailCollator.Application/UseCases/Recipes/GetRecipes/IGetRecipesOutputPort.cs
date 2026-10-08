@@ -1,4 +1,4 @@
-﻿using CocktailCollator.Domain.Entities;
+using CocktailCollator.Domain.Entities;
 
 namespace CocktailCollator.Application.UseCases.Recipes.GetRecipes;
 

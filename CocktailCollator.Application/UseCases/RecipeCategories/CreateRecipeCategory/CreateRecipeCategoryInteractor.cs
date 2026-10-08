@@ -1,11 +1,12 @@
 using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Pipes;
 
 namespace CocktailCollator.Application.UseCases.RecipeCategories.CreateRecipeCategory;
 
-public class CreateRecipeCategoryInteractor(ICocktailDbContext dbContext)
+public class CreateRecipeCategoryInteractor(ICocktailDbContext dbContext) : IInteractorPipe<CreateRecipeCategoryInputPort, ICreateRecipeCategoryOutputPort>
 {
-    public async Task Interact(CreateRecipeCategoryInputPort inputPort, ICreateRecipeCategoryOutputPort outputPort, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(CreateRecipeCategoryInputPort inputPort, ICreateRecipeCategoryOutputPort outputPort, CancellationToken cancellationToken)
     {
         RecipeCategory _RecipeCategory = new() { Name = inputPort.Name };
         dbContext.Add(_RecipeCategory);

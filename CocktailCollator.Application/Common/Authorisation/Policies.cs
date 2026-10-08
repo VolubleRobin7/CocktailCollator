@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace CocktailCollator.Web.Infrastructure.Authentication;
+namespace CocktailCollator.Application.Common.Authorisation;
 
 public static class Policies
 {

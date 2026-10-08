@@ -1,4 +1,4 @@
-namespace CocktailCollator.Web.Infrastructure.Authentication;
+namespace CocktailCollator.Application.Common.Authorisation;
 
 #pragma warning disable IDE1006
 public static class ClaimTypes

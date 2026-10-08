@@ -4,6 +4,8 @@ using CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 using CocktailCollator.Application.UseCases.Recipes.GetRecipes;
 using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Pipes;
+using CocktailCollator.Web.Common.Presenters;
 using CocktailCollator.Web.Common.Services;
 using CocktailCollator.Web.Common.State;
 using CocktailCollator.Web.Views.Components.Toasts;
@@ -22,61 +24,64 @@ public class RecipesViewModel
 
 
     public RecipesViewModel(
-        CreateRecipeInteractor createRecipeInteractor,
-        DeleteRecipeInteractor deleteRecipeInteractor,
-        GetRecipesInteractor getRecipesInteractor,
-        UpdateRecipeInteractor updateRecipeInteractor,
+        IPipeline<CreateRecipeInputPort, ICreateRecipeOutputPort> createRecipePipeline,
+        IPipeline<DeleteRecipeInputPort, IDeleteRecipeOutputPort> deleteRecipePipeline,
+        IPipeline<IGetRecipesOutputPort> getRecipesPipeline,
+        IPipeline<UpdateRecipeInputPort, IUpdateRecipeOutputPort> updateRecipePipeline,
         IMapper mapper,
         IViewModelStore store,
         ToastService toastService)
     {
         this.CreateCommand = new AsyncRelayCommand<CreateRecipeInputPort>((inputPort, cancellationToken)
-            => createRecipeInteractor.Interact(
-                 inputPort,
+            => createRecipePipeline.ExecuteAsync(
+                inputPort,
                 new CreateRecipePresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.DeleteCommand = new AsyncRelayCommand<Guid>((recipeId, cancellationToken)
-            => deleteRecipeInteractor.Interact(
+            => deleteRecipePipeline.ExecuteAsync(
                 new() { RecipeId = recipeId },
                 new DeleteRecipePresenter(store, toastService, this),
                 cancellationToken));
 
         this.GetCommand = new AsyncRelayCommand(cancellationToken
-            => getRecipesInteractor.Interact(
-                new GetRecipesPresenter(mapper, store, this),
+            => getRecipesPipeline.ExecuteAsync(
+                new GetRecipesPresenter(mapper, store, toastService, this),
                 cancellationToken));
 
         this.UpdateCommand = new AsyncRelayCommand<UpdateRecipeInputPort>((inputPort, cancellationToken)
-            => updateRecipeInteractor.InteractAsync(
+            => updateRecipePipeline.ExecuteAsync(
                 inputPort,
                 new UpdateRecipePresenter(mapper, store, toastService),
                 cancellationToken));
     }
 
-    private class CreateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel) : ICreateRecipeOutputPort
+    private class CreateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel)
+        : BasePresenter(toastService, "create recipes"), ICreateRecipeOutputPort
     {
         Task ICreateRecipeOutputPort.Success(Recipe recipe, CancellationToken cancellationToken)
         {
             var _Recipe = mapper.Map<RecipeViewModel>(recipe);
             viewModel.Recipes.Add(store.UpdateOrRegister(_Recipe.RecipeId, _Recipe));
-            toastService.ShowToast(ToastType.Success, "Recipe Created", $"{recipe.Name} created successfully");
+            this.ToastService.ShowToast(ToastType.Success, "Recipe Created", $"{recipe.Name} created successfully");
             return Task.CompletedTask;
         }
     }
 
-    private class DeleteRecipePresenter(IViewModelStore store, ToastService toastService, RecipesViewModel viewModel) : IDeleteRecipeOutputPort
+    private class DeleteRecipePresenter(IViewModelStore store, ToastService toastService, RecipesViewModel viewModel)
+        : BasePresenter(toastService, "delete recipes"), IDeleteRecipeOutputPort
     {
         Task IDeleteRecipeOutputPort.Success(Recipe deletedRecipe, CancellationToken cancellationToken)
         {
             _ = viewModel.Recipes.RemoveAll(recipe => recipe.RecipeId == deletedRecipe.RecipeId);
             store.Remove<RecipeViewModel>(deletedRecipe.RecipeId);
-            toastService.ShowToast(ToastType.Info, "Recipe Deleted", $"{deletedRecipe.Name} deleted successfully");
+            this.ToastService.ShowToast(ToastType.Info, "Recipe Deleted", $"{deletedRecipe.Name} deleted successfully");
             return Task.CompletedTask;
         }
     }
 
-    private class GetRecipesPresenter(IMapper mapper, IViewModelStore store, RecipesViewModel viewModel) : IGetRecipesOutputPort
+    private class GetRecipesPresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel)
+        : BasePresenter(toastService, "view recipes"), IGetRecipesOutputPort
     {
         Task IGetRecipesOutputPort.Success(List<Recipe> recipes, CancellationToken cancellationToken)
         {
@@ -85,11 +90,12 @@ public class RecipesViewModel
         }
     }
 
-    private class UpdateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService) : IUpdateRecipeOutputPort
+    private class UpdateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService)
+        : BasePresenter(toastService, "update recipes"), IUpdateRecipeOutputPort
     {
-        Task IUpdateRecipeOutputPort.Failure(string failureReason, Recipe? recipe, CancellationToken cancellationToken)
+        public override Task NotFound(CancellationToken cancellationToken)
         {
-            toastService.ShowToast(ToastType.Danger, "Failed to Update", failureReason);
+            this.ToastService.ShowToast(ToastType.Warning, "Recipe Not Found", "The recipe you are trying to update does not exist");
             return Task.CompletedTask;
         }
 
@@ -97,7 +103,7 @@ public class RecipesViewModel
         {
             var _Recipe = mapper.Map<RecipeViewModel>(recipe);
             _ = store.UpdateOrRegister(_Recipe.RecipeId, _Recipe);
-            toastService.ShowToast(ToastType.Success, "Recipe Updated", $"{recipe.Name} updated successfully");
+            this.ToastService.ShowToast(ToastType.Success, "Recipe Updated", $"{recipe.Name} updated successfully");
             return Task.CompletedTask;
         }
     }

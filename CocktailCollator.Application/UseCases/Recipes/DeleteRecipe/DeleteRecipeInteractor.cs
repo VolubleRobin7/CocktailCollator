@@ -1,11 +1,12 @@
 using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Pipes;
 
 namespace CocktailCollator.Application.UseCases.Recipes.DeleteRecipe;
 
-public class DeleteRecipeInteractor(ICocktailDbContext dbContext)
+public class DeleteRecipeInteractor(ICocktailDbContext dbContext) : IInteractorPipe<DeleteRecipeInputPort, IDeleteRecipeOutputPort>
 {
-    public async Task Interact(DeleteRecipeInputPort inputPort, IDeleteRecipeOutputPort outputPort, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(DeleteRecipeInputPort inputPort, IDeleteRecipeOutputPort outputPort, CancellationToken cancellationToken)
     {
         // Returns a tuple of Recipe and RecipeDocument
         var _RecipeData = dbContext.GetEntities<Recipe>()

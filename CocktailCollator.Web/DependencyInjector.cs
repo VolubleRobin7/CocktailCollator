@@ -1,3 +1,4 @@
+using CocktailCollator.Application.Common.Authorisation;
 using CocktailCollator.Infrastructure.Persistence;
 using CocktailCollator.Infrastructure.Persistence.Models;
 using CocktailCollator.Web.Common.Services;

@@ -1,4 +1,4 @@
-using CocktailCollator.Web.Infrastructure.Authentication;
+using CocktailCollator.Application.Common.Authorisation;
 
 namespace CocktailCollator.Web.Views.Components.Navbars;
 

@@ -1,11 +1,12 @@
-﻿using CocktailCollator.Application.Common.Interfaces;
+using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
+using CocktailCollator.UseCasePipelines.Pipes;
 
 namespace CocktailCollator.Application.UseCases.Ingredients.GetIngredients;
 
-public class GetIngredientsInteractor(ICocktailDbContext dbContext)
+public class GetIngredientsInteractor(ICocktailDbContext dbContext) : IInteractorPipe<IGetIngredientsOutputPort>
 {
-    public Task Interact(IGetIngredientsOutputPort outputPort, CancellationToken cancellationToken)
+    public Task ExecuteAsync(IGetIngredientsOutputPort outputPort, CancellationToken cancellationToken)
     {
         var _Ingredients = dbContext.GetEntities<Ingredient>()
             .Select(i => new Ingredient()

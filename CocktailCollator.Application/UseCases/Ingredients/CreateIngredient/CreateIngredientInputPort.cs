@@ -1,6 +1,8 @@
-﻿namespace CocktailCollator.Application.UseCases.Ingredients.CreateIngredient;
+using CocktailCollator.UseCasePipelines.InputPorts;
 
-public class CreateIngredientInputPort
+namespace CocktailCollator.Application.UseCases.Ingredients.CreateIngredient;
+
+public class CreateIngredientInputPort : IInputPort<ICreateIngredientOutputPort>
 {
     public required string Name { get; set; }
 }

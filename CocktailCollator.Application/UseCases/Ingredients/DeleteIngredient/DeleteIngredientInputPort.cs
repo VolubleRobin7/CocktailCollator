@@ -1,6 +1,8 @@
-﻿namespace CocktailCollator.Application.UseCases.Ingredients.DeleteIngredient;
+using CocktailCollator.UseCasePipelines.InputPorts;
 
-public class DeleteIngredientInputPort
+namespace CocktailCollator.Application.UseCases.Ingredients.DeleteIngredient;
+
+public class DeleteIngredientInputPort : IInputPort<IDeleteIngredientOutputPort>
 {
     public required Guid IngredientId { get; set; }
 }

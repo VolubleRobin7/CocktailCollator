@@ -1,4 +1,4 @@
-namespace CocktailCollator.Web.Infrastructure.Authentication;
+namespace CocktailCollator.Application.Common.Authorisation;
 
 public static class ClaimValues
 {
