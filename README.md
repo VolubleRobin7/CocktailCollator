@@ -38,10 +38,3 @@ Place the following JSON structure in your `secrets.json` file:
   "FileStorePath": "C:\\CocktailCollator"
 }
 ```
-
-#### Required Configuration Keys
-
-| Key | Description | Example |
-| :--- | :--- | :--- |
-| `ConnectionStrings:CocktailCollator` | SQL Server connection string for the app and EF Core | `Server=192.168.56.5;Database=CocktailCollatorDB;User Id=cocktail_collator;Password=...;TrustServerCertificate=True;` |
-| `FileStorePath` | Local directory path for file attachments | `C:\CocktailCollator` |
