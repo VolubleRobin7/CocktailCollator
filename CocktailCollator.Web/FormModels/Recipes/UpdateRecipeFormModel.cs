@@ -3,6 +3,7 @@ using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using CocktailCollator.Web.Common.Inputs;
 using CocktailCollator.Web.ViewModels.Measurements;
 using CocktailCollator.Web.ViewModels.RecipeCategories;
+using CocktailCollator.Web.ViewModels.Recipes;
 
 namespace CocktailCollator.Web.FormModels.Recipes;
 
@@ -15,6 +16,10 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         = new([(ingredient) => ingredient.Amount, (ingredient) => ingredient.Measurement, (ingredient) => ingredient.Name]);
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
+    public InputProperty<string> Note { get; set; }
+        = new(() => string.Empty, (input) => true);
+    public InputProperty<string?> PersonalNote { get; set; }
+        = new(() => null, (input) => true);
     public InputProperty<Guid> RecipeId { get; set; }
         = new(() => Guid.Empty, (input) => input != Guid.Empty);
     public InputProperty<RecipeCategoryViewModel?> RecipeCategory { get; set; }
@@ -31,6 +36,8 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this.Images.OnChange = () => OnChange?.Invoke();
         this.Ingredients.OnChange = () => OnChange?.Invoke();
         this.Name.OnChange = () => OnChange?.Invoke();
+        this.Note.OnChange = () => OnChange?.Invoke();
+        this.PersonalNote.OnChange = () => OnChange?.Invoke();
         this.RecipeId.OnChange = () => OnChange?.Invoke();
         this.RecipeCategory.OnChange = () => OnChange?.Invoke();
         this.Steps.OnChange = () => OnChange?.Invoke();
@@ -40,6 +47,8 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
     {
         var _InputPort = this._mapper.Map<UpdateRecipeInputPort>(this);
         _InputPort.RecipeCategoryId = this.RecipeCategory.Input?.RecipeCategoryId;
+        _InputPort.Note = this.Note.Input;
+        _InputPort.PersonalNote = this.PersonalNote.Input;
         return _InputPort;
     }
 
@@ -49,6 +58,39 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
             && this.Ingredients.IsValid()
             && this.Images.IsValid();
 
+    public void PopulateFrom(RecipeViewModel recipe)
+    {
+        this.RecipeId.Input = recipe.RecipeId;
+        this.Name.Input = recipe.Name ?? string.Empty;
+        this.RecipeCategory.Input = recipe.Category;
+        this.Note.Input = recipe.Note;
+        this.PersonalNote.ResetToDefault();
+
+        this.Images.ResetToDefault();
+        this.Images.AddRange(recipe.Images?.Select(i => i.AsExistingDocument()) ?? []);
+
+        this.Ingredients.Clear();
+        foreach (var ingredient in recipe.Ingredients ?? [])
+        {
+            var newIngredient = new UpdateRecipeFormModelIngredient();
+            newIngredient.Amount.Input = ingredient.Amount ?? 0;
+            newIngredient.ExistingIngredientId = ingredient.IngredientId;
+            newIngredient.Name.Input = ingredient.Ingredient?.Name ?? "";
+            newIngredient.Measurement.Input = ingredient.MeasurementId;
+            newIngredient.MeasurementModel = ingredient.Measurement;
+            this.Ingredients.Add(newIngredient);
+        }
+
+        this.Steps.Clear();
+        foreach (var step in recipe.Steps ?? [])
+        {
+            var newStep = new UpdateRecipeFormModelStep();
+            newStep.Instruction.Input = step.Instruction ?? "";
+            newStep.Order.Input = step.Order ?? 0;
+            this.Steps.Add(newStep);
+        }
+    }
+
     public void ResetToDefault()
     {
         this.RecipeId.ResetToDefault();
@@ -57,6 +99,8 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this.Ingredients.ResetToDefault();
         this.Steps.ResetToDefault();
         this.Images.ResetToDefault();
+        this.Note.ResetToDefault();
+        this.PersonalNote.ResetToDefault();
     }
 }
 

@@ -4,3 +4,7 @@
     font-weight: 600;
     flex-shrink: 0;
 }
+
+.note-text {
+    white-space: pre-wrap;
+}

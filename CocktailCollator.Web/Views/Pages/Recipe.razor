@@ -1,9 +1,11 @@
 @using CocktailCollator.Application.Common.Authorisation
+@using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Modals
 
 @inject NavigationManager NavigationManager
+@inject UpdateRecipeFormModel UpdateRecipeFormModel
 @inject RecipesViewModel ViewModel
 
 @page "/recipe/{RecipeId:guid}"
@@ -107,6 +109,69 @@
                         </ol>
                     </div>
                 </div>
+
+                <div class="mt-4 pt-3 border-top">
+                    <h4 class="mb-3 pb-2 border-bottom">Recipe Notes</h4>
+
+                    @if (!string.IsNullOrWhiteSpace(this._recipe.Note))
+                    {
+                        <p class="mb-0 note-text">@this._recipe.Note</p>
+                    }
+                    else
+                    {
+                        <p class="mb-0 text-secondary fst-italic">No recipe notes.</p>
+                    }
+                </div>
+
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                <h4 class="mb-0">Personal Notes</h4>
+                                @if (!this._isEditingPersonalNote)
+                                {
+                                    <Button @onclick="this.EnterPersonalNoteEditMode"
+                                            Size="ButtonSize.Small"
+                                            Text="Edit"
+                                            Theme="ButtonTheme.Secondary" />
+                                }
+                            </div>
+
+                            @if (this._isEditingPersonalNote)
+                            {
+                                <div class="mb-3">
+                                    <textarea @bind="this._personalNoteInput"
+                                              class="form-control"
+                                              placeholder="Add a personal note..."
+                                              rows="3"></textarea>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <Button @onclick="this.SavePersonalNoteAsync"
+                                            Size="ButtonSize.Small"
+                                            Text="Save"
+                                            Theme="ButtonTheme.Success" />
+
+                                    <Button @onclick="this.CancelPersonalNoteEdit"
+                                            Size="ButtonSize.Small"
+                                            Text="Cancel"
+                                            Theme="ButtonTheme.Secondary" />
+                                </div>
+                            }
+                            else
+                            {
+                                @if (!string.IsNullOrWhiteSpace(this._recipe.PersonalNote))
+                                {
+                                    <p class="mb-0 note-text">@this._recipe.PersonalNote</p>
+                                }
+                                else
+                                {
+                                    <p class="mb-0 text-secondary fst-italic">No personal notes.</p>
+                                }
+                            }
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
             </div>
         </div>
 
@@ -129,8 +194,14 @@
 
 @code {
     private bool _isLoading = true;
+    private bool _isEditingPersonalNote = false;
+    private string _personalNoteInput = "";
     private RecipeViewModel? _recipe;
     private UpdateRecipeModal _updateRecipeModal = default!;
+
+    // When this page is converted to be editable all over, `_personalNoteInput` can removed (using the InputProperty instead),
+    // and every time edit mode is entered, the form model can be re-populated from the view model.
+    // This allows a cancel operation to work without having to store the original values.
 
     [Parameter]
     public Guid RecipeId { get; set; }
@@ -156,5 +227,33 @@
     private async Task OpenUpdateRecipeModal(RecipeViewModel recipe)
     {
         await this._updateRecipeModal.OpenModalAsync(recipe);
+    }
+
+    private void EnterPersonalNoteEditMode()
+    {
+        this._isEditingPersonalNote = !this._isEditingPersonalNote;
+        if (this._isEditingPersonalNote)
+            this._personalNoteInput = this._recipe?.PersonalNote ?? string.Empty;
+    }
+
+    private void CancelPersonalNoteEdit()
+    {
+        this._isEditingPersonalNote = false;
+        this._personalNoteInput = this._recipe?.PersonalNote ?? string.Empty;
+    }
+
+    private async Task SavePersonalNoteAsync()
+    {
+        if (this._recipe is null)
+            return;
+
+        this.UpdateRecipeFormModel.PopulateFrom(this._recipe);
+        this.UpdateRecipeFormModel.PersonalNote.Input = this._personalNoteInput;
+
+        await this.ViewModel.UpdateCommand.ExecuteAsync(this.UpdateRecipeFormModel.ExtractToInputPort());
+
+        this.UpdateRecipeFormModel.ResetToDefault();
+        this._isEditingPersonalNote = false;
+        this.StateHasChanged();
     }
 }

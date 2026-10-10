@@ -99,6 +99,14 @@ public class RecipesViewModel
             return Task.CompletedTask;
         }
 
+        Task IUpdateRecipeOutputPort.PersonalNoteUpdated(Recipe recipe, CancellationToken cancellationToken)
+        {
+            var _Recipe = mapper.Map<RecipeViewModel>(recipe);
+            _ = store.UpdateOrRegister(_Recipe.RecipeId, _Recipe);
+            this.ToastService.ShowToast(ToastType.Success, "Recipe Note Updated", $"Personal note for {recipe.Name} updated successfully");
+            return Task.CompletedTask;
+        }
+
         Task IUpdateRecipeOutputPort.Success(Recipe recipe, CancellationToken cancellationToken)
         {
             var _Recipe = mapper.Map<RecipeViewModel>(recipe);
