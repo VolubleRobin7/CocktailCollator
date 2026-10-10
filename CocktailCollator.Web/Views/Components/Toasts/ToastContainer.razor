@@ -47,9 +47,18 @@
     {
         this.ToastService.OnShow -= ShowToast;
         this._dotNetRef?.Dispose();
-        
+
         if (this._module is not null)
-            await this._module.DisposeAsync();
+        {
+            try
+            {
+                await this._module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit disconnected, JS cleanup is no longer needed or possible
+            }
+        }
     }
 
     public void ShowToast(ToastItem toast)
