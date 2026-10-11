@@ -122,6 +122,10 @@ namespace CocktailCollator.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid?>("RecipeCategoryId")
                         .HasColumnType("uniqueidentifier");
 
@@ -185,6 +189,25 @@ namespace CocktailCollator.Infrastructure.Migrations
                     b.HasIndex("MeasurementId");
 
                     b.ToTable("RecipeIngredient");
+                });
+
+            modelBuilder.Entity("CocktailCollator.Domain.Entities.RecipeNote", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "RecipeId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("RecipeNote");
                 });
 
             modelBuilder.Entity("CocktailCollator.Domain.Entities.RecipeStep", b =>
@@ -498,6 +521,17 @@ namespace CocktailCollator.Infrastructure.Migrations
                     b.Navigation("Recipe");
                 });
 
+            modelBuilder.Entity("CocktailCollator.Domain.Entities.RecipeNote", b =>
+                {
+                    b.HasOne("CocktailCollator.Domain.Entities.Recipe", "Recipe")
+                        .WithMany("PersonalRecipeNotes")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
             modelBuilder.Entity("CocktailCollator.Domain.Entities.RecipeStep", b =>
                 {
                     b.HasOne("CocktailCollator.Domain.Entities.Recipe", "Recipe")
@@ -584,6 +618,8 @@ namespace CocktailCollator.Infrastructure.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("Ingredients");
+
+                    b.Navigation("PersonalRecipeNotes");
 
                     b.Navigation("Steps");
                 });

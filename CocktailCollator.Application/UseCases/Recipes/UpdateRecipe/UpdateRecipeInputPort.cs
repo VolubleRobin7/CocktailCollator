@@ -8,9 +8,13 @@ public class UpdateRecipeInputPort : IInputPort<IUpdateRecipeOutputPort>
     public List<DocumentModel> Images { get; set; } = [];
     public List<UpdateRecipeInputPortRecipeIngredient> Ingredients { get; set; } = [];
     public required string Name { get; set; }
+    public string Note { get; set; } = "";
+    public string? PersonalNote { get; set; }
     public required Guid RecipeId { get; set; }
     public Guid? RecipeCategoryId { get; set; }
     public List<UpdateRecipeInputPortStep> Steps { get; set; } = [];
+
+    internal UpdateRecipePipelineContext PipelineContext { get; set; } = new(Guid.Empty, false);
 }
 
 public class UpdateRecipeInputPortRecipeIngredient
@@ -31,3 +35,5 @@ public class UpdateRecipeInputPortStep
     public required string Instruction { get; set; }
     public required int Order { get; set; }
 }
+
+internal sealed record UpdateRecipePipelineContext(Guid UserId, bool HasAllPermissions);

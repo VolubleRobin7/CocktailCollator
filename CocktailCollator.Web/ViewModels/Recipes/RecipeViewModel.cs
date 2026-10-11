@@ -14,10 +14,14 @@ public class RecipeViewModel : IStoreableViewModel<RecipeViewModel>
     public required Guid RecipeId { get; set; }
     public List<RecipeStepViewModel>? Steps { get; set; }
     public List<DocumentViewModel>? Images { get; set; }
+    public string Note { get; set; } = "";
+    public string PersonalNote { get; set; } = "";
 
     public void ApplyChanges(RecipeViewModel source, IViewModelStore store)
     {
         this.Name = source.Name;
+        this.Note = source.Note;
+        this.PersonalNote = source.PersonalNote;
 
         if (source.Category is not null)
             this.Category = store.UpdateOrRegister(source.Category.RecipeCategoryId, source.Category);
