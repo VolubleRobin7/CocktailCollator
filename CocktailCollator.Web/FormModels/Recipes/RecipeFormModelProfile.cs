@@ -20,9 +20,7 @@ public class RecipeFormModelProfile : Profile
         _ = this.CreateMap<CreateRecipeFormModelStep, CreateRecipeInputPortStep>();
 
         _ = this.CreateMap<UpdateRecipeFormModel, UpdateRecipeInputPort>()
-            .ForMember(d => d.RecipeCategoryId, o => o.Ignore())
-            .ForMember(d => d.Note, o => o.MapFrom(s => s.Note.Input))
-            .ForMember(d => d.PersonalNote, o => o.MapFrom(s => s.PersonalNote.Input));
+            .ForMember(d => d.RecipeCategoryId, o => o.Ignore());
 
         _ = this.CreateMap<UpdateRecipeFormModelIngredient, UpdateRecipeInputPortRecipeIngredient>()
             .ForMember(d => d.Ingredient, o => o.MapFrom(s => s.UsingExistingIngredient ? null : s))

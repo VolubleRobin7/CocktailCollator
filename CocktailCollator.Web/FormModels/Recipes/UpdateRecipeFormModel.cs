@@ -47,8 +47,6 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
     {
         var _InputPort = this._mapper.Map<UpdateRecipeInputPort>(this);
         _InputPort.RecipeCategoryId = this.RecipeCategory.Input?.RecipeCategoryId;
-        _InputPort.Note = this.Note.Input;
-        _InputPort.PersonalNote = this.PersonalNote.Input;
         return _InputPort;
     }
 
