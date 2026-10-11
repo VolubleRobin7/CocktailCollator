@@ -10,7 +10,7 @@
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         @foreach (var toast in this._toasts)
         {
-            <Toast CreationTime="this._toastLocalTimes.GetValueOrDefault(toast.Id, toast.Time)"
+            <Toast CreationTime="toast.Time.ToUniversalTime().AddMinutes(this._clientTimezoneOffsetMinutes)"
                    Id="@toast.Id"
                    Message="@toast.Message"
                    Title="@toast.Title"
@@ -20,16 +20,20 @@
 }
 
 @code {
+    private int _clientTimezoneOffsetMinutes;
     private DotNetObjectReference<ToastContainer>? _dotNetRef;
     private IJSObjectReference? _module;
-    private Dictionary<string, DateTime> _toastLocalTimes = new();
     private Queue<string> _toastsToShow = new();
     private List<ToastItem> _toasts = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
             this._module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Views/Components/Toasts/ToastContainer.razor.js");
+
+            this._clientTimezoneOffsetMinutes = await this._module.InvokeAsync<int>("getTimezoneOffsetMinutes");
+        }
 
         if (this._module is not null && this._toastsToShow.Count > 0)
         {
@@ -62,23 +66,15 @@
         }
     }
 
-    public async void ShowToast(ToastItem toast)
+    public void ShowToast(ToastItem toast)
     {
-        var _LocalTime = this._module is not null 
-            ? await this._module.InvokeAsync<DateTime>("getLocalTime", toast.Time) 
-            : toast.Time.ToLocalTime();
-        this._toastLocalTimes[toast.Id] = _LocalTime;
-
         this._toasts.Add(toast);
         this._toastsToShow.Enqueue(toast.Id);
-        await this.InvokeAsync(this.StateHasChanged); 
+        this.InvokeAsync(this.StateHasChanged); 
     }
 
     [JSInvokable]
     public void RemoveToast(string id)
-    {
-        this._toasts.RemoveAll(toast => toast.Id == id);
-        this._toastLocalTimes.Remove(id);
-    }
+        => this._toasts.RemoveAll(toast => toast.Id == id);
 }
     

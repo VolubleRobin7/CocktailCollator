@@ -1,13 +1,6 @@
-export function getLocalTime(utcTime) {
-    // Convert string date to JavaScript Date
-    const date = new Date(utcTime);
-    if (isNaN(date.getTime())) {
-        return utcTime;
-    }
-
-    // Add the local time offset
-    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return localDate.toISOString().slice(0, -1);
+export function getTimezoneOffsetMinutes() {
+    // JS returns minutes UTC is ahead of local time, but Blazor expects minutes local time is ahead of UTC, so reverse it.
+    return -(new Date().getTimezoneOffset());
 }
 
 export function showToast(toastId, dotNetReference) {
