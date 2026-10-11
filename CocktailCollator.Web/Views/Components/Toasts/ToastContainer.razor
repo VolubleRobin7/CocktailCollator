@@ -10,7 +10,7 @@
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         @foreach (var toast in this._toasts)
         {
-            <Toast CreationTime="toast.Time"
+            <Toast CreationTime="toast.Time.ToUniversalTime().AddMinutes(this._clientTimezoneOffsetMinutes)"
                    Id="@toast.Id"
                    Message="@toast.Message"
                    Title="@toast.Title"
@@ -20,6 +20,7 @@
 }
 
 @code {
+    private int _clientTimezoneOffsetMinutes;
     private DotNetObjectReference<ToastContainer>? _dotNetRef;
     private IJSObjectReference? _module;
     private Queue<string> _toastsToShow = new();
@@ -28,7 +29,11 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
             this._module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Views/Components/Toasts/ToastContainer.razor.js");
+
+            this._clientTimezoneOffsetMinutes = await this._module.InvokeAsync<int>("getTimezoneOffsetMinutes");
+        }
 
         if (this._module is not null && this._toastsToShow.Count > 0)
         {
@@ -47,9 +52,18 @@
     {
         this.ToastService.OnShow -= ShowToast;
         this._dotNetRef?.Dispose();
-        
+
         if (this._module is not null)
-            await this._module.DisposeAsync();
+        {
+            try
+            {
+                await this._module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit disconnected, JS cleanup is no longer needed or possible
+            }
+        }
     }
 
     public void ShowToast(ToastItem toast)

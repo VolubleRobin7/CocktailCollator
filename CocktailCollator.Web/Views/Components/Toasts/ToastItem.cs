@@ -4,7 +4,7 @@ public class ToastItem
 {
     public string Id { get; } = $"toast_{Guid.NewGuid()}";
     public string Message { get; init; } = string.Empty;
-    public DateTime Time { get; } = DateTime.Now;
+    public DateTime Time { get; } = DateTime.UtcNow;
     public string Title { get; init; } = string.Empty;
     public ToastType Type { get; init; } = ToastType.Info;
 }
