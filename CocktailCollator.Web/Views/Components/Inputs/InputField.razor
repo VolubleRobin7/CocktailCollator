@@ -1,7 +1,10 @@
-﻿@using CocktailCollator.Web.Common.Inputs
+@using CocktailCollator.Web.Common.Inputs
 
 <div @attributes="this.AdditionalAttributes">
-    <label class="form-label">@this.Title</label>
+    @if (!string.IsNullOrWhiteSpace(this.Title))
+    {
+        <label class="form-label">@this.Title</label>
+    }
     <input @bind-value="this.Input.Input"
            @bind-value:event="@(this.UpdateOnlyOnFocusLoss ? "onchange" : "oninput")"
            class="form-control @(this.Input.IsValid() ? "is-valid" : "is-invalid")"
@@ -33,9 +36,14 @@
     [Parameter]
     public string Subtext { get; set; } = "";
 
-    [EditorRequired]
+    /// <summary>
+    /// Set a title to display above the input field. If not set, no title will be displayed.
+    /// </summary>
+    /// <remarks>
+    /// A title should be used if the input field is not self-explanatory.
+    /// </remarks>
     [Parameter]
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     [Parameter]
     public string Type { get; set; } = "text";
