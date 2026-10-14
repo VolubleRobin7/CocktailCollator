@@ -62,7 +62,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this.Name.Input = recipe.Name ?? string.Empty;
         this.RecipeCategory.Input = recipe.Category;
         this.Note.Input = recipe.Note;
-        this.PersonalNote.ResetToDefault();
+        this.PersonalNote.Input = recipe.PersonalNote;
 
         this.Images.ResetToDefault();
         this.Images.AddRange(recipe.Images?.Select(i => i.AsExistingDocument()) ?? []);
@@ -80,7 +80,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         }
 
         this.Steps.Clear();
-        foreach (var step in recipe.Steps ?? [])
+        foreach (var step in (recipe.Steps ?? []).OrderBy(step => step.Order))
         {
             var newStep = new UpdateRecipeFormModelStep();
             newStep.Instruction.Input = step.Instruction ?? "";
