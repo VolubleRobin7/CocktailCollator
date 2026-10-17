@@ -7,32 +7,9 @@
 @inject IngredientsViewModel IngredientsViewModel
 @inject MeasurementsViewModel MeasurementsViewModel
 
-@* The picker button *@
-<button type="button"
-        class="btn btn-secondary w-100 d-flex justify-content-between align-items-center text-start py-2 px-3"
-        @onclick="this.OpenModalAsync">
-
-    <span class="fw-medium">
-        @(string.IsNullOrWhiteSpace(this.Ingredient?.Name.Input) ? "Select an ingredient..." : this.Ingredient.Name.Input)
-    </span>
-
-    <span class="text-secondary small">
-        @if (!string.IsNullOrWhiteSpace(this.Ingredient?.Name.Input))
-        {
-            <span>@this.Ingredient.Amount.Input @(this.Ingredient.MeasurementModel?.Name ?? "")</span>
-        }
-        else
-        {
-            <span class="text-muted fst-italic">Click to configure</span>
-        }
-    </span>
-
-</button>
-
-@* The selector modal *@
 <Modal @ref="this._modal"
        Size="ModalSize.Large"
-       Title="Select Ingredient">
+       Title="@(this._isEditingExisting ? "Edit Ingredient" : "Add Ingredient")">
 
     <Body>
         <div class="accordion">
@@ -292,7 +269,7 @@
                 data-bs-dismiss="modal" />
 
         <Button @onclick="this.OnClickAddAsync"
-                Text="Add"
+                Text="@(this._isEditingExisting ? "Save" : "Add")"
                 Theme="ButtonTheme.Success"
                 data-bs-dismiss="modal"
                 disabled="@(!this.IsAllCompleted())" />
@@ -326,15 +303,17 @@
     private Modal _modal = default!;
     private string _ingredientSearchString = string.Empty;
     private string _measurementSearchString = string.Empty;
+    private UpdateRecipeFormModelIngredient? _targetIngredient;
 
-    [EditorRequired, Parameter]
-    public UpdateRecipeFormModelIngredient Ingredient { get; set; } = default!;
+    private bool _isEditingExisting => this._targetIngredient is not null;
 
     [Parameter]
     public EventCallback<UpdateRecipeFormModelIngredient> OnIngredientUpdated { get; set; }
 
-    public async Task OpenModalAsync()
+    public async Task OpenModalAsync(UpdateRecipeFormModelIngredient? ingredient = null)
     {
+        this._targetIngredient = ingredient;
+
         if (!this.IngredientsViewModel.Ingredients.Any())
             await this.IngredientsViewModel.GetCommand.ExecuteAsync(default);
 
@@ -351,12 +330,12 @@
         this._ingredientSearchString = string.Empty;
         this._measurementSearchString = string.Empty;
 
-        if (this.Ingredient is not null)
+        if (this._targetIngredient is not null)
         {
-            this._ingredientName = this.Ingredient.Name.Input ?? string.Empty;
-            this._usingExistingIngredient = this.Ingredient.UsingExistingIngredient;
-            this._existingIngredientId = this.Ingredient.ExistingIngredientId;
-            this._amount = this.Ingredient.Amount.Input > 0 ? this.Ingredient.Amount.Input : 1m;
+            this._ingredientName = this._targetIngredient.Name.Input ?? string.Empty;
+            this._usingExistingIngredient = this._targetIngredient.UsingExistingIngredient;
+            this._existingIngredientId = this._targetIngredient.ExistingIngredientId;
+            this._amount = this._targetIngredient.Amount.Input > 0 ? this._targetIngredient.Amount.Input : 1m;
 
             if (this._usingExistingIngredient && this._existingIngredientId != Guid.Empty)
             {
@@ -368,14 +347,14 @@
                 this._selectedIngredient = null;
             }
 
-            if (this.Ingredient.MeasurementModel is not null)
+            if (this._targetIngredient.MeasurementModel is not null)
             {
-                this._selectedMeasurement = this.Ingredient.MeasurementModel;
+                this._selectedMeasurement = this._targetIngredient.MeasurementModel;
             }
-            else if (this.Ingredient.Measurement.Input != Guid.Empty)
+            else if (this._targetIngredient.Measurement.Input != Guid.Empty)
             {
                 this._selectedMeasurement = this.MeasurementsViewModel.Measurements
-                    .FirstOrDefault(m => m.MeasurementId == this.Ingredient.Measurement.Input);
+                    .FirstOrDefault(m => m.MeasurementId == this._targetIngredient.Measurement.Input);
             }
             else
             {
@@ -503,14 +482,15 @@
         if (!this.IsAllCompleted())
             return;
 
-        this.Ingredient.Name.Input = this._ingredientName.Trim();
-        this.Ingredient.UsingExistingIngredient = this._usingExistingIngredient;
-        this.Ingredient.ExistingIngredientId = this._existingIngredientId;
-        this.Ingredient.Measurement.Input = this._selectedMeasurement!.MeasurementId;
-        this.Ingredient.MeasurementModel = this._selectedMeasurement;
-        this.Ingredient.Amount.Input = this._amount;
+        var target = this._targetIngredient ?? new UpdateRecipeFormModelIngredient();
+        target.Name.Input = this._ingredientName.Trim();
+        target.UsingExistingIngredient = this._usingExistingIngredient;
+        target.ExistingIngredientId = this._existingIngredientId;
+        target.Measurement.Input = this._selectedMeasurement!.MeasurementId;
+        target.MeasurementModel = this._selectedMeasurement;
+        target.Amount.Input = this._amount;
 
-        await this.OnIngredientUpdated.InvokeAsync(this.Ingredient);
+        await this.OnIngredientUpdated.InvokeAsync(target);
         await this._modal.CloseModalAsync();
     }
 }
