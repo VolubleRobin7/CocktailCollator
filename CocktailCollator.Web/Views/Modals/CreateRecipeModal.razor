@@ -110,12 +110,12 @@
 
     private void AddStep()
     {
-        var step = new CreateRecipeFormModelStep();
+        var step = new RecipeFormModelStep();
         step.Order.Input = this.CreateRecipeFormModel.Steps.Count;
         this.CreateRecipeFormModel.Steps.Add(step);
     }
 
-    private void MoveStepDown(CreateRecipeFormModelStep step)
+    private void MoveStepDown(RecipeFormModelStep step)
     {
         if (step.Order.Input >= this.CreateRecipeFormModel.Steps.Count - 1)
             return;
@@ -124,7 +124,7 @@
         this.RecalculateSteps();
     }
 
-    private void MoveStepUp(CreateRecipeFormModelStep step)
+    private void MoveStepUp(RecipeFormModelStep step)
     {
         if (step.Order.Input <= 0)
             return;
@@ -150,7 +150,7 @@
             this.CreateRecipeFormModel.Steps[i].Order.Input = i;
     }
 
-    private void RemoveStep(CreateRecipeFormModelStep stepIndex)
+    private void RemoveStep(RecipeFormModelStep stepIndex)
     {
         _ = this.CreateRecipeFormModel.Steps.Remove(stepIndex);
         this.RecalculateSteps();

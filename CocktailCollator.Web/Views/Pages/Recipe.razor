@@ -424,7 +424,7 @@
 
     private void AddStep()
     {
-        var step = new UpdateRecipeFormModelStep();
+        var step = new RecipeFormModelStep();
         step.Order.Input = this.UpdateRecipeFormModel.Steps.Count;
         this.UpdateRecipeFormModel.Steps.Add(step);
     }
@@ -462,7 +462,7 @@
     private void GoBack()
         => this.NavigationManager.NavigateTo("/");
 
-    private void MoveStepDown(UpdateRecipeFormModelStep step)
+    private void MoveStepDown(RecipeFormModelStep step)
     {
         if (step.Order.Input >= this.UpdateRecipeFormModel.Steps.Count - 1)
             return;
@@ -471,7 +471,7 @@
         this.RecalculateSteps();
     }
 
-    private void MoveStepUp(UpdateRecipeFormModelStep step)
+    private void MoveStepUp(RecipeFormModelStep step)
     {
         if (step.Order.Input <= 0)
             return;
@@ -486,7 +486,7 @@
             this.UpdateRecipeFormModel.Steps[i].Order.Input = i;
     }
 
-    private void RemoveStep(UpdateRecipeFormModelStep stepIndex)
+    private void RemoveStep(RecipeFormModelStep stepIndex)
     {
         _ = this.UpdateRecipeFormModel.Steps.Remove(stepIndex);
         this.RecalculateSteps();
@@ -540,10 +540,10 @@
         this._isEditing = true;
     }
 
-    private async Task OpenEditIngredientModalAsync(UpdateRecipeFormModelIngredient? ingredient)
+    private async Task OpenEditIngredientModalAsync(RecipeFormModelIngredient? ingredient)
         => await this._ingredientModal.OpenModalAsync(ingredient);
 
-    private void UpdateIngredient(UpdateRecipeFormModelIngredient ingredient)
+    private void UpdateIngredient(RecipeFormModelIngredient ingredient)
     {
         var existingIndex = this.UpdateRecipeFormModel.Ingredients.IndexOf(ingredient);
         if (existingIndex >= 0)

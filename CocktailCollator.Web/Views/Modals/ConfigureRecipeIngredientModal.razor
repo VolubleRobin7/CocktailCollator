@@ -303,14 +303,14 @@
     private Modal _modal = default!;
     private string _ingredientSearchString = string.Empty;
     private string _measurementSearchString = string.Empty;
-    private UpdateRecipeFormModelIngredient? _targetIngredient;
+    private RecipeFormModelIngredient? _targetIngredient;
 
     private bool _isEditingExisting => this._targetIngredient is not null;
 
     [Parameter]
-    public EventCallback<UpdateRecipeFormModelIngredient> OnIngredientUpdated { get; set; }
+    public EventCallback<RecipeFormModelIngredient> OnIngredientUpdated { get; set; }
 
-    public async Task OpenModalAsync(UpdateRecipeFormModelIngredient? ingredient = null)
+    public async Task OpenModalAsync(RecipeFormModelIngredient? ingredient = null)
     {
         this._targetIngredient = ingredient;
 
@@ -482,7 +482,7 @@
         if (!this.IsAllCompleted())
             return;
 
-        var target = this._targetIngredient ?? new UpdateRecipeFormModelIngredient();
+        var target = this._targetIngredient ?? new RecipeFormModelIngredient();
         target.Name.Input = this._ingredientName.Trim();
         target.UsingExistingIngredient = this._usingExistingIngredient;
         target.ExistingIngredientId = this._existingIngredientId;

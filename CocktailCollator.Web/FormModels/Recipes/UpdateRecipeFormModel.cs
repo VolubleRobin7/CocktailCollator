@@ -1,7 +1,6 @@
 using AutoMapper;
 using CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 using CocktailCollator.Web.Common.Inputs;
-using CocktailCollator.Web.ViewModels.Measurements;
 using CocktailCollator.Web.ViewModels.RecipeCategories;
 using CocktailCollator.Web.ViewModels.Recipes;
 
@@ -12,7 +11,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
     private readonly IMapper _mapper;
 
     public DocumentInputPropertyList Images { get; set; } = [];
-    public InputPropertyList<UpdateRecipeFormModelIngredient> Ingredients { get; set; }
+    public InputPropertyList<RecipeFormModelIngredient> Ingredients { get; set; }
         = new([(ingredient) => ingredient.Amount, (ingredient) => ingredient.Measurement, (ingredient) => ingredient.Name]);
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
@@ -24,7 +23,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         = new(() => Guid.Empty, (input) => input != Guid.Empty);
     public InputProperty<RecipeCategoryViewModel?> RecipeCategory { get; set; }
         = new(() => null, (input) => true);
-    public InputPropertyList<UpdateRecipeFormModelStep> Steps { get; set; }
+    public InputPropertyList<RecipeFormModelStep> Steps { get; set; }
         = new([(step) => step.Instruction, (step) => step.Order]);
 
     public Action? OnChange { get; set; }
@@ -70,7 +69,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this.Ingredients.Clear();
         foreach (var ingredient in recipe.Ingredients ?? [])
         {
-            var newIngredient = new UpdateRecipeFormModelIngredient();
+            var newIngredient = new RecipeFormModelIngredient();
             newIngredient.Amount.Input = ingredient.Amount ?? 0;
             newIngredient.ExistingIngredientId = ingredient.IngredientId;
             newIngredient.Name.Input = ingredient.Ingredient?.Name ?? "";
@@ -82,7 +81,7 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this.Steps.Clear();
         foreach (var step in (recipe.Steps ?? []).OrderBy(step => step.Order))
         {
-            var newStep = new UpdateRecipeFormModelStep();
+            var newStep = new RecipeFormModelStep();
             newStep.Instruction.Input = step.Instruction ?? "";
             newStep.Order.Input = step.Order ?? 0;
             this.Steps.Add(newStep);
@@ -100,25 +99,4 @@ public class UpdateRecipeFormModel : IFormModel<UpdateRecipeInputPort>
         this.Note.ResetToDefault();
         this.PersonalNote.ResetToDefault();
     }
-}
-
-public class UpdateRecipeFormModelIngredient
-{
-    public InputProperty<decimal> Amount { get; set; }
-        = new(() => 1m, (input) => true);
-    public Guid ExistingIngredientId { get; set; }
-    public InputProperty<Guid> Measurement { get; set; }
-        = new(() => Guid.Empty, (input) => input != Guid.Empty);
-    public MeasurementViewModel? MeasurementModel { get; set; }
-    public InputProperty<string> Name { get; set; }
-        = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
-    public bool UsingExistingIngredient { get; set; } = true;
-}
-
-public class UpdateRecipeFormModelStep
-{
-    public InputProperty<string> Instruction { get; set; }
-        = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
-    public InputProperty<int> Order { get; set; }
-        = new(() => 0, (input) => true);
 }
