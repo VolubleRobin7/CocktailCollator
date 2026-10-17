@@ -115,7 +115,9 @@
                                 @foreach (var ingredient in this.UpdateRecipeFormModel.Ingredients)
                                 {
                                     <li class="list-group-item">
-                                        <UpdateRecipeIngredientSelector Ingredient="ingredient" />
+                                        <RecipeIngredientModalSelector Ingredient="ingredient"
+                                                                       OnIngredientUpdated="this.UpdateIngredient" />
+
                                         <Button @onclick="() => this.UpdateRecipeFormModel.Ingredients.Remove(ingredient)"
                                                 Size="ButtonSize.Small"
                                                 Text="Remove"
@@ -520,5 +522,20 @@
         this.SetCategorySearchValue("");
         this._isEditingPersonalNote = false;
         this._isEditing = true;
+    }
+
+    private void UpdateIngredient(UpdateRecipeFormModelIngredient ingredient)
+    {
+        var existingIndex = this.UpdateRecipeFormModel.Ingredients.IndexOf(ingredient);
+        if (existingIndex >= 0)
+        {
+            this.UpdateRecipeFormModel.Ingredients[existingIndex] = ingredient;
+        }
+        else
+        {
+            this.UpdateRecipeFormModel.Ingredients.Add(ingredient);
+        }
+
+        this.StateHasChanged();
     }
 }

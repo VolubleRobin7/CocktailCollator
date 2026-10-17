@@ -1,0 +1,21 @@
+.accordion-step-body {
+    height: 450px;
+    max-height: 450px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.accordion-step-body > *:not(.selector-scroll-list) {
+    flex-shrink: 0;
+}
+
+.accordion-step-body > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+.selector-scroll-list {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
