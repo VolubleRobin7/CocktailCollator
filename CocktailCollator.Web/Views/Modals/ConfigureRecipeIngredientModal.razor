@@ -37,25 +37,11 @@
                      aria-labelledby="@this._headingIngredientId">
 
                     <div class="accordion-body accordion-step-body">
-                        <div class="mb-3">
-                            <label class="form-label text-muted small">Search existing ingredients or create a new one</label>
-
-                            <div class="input-group">
-                                <input @bind-value:event="oninput"
-                                       @bind-value:get="this._ingredientSearchString"
-                                       @bind-value:set="this.SetIngredientSearchValue"
-                                       class="form-control"
-                                       placeholder="Type to search ingredients..."
-                                       type="text" />
-
-                                @if (!string.IsNullOrEmpty(this._ingredientSearchString))
-                                {
-                                    <button class="btn btn-outline-secondary" type="button" @onclick="() => this.SetIngredientSearchValue(string.Empty)">
-                                        ✕
-                                    </button>
-                                }
-                            </div>
-                        </div>
+                        <SearchField class="mb-3"
+                                     Label="Search existing ingredients or create a new one"
+                                     Placeholder="Type to search ingredients..."
+                                     Value="@this._ingredientSearchString"
+                                     ValueChanged="this.SetIngredientSearchValue" />
 
                         <div class="list-group mb-3 overflow-auto selector-scroll-list">
                             @foreach (var ingredient in this._ingredientSearchResults)
@@ -128,25 +114,11 @@
                      aria-labelledby="@this._headingMeasurementId">
 
                     <div class="accordion-body accordion-step-body">
-                        <div class="mb-3">
-                            <label class="form-label text-muted small">Search measurement types (e.g., ml, oz, dash, tsp)</label>
-
-                            <div class="input-group">
-                                <input @bind-value:event="oninput"
-                                       @bind-value:get="this._measurementSearchString"
-                                       @bind-value:set="this.SetMeasurementSearchValue"
-                                       class="form-control"
-                                       placeholder="Type to search measurements..."
-                                       type="text" />
-
-                                @if (!string.IsNullOrEmpty(this._measurementSearchString))
-                                {
-                                    <button class="btn btn-outline-secondary" type="button" @onclick="() => this.SetMeasurementSearchValue(string.Empty)">
-                                        ✕
-                                    </button>
-                                }
-                            </div>
-                        </div>
+                        <SearchField class="mb-3"
+                                     Label="Search measurement types (e.g., ml, oz, dash, tsp)"
+                                     Placeholder="Type to search measurements..."
+                                     Value="@this._measurementSearchString"
+                                     ValueChanged="this.SetMeasurementSearchValue" />
 
                         <div class="list-group mb-3 overflow-auto selector-scroll-list">
                             @foreach (var measurement in this._measurementSearchResults)
@@ -379,7 +351,7 @@
         this._activeSection = AccordionSection.Amount;
     }
 
-    private void SetIngredientSearchValue(string? value)
+    private void SetIngredientSearchValue(string value)
     {
         this._ingredientSearchString = value ?? string.Empty;
         this._ingredientSearchResults = this.IngredientsViewModel.Ingredients
@@ -388,7 +360,7 @@
             .ToList();
     }
 
-    private void SetMeasurementSearchValue(string? value)
+    private void SetMeasurementSearchValue(string value)
     {
         this._measurementSearchString = value ?? string.Empty;
 
