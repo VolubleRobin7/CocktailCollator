@@ -1,0 +1,107 @@
+@typeparam TItem
+
+<div @attributes="this.AdditionalAttributes">
+    <div class="list-group list-input">
+        @foreach (var _Item in this.Values)
+        {
+            var _IsSelected = EqualityComparer<TItem>.Default.Equals(_Item, this.SelectedValue);
+            <button @onclick="() => this.SelectItemAsync(_Item)" 
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center @(_IsSelected ? "active" : "")"
+                    type="button">
+
+                <span>@this.ItemText(_Item)</span>
+                @if (_IsSelected)
+                {
+                    <span class="badge bg-light text-dark">Selected</span>
+                }
+
+            </button>
+        }
+
+        @if (!this.Values.Any())
+        {
+            <div class="p-3 text-center text-muted small">
+                @this.EmptyText
+            </div>
+        }
+
+        @if (this.AllowCreate)
+        {
+            <button @onclick="this.OnCreateClickAsync" 
+                    class="list-group-item list-group-item-action list-group-item-light border-top @(this.IsCreateSelected ? "active" : "")"
+                    type="button">
+
+                <div class="d-flex align-items-center">
+                    <span class="me-2">＋</span>
+                    <span>@this.CreateText</span>
+                </div>
+
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    [Parameter]
+    public bool AllowCreate { get; set; }
+
+    [Parameter]
+    public string CreateText { get; set; } = "Create new...";
+
+    [Parameter]
+    public string EmptyText { get; set; } = "No matching items found.";
+
+    [EditorRequired]
+    [Parameter]
+    public Func<TItem, string> ItemText { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnCreateActivated { get; set; }
+
+    [Parameter]
+    public EventCallback<TItem> OnValueSelected { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public IEnumerable<TItem> Values { get; set; } = [];
+
+    public bool IsCreateSelected { get; private set; }
+
+    public TItem? SelectedValue { get; private set; }
+
+    public void Select(TItem? item)
+    {
+        this.SelectedValue = item;
+        this.IsCreateSelected = false;
+        this.StateHasChanged();
+    }
+
+    public void SelectCreate()
+    {
+        this.SelectedValue = default;
+        this.IsCreateSelected = true;
+        this.StateHasChanged();
+    }
+
+    public void ClearSelection()
+    {
+        this.SelectedValue = default;
+        this.IsCreateSelected = false;
+        this.StateHasChanged();
+    }
+
+    private async Task SelectItemAsync(TItem item)
+    {
+        this.Select(item);
+        await this.OnValueSelected.InvokeAsync(item);
+    }
+
+    private async Task OnCreateClickAsync()
+    {
+        this.SelectCreate();
+        await this.OnCreateActivated.InvokeAsync();
+    }
+}

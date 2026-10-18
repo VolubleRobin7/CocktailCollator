@@ -13,9 +13,3 @@
 .accordion-step-body > *:last-child {
     margin-bottom: 0 !important;
 }
-
-.selector-scroll-list {
-    flex: 0 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-}

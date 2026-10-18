@@ -1,0 +1,12 @@
+div:has(> .list-input) {
+    display: flex;
+    flex-direction: column;
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
+.list-input {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
