@@ -1,7 +1,9 @@
+@using System.Diagnostics.CodeAnalysis
 @using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.ViewModels.Measurements
 @using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
 
 @inject IngredientsViewModel IngredientsViewModel
@@ -22,9 +24,9 @@
 
                         <div class="d-flex justify-content-between align-items-center w-100 me-3">
                             <span class="fw-semibold">1. Ingredient</span>
-                            @if (!string.IsNullOrWhiteSpace(this._ingredientName))
+                            @if (!string.IsNullOrWhiteSpace(this._ingredient.Name.Input))
                             {
-                                <span class="badge bg-primary">@this._ingredientName</span>
+                                <span class="badge bg-primary">@this._ingredient.Name.Input</span>
                             }
                         </div>
 
@@ -39,15 +41,16 @@
                             <label class="form-label text-muted small">Search existing ingredients or create a new one</label>
 
                             <div class="input-group">
-                                <input @bind-value="this._ingredientSearchString"
-                                       @bind-value:event="oninput"
+                                <input @bind-value:event="oninput"
+                                       @bind-value:get="this._ingredientSearchString"
+                                       @bind-value:set="this.SetIngredientSearchValue"
                                        class="form-control"
                                        placeholder="Type to search ingredients..."
                                        type="text" />
 
                                 @if (!string.IsNullOrEmpty(this._ingredientSearchString))
                                 {
-                                    <button class="btn btn-outline-secondary" type="button" @onclick="() => this._ingredientSearchString = string.Empty">
+                                    <button class="btn btn-outline-secondary" type="button" @onclick="() => this.SetIngredientSearchValue(string.Empty)">
                                         ✕
                                     </button>
                                 }
@@ -55,9 +58,9 @@
                         </div>
 
                         <div class="list-group mb-3 overflow-auto selector-scroll-list">
-                            @foreach (var ingredient in this.GetFilteredIngredients())
+                            @foreach (var ingredient in this._ingredientSearchResults)
                             {
-                                var isSelected = this._usingExistingIngredient && this._existingIngredientId == ingredient.IngredientId;
+                                var isSelected = this._ingredient.UsingExistingIngredient && this._ingredient.ExistingIngredientId == ingredient.IngredientId;
                                 <button type="button"
                                         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center @(isSelected ? "active" : "")"
                                         @onclick="() => this.SelectExistingIngredient(ingredient)">
@@ -71,7 +74,7 @@
                                 </button>
                             }
 
-                            @if (!this.GetFilteredIngredients().Any())
+                            @if (!this._ingredientSearchResults.Any())
                             {
                                 <div class="p-3 text-center text-muted small">
                                     No matching ingredients found.
@@ -79,7 +82,7 @@
                             }
 
                             <button type="button"
-                                    class="list-group-item list-group-item-action list-group-item-light border-top @(!this._usingExistingIngredient && !string.IsNullOrWhiteSpace(this._ingredientName) ? "active" : "")"
+                                    class="list-group-item list-group-item-action list-group-item-light border-top @(!this._ingredient.UsingExistingIngredient && !string.IsNullOrWhiteSpace(this._ingredient.Name.Input) ? "active" : "")"
                                     @onclick="this.EnableCreateNewIngredient">
 
                                 <div class="d-flex align-items-center">
@@ -90,16 +93,11 @@
 
                         </div>
 
-                        @if (!this._usingExistingIngredient)
+                        @if (!this._ingredient.UsingExistingIngredient)
                         {
-                            @* This could be a InputField if there was a custom form model for this modal (so that changes can be cancelled) *@
                             <div class="card p-3 mb-3 bg-light border">
-                                <label class="form-label fw-semibold">New Ingredient Name</label>
-                                <input @bind-value="this._ingredientName"
-                                       @bind-value:event="oninput"
-                                       class="form-control"
-                                       placeholder="Enter custom ingredient name..."
-                                       type="text" />
+                                <InputField Input="this._ingredient.Name"
+                                            Title="New Ingredient Name" />
                             </div>
                         }
                     </div>
@@ -112,14 +110,14 @@
                 <h2 class="accordion-header" id="@this._headingMeasurementId">
                     <button class="accordion-button @(this._activeSection != AccordionSection.Measurement ? "collapsed" : "")"
                             type="button"
-                            disabled="@(string.IsNullOrWhiteSpace(this._ingredientName))"
+                            disabled="@(!this._ingredient.Name.IsValid())"
                             @onclick="() => this.ToggleSection(AccordionSection.Measurement)">
 
                         <div class="d-flex justify-content-between align-items-center w-100 me-3">
                             <span class="fw-semibold">2. Measurement Type</span>
-                            @if (this._selectedMeasurement is not null)
+                            @if (this._ingredient.MeasurementModel is not null)
                             {
-                                <span class="badge bg-primary">@this._selectedMeasurement.Name</span>
+                                <span class="badge bg-primary">@this._ingredient.MeasurementModel.Name</span>
                             }
                         </div>
 
@@ -134,15 +132,16 @@
                             <label class="form-label text-muted small">Search measurement types (e.g., ml, oz, dash, tsp)</label>
 
                             <div class="input-group">
-                                <input @bind-value="this._measurementSearchString"
-                                       @bind-value:event="oninput"
+                                <input @bind-value:event="oninput"
+                                       @bind-value:get="this._measurementSearchString"
+                                       @bind-value:set="this.SetMeasurementSearchValue"
                                        class="form-control"
                                        placeholder="Type to search measurements..."
                                        type="text" />
 
                                 @if (!string.IsNullOrEmpty(this._measurementSearchString))
                                 {
-                                    <button class="btn btn-outline-secondary" type="button" @onclick="() => this._measurementSearchString = string.Empty">
+                                    <button class="btn btn-outline-secondary" type="button" @onclick="() => this.SetMeasurementSearchValue(string.Empty)">
                                         ✕
                                     </button>
                                 }
@@ -150,9 +149,9 @@
                         </div>
 
                         <div class="list-group mb-3 overflow-auto selector-scroll-list">
-                            @foreach (var measurement in this.GetFilteredMeasurements())
+                            @foreach (var measurement in this._measurementSearchResults)
                             {
-                                var isSelected = this._selectedMeasurement?.MeasurementId == measurement.MeasurementId;
+                                var isSelected = this._ingredient.MeasurementModel?.MeasurementId == measurement.MeasurementId;
                                 <button type="button"
                                         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center @(isSelected ? "active" : "")"
                                         @onclick="() => this.SelectMeasurement(measurement)">
@@ -166,7 +165,7 @@
                                 </button>
                             }
 
-                            @if (!this.GetFilteredMeasurements().Any())
+                            @if (!this._measurementSearchResults.Any())
                             {
                                 <div class="p-3 text-center text-muted small">
                                     No matching measurements found.
@@ -182,14 +181,14 @@
                 <h2 class="accordion-header" id="@this._headingAmountId">
                     <button class="accordion-button @(this._activeSection != AccordionSection.Amount ? "collapsed" : "")"
                             type="button"
-                            disabled="@(this._selectedMeasurement is null)"
+                            disabled="@(this._ingredient.MeasurementModel is null)"
                             @onclick="() => this.ToggleSection(AccordionSection.Amount)">
 
                         <div class="d-flex justify-content-between align-items-center w-100 me-3">
                             <span class="fw-semibold">3. Amount</span>
-                            @if (this._amount > 0)
+                            @if (this._ingredient.Amount.Input > 0)
                             {
-                                <span class="badge bg-primary">@this._amount @(this._selectedMeasurement?.Name ?? "")</span>
+                                <span class="badge bg-primary">@this._ingredient.Amount.Input @(this._ingredient.MeasurementModel?.Name ?? "")</span>
                             }
                         </div>
 
@@ -202,11 +201,11 @@
                         <div class="py-2">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">
-                                    Amount @(this._selectedMeasurement is not null ? $"({this._selectedMeasurement.Name})" : "")
+                                    Amount @(this._ingredient.MeasurementModel is not null ? $"({this._ingredient.MeasurementModel.Name})" : "")
                                 </label>
 
                                 <div class="input-group input-group-lg">
-                                    <input @bind-value="this._amount"
+                                    <input @bind-value="this._ingredient.Amount.Input"
                                            @bind-value:event="oninput"
                                            class="form-control"
                                            min="0.01"
@@ -214,14 +213,14 @@
                                            type="number"
                                            placeholder="e.g. 30" />
 
-                                    @if (this._selectedMeasurement is not null)
+                                    @if (this._ingredient.MeasurementModel is not null)
                                     {
-                                        <span class="input-group-text">@this._selectedMeasurement.Name</span>
+                                        <span class="input-group-text">@this._ingredient.MeasurementModel.Name</span>
                                     }
                                 </div>
 
                                 <div class="form-text mt-2 text-muted">
-                                    Enter the amount of @(string.IsNullOrWhiteSpace(this._ingredientName) ? "ingredient" : this._ingredientName) to add to the recipe.
+                                    Enter the amount of @(string.IsNullOrWhiteSpace(this._ingredient.Name.Input) ? "ingredient" : this._ingredient.Name.Input) to add to the recipe.
                                 </div>
                             </div>
                         </div>
@@ -237,19 +236,19 @@
             <div class="card p-3 bg-light border">
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="fw-medium">
-                        @(string.IsNullOrWhiteSpace(this._ingredientName) ? "Select an ingredient..." : this._ingredientName)
+                        @(string.IsNullOrWhiteSpace(this._ingredient.Name.Input) ? "Select an ingredient..." : this._ingredient.Name.Input)
                     </span>
 
                     <span class="text-secondary small">
-                        @if (!string.IsNullOrWhiteSpace(this._ingredientName) && this._selectedMeasurement is not null && this._amount > 0)
+                        @if (!string.IsNullOrWhiteSpace(this._ingredient.Name.Input) && this._ingredient.MeasurementModel is not null && this._ingredient.Amount.Input > 0)
                         {
-                            <span>@this._amount @this._selectedMeasurement.Name</span>
+                            <span>@this._ingredient.Amount.Input @this._ingredient.MeasurementModel.Name</span>
                         }
-                        else if (!string.IsNullOrWhiteSpace(this._ingredientName) && this._selectedMeasurement is not null)
+                        else if (!string.IsNullOrWhiteSpace(this._ingredient.Name.Input) && this._ingredient.MeasurementModel is not null)
                         {
-                            <span>@this._amount @this._selectedMeasurement.Name</span>
+                            <span>@this._ingredient.Amount.Input @this._ingredient.MeasurementModel.Name</span>
                         }
-                        else if (!string.IsNullOrWhiteSpace(this._ingredientName))
+                        else if (!string.IsNullOrWhiteSpace(this._ingredient.Name.Input))
                         {
                             <span class="text-muted fst-italic">Select measurement & amount...</span>
                         }
@@ -291,20 +290,18 @@
     private readonly string _headingAmountId = $"head_amt_{Guid.NewGuid():N}";
 
     // Form data
-    private decimal _amount = 1m;
-    private Guid _existingIngredientId = Guid.Empty;
-    private string _ingredientName = string.Empty;
-    private IngredientViewModel? _selectedIngredient;
-    private MeasurementViewModel? _selectedMeasurement;
-    private bool _usingExistingIngredient = true;
+    private RecipeFormModelIngredient _ingredient = new();
 
     // Fields
     private AccordionSection _activeSection = AccordionSection.Ingredient;
     private Modal _modal = default!;
     private string _ingredientSearchString = string.Empty;
+    private List<IngredientViewModel> _ingredientSearchResults = [];
     private string _measurementSearchString = string.Empty;
+    private List<MeasurementViewModel> _measurementSearchResults = [];
     private RecipeFormModelIngredient? _targetIngredient;
 
+    [MemberNotNullWhen(true, nameof(_targetIngredient))]
     private bool _isEditingExisting => this._targetIngredient is not null;
 
     [Parameter]
@@ -327,57 +324,23 @@
     private void InitializeWorkingCopy()
     {
         this._activeSection = AccordionSection.Ingredient;
-        this._ingredientSearchString = string.Empty;
-        this._measurementSearchString = string.Empty;
 
+        this._ingredient = new RecipeFormModelIngredient();
         if (this._targetIngredient is not null)
-        {
-            this._ingredientName = this._targetIngredient.Name.Input ?? string.Empty;
-            this._usingExistingIngredient = this._targetIngredient.UsingExistingIngredient;
-            this._existingIngredientId = this._targetIngredient.ExistingIngredientId;
-            this._amount = this._targetIngredient.Amount.Input > 0 ? this._targetIngredient.Amount.Input : 1m;
+            this._targetIngredient.CopyTo(this._ingredient);
 
-            if (this._usingExistingIngredient && this._existingIngredientId != Guid.Empty)
-            {
-                this._selectedIngredient = this.IngredientsViewModel.Ingredients
-                    .FirstOrDefault(i => i.IngredientId == this._existingIngredientId);
-            }
-            else
-            {
-                this._selectedIngredient = null;
-            }
+        this._ingredient.Name.OnChange = this.StateHasChanged;
 
-            if (this._targetIngredient.MeasurementModel is not null)
-            {
-                this._selectedMeasurement = this._targetIngredient.MeasurementModel;
-            }
-            else if (this._targetIngredient.Measurement.Input != Guid.Empty)
-            {
-                this._selectedMeasurement = this.MeasurementsViewModel.Measurements
-                    .FirstOrDefault(m => m.MeasurementId == this._targetIngredient.Measurement.Input);
-            }
-            else
-            {
-                this._selectedMeasurement = null;
-            }
-        }
-        else
-        {
-            this._ingredientName = string.Empty;
-            this._usingExistingIngredient = true;
-            this._existingIngredientId = Guid.Empty;
-            this._selectedIngredient = null;
-            this._selectedMeasurement = null;
-            this._amount = 1m;
-        }
+        this.SetIngredientSearchValue(string.Empty);
+        this.SetMeasurementSearchValue(string.Empty);
     }
 
     private void ToggleSection(AccordionSection section)
     {
-        if (section == AccordionSection.Measurement && string.IsNullOrWhiteSpace(this._ingredientName))
+        if (section == AccordionSection.Measurement && !this._ingredient.Name.IsValid())
             return;
 
-        if (section == AccordionSection.Amount && this._selectedMeasurement is null)
+        if (section == AccordionSection.Amount && this._ingredient.MeasurementModel is null)
             return;
 
         this._activeSection = section;
@@ -385,93 +348,79 @@
 
     private void SelectExistingIngredient(IngredientViewModel ingredient)
     {
-        this._usingExistingIngredient = true;
-        this._selectedIngredient = ingredient;
-        this._existingIngredientId = ingredient.IngredientId;
-        this._ingredientName = ingredient.Name ?? string.Empty;
+        this._ingredient.UsingExistingIngredient = true;
+        this._ingredient.ExistingIngredientId = ingredient.IngredientId;
+        this._ingredient.Name.Input = ingredient.Name ?? string.Empty;
+        this._ingredient.MeasurementModel = null;
+        this._ingredient.Measurement.ResetToDefault();
+        this.SetMeasurementSearchValue(string.Empty);
 
         if (ingredient.Measurements?.Count == 1)
-        {
-            this._selectedMeasurement = ingredient.Measurements.First();
-        }
-        else if (this._selectedMeasurement is not null && ingredient.Measurements?.Any() == true)
-        {
-            if (!ingredient.Measurements.Any(m => m.MeasurementId == this._selectedMeasurement.MeasurementId))
-            {
-                this._selectedMeasurement = null;
-            }
-        }
-
-        this._activeSection = AccordionSection.Measurement;
+            this.SelectMeasurement(ingredient.Measurements.First());
+        else
+            this._activeSection = AccordionSection.Measurement;
     }
 
     private void EnableCreateNewIngredient()
     {
-        this._usingExistingIngredient = false;
-        this._existingIngredientId = Guid.Empty;
-        this._selectedIngredient = null;
+        this._ingredient.UsingExistingIngredient = false;
+        this._ingredient.ExistingIngredientId = Guid.Empty;
 
         if (!string.IsNullOrWhiteSpace(this._ingredientSearchString))
-            this._ingredientName = this._ingredientSearchString.Trim();
+            this._ingredient.Name.Input = this._ingredientSearchString.Trim();
+
+        this.SetMeasurementSearchValue(string.Empty);
     }
 
     private void SelectMeasurement(MeasurementViewModel measurement)
     {
-        this._selectedMeasurement = measurement;
+        this._ingredient.MeasurementModel = measurement;
+        this._ingredient.Measurement.Input = measurement.MeasurementId;
         this._activeSection = AccordionSection.Amount;
     }
 
-    private IEnumerable<IngredientViewModel> GetFilteredIngredients()
+    private void SetIngredientSearchValue(string? value)
     {
-        var search = this._ingredientSearchString?.Trim() ?? string.Empty;
-        var all = this.IngredientsViewModel.Ingredients;
-
-        if (string.IsNullOrEmpty(search))
-            return all.Take(15);
-
-        return all
-            .Where(i => i.Name is not null && i.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
-            .Take(15);
+        this._ingredientSearchString = value ?? string.Empty;
+        this._ingredientSearchResults = this.IngredientsViewModel.Ingredients
+            .Where(ingredient => ingredient.Name is not null && ingredient.Name.Contains(this._ingredientSearchString, StringComparison.OrdinalIgnoreCase))
+            .Take(15)
+            .ToList();
     }
 
-    private IEnumerable<MeasurementViewModel> GetFilteredMeasurements()
+    private void SetMeasurementSearchValue(string? value)
     {
-        var search = this._measurementSearchString?.Trim() ?? string.Empty;
+        this._measurementSearchString = value ?? string.Empty;
 
-        if (this._usingExistingIngredient && this._selectedIngredient?.Measurements?.Any() == true)
+        if (this._ingredient.UsingExistingIngredient && this._ingredient.ExistingIngredientId != Guid.Empty)
         {
-            var ingMeasurements = this._selectedIngredient.Measurements;
-            if (string.IsNullOrEmpty(search))
-                return ingMeasurements;
+            var selectedIngredient = this.IngredientsViewModel.Ingredients
+                .FirstOrDefault(i => i.IngredientId == this._ingredient.ExistingIngredientId);
 
-            var matched = ingMeasurements
-                .Where(m => m.Name is not null && m.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (matched.Any())
-                return matched;
+            this._measurementSearchResults = selectedIngredient?.Measurements?
+                .Where(measurement => measurement.Name is not null && measurement.Name.Contains(this._measurementSearchString, StringComparison.OrdinalIgnoreCase))
+                .ToList() ?? [];
         }
-
-        var all = this.MeasurementsViewModel.Measurements;
-        if (string.IsNullOrEmpty(search))
-            return all;
-
-        return all
-            .Where(m => m.Name is not null && m.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+        else
+        {
+            this._measurementSearchResults = this.MeasurementsViewModel.Measurements
+                .Where(measurement => measurement.Name is not null && measurement.Name.Contains(this._measurementSearchString, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
     }
 
     private bool IsAllCompleted()
     {
-        if (string.IsNullOrWhiteSpace(this._ingredientName))
+        if (!this._ingredient.Name.IsValid())
             return false;
 
-        if (this._usingExistingIngredient && this._existingIngredientId == Guid.Empty)
+        if (this._ingredient.UsingExistingIngredient && this._ingredient.ExistingIngredientId == Guid.Empty)
             return false;
 
-        if (this._selectedMeasurement is null || this._selectedMeasurement.MeasurementId == Guid.Empty)
+        if (this._ingredient.MeasurementModel is null || !this._ingredient.Measurement.IsValid())
             return false;
 
-        if (this._amount <= 0)
+        if (!this._ingredient.Amount.IsValid())
             return false;
 
         return true;
@@ -482,15 +431,16 @@
         if (!this.IsAllCompleted())
             return;
 
-        var target = this._targetIngredient ?? new RecipeFormModelIngredient();
-        target.Name.Input = this._ingredientName.Trim();
-        target.UsingExistingIngredient = this._usingExistingIngredient;
-        target.ExistingIngredientId = this._existingIngredientId;
-        target.Measurement.Input = this._selectedMeasurement!.MeasurementId;
-        target.MeasurementModel = this._selectedMeasurement;
-        target.Amount.Input = this._amount;
+        this._ingredient.Name.Input = this._ingredient.Name.Input.Trim();
 
-        await this.OnIngredientUpdated.InvokeAsync(target);
+        if (this._isEditingExisting)
+        {
+            this._ingredient.CopyTo(this._targetIngredient);
+            await this.OnIngredientUpdated.InvokeAsync(this._targetIngredient);
+        }
+        else
+            await this.OnIngredientUpdated.InvokeAsync(this._ingredient);
+
         await this._modal.CloseModalAsync();
     }
 }

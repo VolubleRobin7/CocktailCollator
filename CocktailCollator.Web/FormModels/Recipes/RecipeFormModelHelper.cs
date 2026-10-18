@@ -14,6 +14,16 @@ public class RecipeFormModelIngredient
     public InputProperty<string> Name { get; set; }
         = new(() => string.Empty, (input) => !string.IsNullOrEmpty(input));
     public bool UsingExistingIngredient { get; set; } = true;
+
+    public void CopyTo(RecipeFormModelIngredient target)
+    {
+        target.Amount.Input = this.Amount.Input;
+        target.ExistingIngredientId = this.ExistingIngredientId;
+        target.Measurement.Input = this.Measurement.Input;
+        target.MeasurementModel = this.MeasurementModel;
+        target.Name.Input = this.Name.Input;
+        target.UsingExistingIngredient = this.UsingExistingIngredient;
+    }
 }
 
 public class RecipeFormModelStep
