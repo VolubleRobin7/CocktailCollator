@@ -6,7 +6,10 @@
 @using CocktailCollator.Web.Views.Components.Helpers
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Modals
+@using Microsoft.AspNetCore.Components.Authorization
 
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
 @inject NavigationManager NavigationManager
 @inject RecipeCategoriesViewModel RecipeCategoriesViewModel
 @inject UpdateRecipeFormModel UpdateRecipeFormModel
@@ -413,13 +416,19 @@
     [Parameter]
     public Guid RecipeId { get; set; }
 
+    [SupplyParameterFromQuery(Name = "edit")]
+    public bool StartInEditMode { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         if (!this.ViewModel.Recipes.Any())
             await this.ViewModel.GetCommand.ExecuteAsync(null);
-        
+
         this._recipe = this.ViewModel.Recipes.FirstOrDefault(r => r.RecipeId == this.RecipeId);
         this._isLoading = false;
+
+        if (this.StartInEditMode)
+            await this.StartEditing();
     }
 
     private void AddStep()
@@ -435,6 +444,7 @@
         this.UpdateRecipeFormModel.ResetToDefault();
         this._isEditing = false;
         this._isEditingPersonalNote = false;
+        this.NavigationManager.NavigateTo($"/recipe/{this.RecipeId}", replace: true);
         this.StateHasChanged();
     }
 
@@ -516,6 +526,7 @@
         this.UpdateRecipeFormModel.ResetToDefault();
         this._isEditing = false;
         this._isEditingPersonalNote = false;
+        this.NavigationManager.NavigateTo($"/recipe/{this.RecipeId}", replace: true);
         this.StateHasChanged();
     }
 
@@ -533,11 +544,17 @@
         if (this._recipe is null)
             return;
 
+        var _AuthState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var _AuthResult = await this.AuthorizationService.AuthorizeAsync(_AuthState.User, Policies.ManageRecipes);
+        if (!_AuthResult.Succeeded)
+            return;
+
         this.UpdateRecipeFormModel.PopulateFrom(this._recipe);
         await this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync(default);
         this.SetCategorySearchValue("");
         this._isEditingPersonalNote = false;
         this._isEditing = true;
+        this.NavigationManager.NavigateTo($"/recipe/{this.RecipeId}?edit=true", replace: true);
     }
 
     private async Task OpenEditIngredientModalAsync(RecipeFormModelIngredient? ingredient)

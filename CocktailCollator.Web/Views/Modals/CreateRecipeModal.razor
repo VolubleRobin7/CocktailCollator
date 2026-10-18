@@ -6,10 +6,10 @@
 @using CocktailCollator.Web.Views.Components.Modals
 
 @inject CreateRecipeFormModel CreateRecipeFormModel
+@inject NavigationManager NavigationManager
 @inject RecipesViewModel RecipesViewModel
 
-<Modal @ref=this._modal
-       Size="ModalSize.Large"
+<Modal @ref="this._modal"
        Title="Create Recipe">
 
     <Body>
@@ -20,78 +20,11 @@
                         InvalidMessage="Name requires a value."
                         Title="Recipe Name" />
 
-            <DocumentUpload @ref="this._documentUpload"
-                            Accept="image/*"
-                            Documents="this.CreateRecipeFormModel.Images"
-                            Multiple="true"
-                            Title="Recipe Images"
-                            class="mb-3" />
-
-            <h4>Ingredients</h4>
-
-            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Add(new())"
-                    Theme="ButtonTheme.Primary"
-                    Text="Add Ingredient" />
-
-            <div>
-                <ul class="list-group">
-                    @foreach (var ingredient in this.CreateRecipeFormModel.Ingredients)
-                    {
-                        <li class="list-group-item">
-                            <CreateRecipeIngredientSelector Ingredient="ingredient" />
-                            <Button @onclick="() => this.CreateRecipeFormModel.Ingredients.Remove(ingredient)"
-                                    Size="ButtonSize.Small"
-                                    Theme="ButtonTheme.Danger"
-                                    Text="Remove"
-                                    class="mt-2" />
-                        </li>
-                    }
-                </ul>
-            </div>
-
-            <h4>Steps</h4>
-
-            <Button @onclick="this.AddStep"
-                    Theme="ButtonTheme.Primary"
-                    Text="Add Step" />
-
-            <div>
-                <ul class="list-group">
-                    @foreach (var step in this.CreateRecipeFormModel.Steps)
-                    {
-                        <li class="list-group-item">
-                            <InputField Input="step.Instruction"
-                                        InvalidMessage="Instruction requires a value."
-                                        Title="Step Instruction" />
-
-                            <div class="btn-group">
-                                <Button @onclick="() => this.MoveStepUp(step)" 
-                                        Size="ButtonSize.Small"
-                                        Text="▲"
-                                        Theme="ButtonTheme.Secondary"
-                                        disabled="@(step.Order.Input <= 0)" />
-
-                                <Button @onclick="() => this.MoveStepDown(step)"
-                                        Size="ButtonSize.Small"
-                                        Text="▼"
-                                        Theme="ButtonTheme.Secondary"
-                                        disabled="@(step.Order.Input >= this.CreateRecipeFormModel.Steps.Count - 1)" />
-                            </div>
-
-                            <Button @onclick="() => this.RemoveStep(step)"
-                                    Size="ButtonSize.Small"
-                                    Theme="ButtonTheme.Danger"
-                                    Text="Remove" />
-                        </li>
-                    }
-                </ul>
-            </div>
-
             <FormChangeWrapper FormModel="this.CreateRecipeFormModel">
-                <Button @onclick="this.OnClickCreateAsync"
+                <Button @onclick="this.OnClickContinueAsync"
                         Size="ButtonSize.Large"
                         Theme="ButtonTheme.Success"
-                        Text="Save Recipe"
+                        Text="Continue"
                         class="mt-2"
                         data-bs-dismiss="modal"
                         disabled="@(!this.CreateRecipeFormModel.IsValid())" />
@@ -102,58 +35,33 @@
 </Modal>
 
 @code {
-    private DocumentUpload _documentUpload = default!;
     private Modal _modal = default!;
 
     [Parameter]
     public EventCallback OnAfterCreation { get; set; }
 
-    private void AddStep()
+    private async Task OnClickContinueAsync()
     {
-        var step = new RecipeFormModelStep();
-        step.Order.Input = this.CreateRecipeFormModel.Steps.Count;
-        this.CreateRecipeFormModel.Steps.Add(step);
-    }
-
-    private void MoveStepDown(RecipeFormModelStep step)
-    {
-        if (step.Order.Input >= this.CreateRecipeFormModel.Steps.Count - 1)
+        if (!this.CreateRecipeFormModel.IsValid())
             return;
 
-        this.CreateRecipeFormModel.Steps.Move(step, 1);
-        this.RecalculateSteps();
-    }
-
-    private void MoveStepUp(RecipeFormModelStep step)
-    {
-        if (step.Order.Input <= 0)
-            return;
-
-        this.CreateRecipeFormModel.Steps.Move(step, -1);
-        this.RecalculateSteps();
-    }
-
-    private async Task OnClickCreateAsync()
-    {
+        var _RecipeName = this.CreateRecipeFormModel.Name.Input;
         await this.RecipesViewModel.CreateCommand.ExecuteAsync(this.CreateRecipeFormModel.ExtractToInputPort());
-        this.CreateRecipeFormModel.ResetToDefault();
-        this._documentUpload.Reset();
-        await this.OnAfterCreation.InvokeAsync();
+
+        var _CreatedRecipe = this.RecipesViewModel.Recipes.LastOrDefault(recipe => recipe.Name == _RecipeName)
+            ?? this.RecipesViewModel.Recipes.LastOrDefault();
+
+        if (_CreatedRecipe is not null) 
+        {
+            this.CreateRecipeFormModel.ResetToDefault();
+            await this.OnAfterCreation.InvokeAsync();
+            this.NavigationManager.NavigateTo($"/recipe/{_CreatedRecipe.RecipeId}?edit=true");
+        }
     }
 
     public Task OpenModalAsync()
-        => this._modal.OpenModalAsync();
-
-    private void RecalculateSteps()
     {
-        for (int i = 0; i < this.CreateRecipeFormModel.Steps.Count; i++)
-            this.CreateRecipeFormModel.Steps[i].Order.Input = i;
+        this.CreateRecipeFormModel.ResetToDefault();
+        return this._modal.OpenModalAsync();
     }
-
-    private void RemoveStep(RecipeFormModelStep stepIndex)
-    {
-        _ = this.CreateRecipeFormModel.Steps.Remove(stepIndex);
-        this.RecalculateSteps();
-    }
-
 }
