@@ -56,34 +56,26 @@
     public bool IsOpen { get; private set; }
 
     [CascadingParameter]
-    private Accordion? Parent { get; set; }
+    private Accordion Parent { get; set; } = default!;
 
     [EditorRequired, Parameter]
-    public string Title { get; set; } = default!;
+    public string Title { get; set; }
 
-    public void Close() 
-        => this.Parent?.Close(this);
-
-    internal void Collapse()
+    public void Close()
     {
         if (!this.IsOpen)
             return;
 
+        if (!this.Parent.AllowAllClosed && this.Parent.IsActive(this))
+            return;
+
         this.IsOpen = false;
         this.StateHasChanged();
+        this.Parent.OnItemClosed(this);
     }
 
     public void Dispose() 
-        => this.Parent?.Unregister(this);
-
-    internal void Expand()
-    {
-        if (this.IsOpen)
-            return;
-
-        this.IsOpen = true;
-        this.StateHasChanged();
-    }
+        => this.Parent.Unregister(this);
 
     private void OnClickHeader()
     {
@@ -105,13 +97,25 @@
 
         if (this.DefaultOpen)
         {
-            this.Parent.Open(this);
+            this.Open();
         }
     }
 
-    public void Open() 
-        => this.Parent?.Open(this);
+    public void Open()
+    {
+        if (this.IsOpen || this.Disabled)
+            return;
 
-    public void Toggle() 
-        => this.Parent?.Toggle(this);
+        this.IsOpen = true;
+        this.StateHasChanged();
+        this.Parent.OnItemOpened(this);
+    }
+
+    public void Toggle()
+    {
+        if (this.IsOpen)
+            this.Close();
+        else
+            this.Open();
+    }
 }

@@ -23,35 +23,35 @@
     [EditorRequired, Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    public void Close(AccordionItem item)
-    {
-        if (!this.AllowAllClosed || this._activeItem != item)
-            return;
-
-        this._activeItem?.Collapse();
-        this._activeItem = null;
-    }
-
     public void CloseAll()
     {
         if (!this.AllowAllClosed || this._activeItem is null)
             return;
 
-        this._activeItem.Collapse();
-        this._activeItem = null;
+        this._activeItem.Close();
     }
 
     public bool IsActive(AccordionItem item) 
         => this._activeItem == item;
 
-    public void Open(AccordionItem item)
+    internal void OnItemClosed(AccordionItem item)
     {
         if (this._activeItem == item)
-            return;
+            this._activeItem = null;
+    }
 
-        this._activeItem?.Collapse();
-        this._activeItem = item;
-        this._activeItem.Expand();
+    internal void OnItemOpened(AccordionItem item)
+    {
+        if (this._activeItem != null && this._activeItem != item)
+        {
+            var previous = this._activeItem;
+            this._activeItem = item;
+            previous.Close();
+        }
+        else
+        {
+            this._activeItem = item;
+        }
     }
 
     internal void Register(AccordionItem item)
@@ -61,18 +61,15 @@
             this._items.Add(item);
 
             if (this._activeItem is null && !this.AllowAllClosed && !item.Disabled)
-                this.Open(item);
+                item.Open();
         }
     }
 
-    public void Toggle(AccordionItem item)
+    internal void Unregister(AccordionItem item)
     {
-        if (this.IsActive(item))
-            this.Close(item);
-        else
-            this.Open(item);
-    }
+        this._items.Remove(item);
 
-    internal void Unregister(AccordionItem item) 
-        => this._items.Remove(item);
+        if (this._activeItem == item)
+            this._activeItem = null;
+    }
 }
