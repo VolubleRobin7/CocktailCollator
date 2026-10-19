@@ -80,7 +80,6 @@
                            Badge="@(this._ingredient.Amount.Input > 0 ? $"{this._ingredient.Amount.Input} {this._ingredient.MeasurementModel?.Name}".Trim() : null)"
                            Disabled="@(this._ingredient.MeasurementModel is null)">
 
-                <div class="py-2">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">
                             Amount @(this._ingredient.MeasurementModel is not null ? $"({this._ingredient.MeasurementModel.Name})" : "")
@@ -105,7 +104,6 @@
                             Enter the amount of @(string.IsNullOrWhiteSpace(this._ingredient.Name.Input) ? "ingredient" : this._ingredient.Name.Input) to add to the recipe.
                         </div>
                     </div>
-                </div>
 
             </AccordionItem>
         </Accordion>

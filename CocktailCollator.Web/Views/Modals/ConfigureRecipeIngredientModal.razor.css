@@ -9,7 +9,3 @@
 .accordion-step-body > *:not(.selector-scroll-list) {
     flex-shrink: 0;
 }
-
-.accordion-step-body > *:last-child {
-    margin-bottom: 0 !important;
-}
