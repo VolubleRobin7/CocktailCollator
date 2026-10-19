@@ -2,6 +2,7 @@
 @using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.ViewModels.Measurements
+@using CocktailCollator.Web.Views.Components.Accordions
 @using CocktailCollator.Web.Views.Components.Buttons
 @using CocktailCollator.Web.Views.Components.Inputs
 @using CocktailCollator.Web.Views.Components.Modals
@@ -14,150 +15,101 @@
        Title="@(this.IsEditingExisting ? "Edit Ingredient" : "Add Ingredient")">
 
     <Body>
-        <div class="accordion">
+        <Accordion>
             @* Accordion Section 1: Ingredient *@
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="@this._headingIngredientId">
-                    <button class="accordion-button @(this._activeSection != AccordionSection.Ingredient ? "collapsed" : "")"
-                            type="button"
-                            @onclick="() => this.ToggleSection(AccordionSection.Ingredient)">
+            <AccordionItem @ref="this._ingredientSection"
+                           DefaultOpen="true"
+                           Title="1. Ingredient"
+                           Badge="@(!string.IsNullOrWhiteSpace(this._ingredient.Name.Input) ? this._ingredient.Name.Input : null)">
 
-                        <div class="d-flex justify-content-between align-items-center w-100 me-3">
-                            <span class="fw-semibold">1. Ingredient</span>
-                            @if (!string.IsNullOrWhiteSpace(this._ingredient.Name.Input))
-                            {
-                                <span class="badge bg-primary">@this._ingredient.Name.Input</span>
-                            }
+                <div class="accordion-step-body">
+                    <SearchField class="mb-3"
+                                 Label="Search existing ingredients or create a new one"
+                                 Placeholder="Type to search ingredients..."
+                                 Value="@this._ingredientSearchString"
+                                 ValueChanged="this.SetIngredientSearchValue" />
+
+                    <ListInput @ref="this._ingredientList"
+                               TItem="IngredientViewModel"
+                               Values="this._ingredientSearchResults"
+                               AllowCreate="true"
+                               CreateText="@this.CreateIngredientButtonText"
+                               EmptyText="No matching ingredients found."
+                               ItemText="ingredient => ingredient.Name ?? string.Empty"
+                               OnCreateActivated="this.EnableCreateNewIngredient"
+                               OnValueSelected="this.SelectExistingIngredient"
+                               class="selector-scroll-list mb-3" />
+
+                    @if (!this._ingredient.UsingExistingIngredient)
+                    {
+                        <div class="card p-3 mb-3 bg-light border">
+                            <InputField Input="this._ingredient.Name"
+                                        Title="New Ingredient Name" />
                         </div>
-
-                    </button>
-                </h2>
-
-                <div class="accordion-collapse collapse @(this._activeSection == AccordionSection.Ingredient ? "show" : "")"
-                     aria-labelledby="@this._headingIngredientId">
-
-                    <div class="accordion-body accordion-step-body">
-                        <SearchField class="mb-3"
-                                     Label="Search existing ingredients or create a new one"
-                                     Placeholder="Type to search ingredients..."
-                                     Value="@this._ingredientSearchString"
-                                     ValueChanged="this.SetIngredientSearchValue" />
-
-                        <ListInput @ref="this._ingredientList"
-                                   TItem="IngredientViewModel"
-                                   Values="this._ingredientSearchResults"
-                                   AllowCreate="true"
-                                   CreateText="@this.CreateIngredientButtonText"
-                                   EmptyText="No matching ingredients found."
-                                   ItemText="ingredient => ingredient.Name ?? string.Empty"
-                                   OnCreateActivated="this.EnableCreateNewIngredient"
-                                   OnValueSelected="this.SelectExistingIngredient"
-                                   class="selector-scroll-list mb-3" />
-
-                        @if (!this._ingredient.UsingExistingIngredient)
-                        {
-                            <div class="card p-3 mb-3 bg-light border">
-                                <InputField Input="this._ingredient.Name"
-                                            Title="New Ingredient Name" />
-                            </div>
-                        }
-                    </div>
-
+                    }
                 </div>
-            </div>
+
+            </AccordionItem>
 
             @* Accordion Section 2: Measurement *@
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="@this._headingMeasurementId">
-                    <button class="accordion-button @(this._activeSection != AccordionSection.Measurement ? "collapsed" : "")"
-                            type="button"
-                            disabled="@(!this._ingredient.Name.IsValid())"
-                            @onclick="() => this.ToggleSection(AccordionSection.Measurement)">
+            <AccordionItem @ref="this._measurementSection"
+                           Title="2. Measurement Type"
+                           Badge="@this._ingredient.MeasurementModel?.Name"
+                           Disabled="@(!this._ingredient.Name.IsValid())">
 
-                        <div class="d-flex justify-content-between align-items-center w-100 me-3">
-                            <span class="fw-semibold">2. Measurement Type</span>
-                            @if (this._ingredient.MeasurementModel is not null)
-                            {
-                                <span class="badge bg-primary">@this._ingredient.MeasurementModel.Name</span>
-                            }
-                        </div>
+                <div class="accordion-step-body">
+                    <SearchField class="mb-3"
+                                 Label="Search measurement types (e.g., ml, oz, dash, tsp)"
+                                 Placeholder="Type to search measurements..."
+                                 Value="@this._measurementSearchString"
+                                 ValueChanged="this.SetMeasurementSearchValue" />
 
-                    </button>
-                </h2>
-
-                <div class="accordion-collapse collapse @(this._activeSection == AccordionSection.Measurement ? "show" : "")"
-                     aria-labelledby="@this._headingMeasurementId">
-
-                    <div class="accordion-body accordion-step-body">
-                        <SearchField class="mb-3"
-                                     Label="Search measurement types (e.g., ml, oz, dash, tsp)"
-                                     Placeholder="Type to search measurements..."
-                                     Value="@this._measurementSearchString"
-                                     ValueChanged="this.SetMeasurementSearchValue" />
-
-                        <ListInput @ref="this._measurementList"
-                                   TItem="MeasurementViewModel"
-                                   Values="this._measurementSearchResults"
-                                   EmptyText="No matching measurements found."
-                                   ItemText="measurement => measurement.Name ?? string.Empty"
-                                   OnValueSelected="this.SelectMeasurement"
-                                   class="selector-scroll-list mb-3" />
-                    </div>
+                    <ListInput @ref="this._measurementList"
+                               TItem="MeasurementViewModel"
+                               Values="this._measurementSearchResults"
+                               EmptyText="No matching measurements found."
+                               ItemText="measurement => measurement.Name ?? string.Empty"
+                               OnValueSelected="this.SelectMeasurement"
+                               class="selector-scroll-list mb-3" />
                 </div>
-            </div>
+
+            </AccordionItem>
 
             @* Accordion Section 3: Amount *@
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="@this._headingAmountId">
-                    <button class="accordion-button @(this._activeSection != AccordionSection.Amount ? "collapsed" : "")"
-                            type="button"
-                            disabled="@(this._ingredient.MeasurementModel is null)"
-                            @onclick="() => this.ToggleSection(AccordionSection.Amount)">
+            <AccordionItem @ref="this._amountSection"
+                           Title="3. Amount"
+                           Badge="@(this._ingredient.Amount.Input > 0 ? $"{this._ingredient.Amount.Input} {this._ingredient.MeasurementModel?.Name}".Trim() : null)"
+                           Disabled="@(this._ingredient.MeasurementModel is null)">
 
-                        <div class="d-flex justify-content-between align-items-center w-100 me-3">
-                            <span class="fw-semibold">3. Amount</span>
-                            @if (this._ingredient.Amount.Input > 0)
+                <div class="py-2">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Amount @(this._ingredient.MeasurementModel is not null ? $"({this._ingredient.MeasurementModel.Name})" : "")
+                        </label>
+
+                        <div class="input-group input-group-lg">
+                            <input @bind-value="this._ingredient.Amount.Input"
+                                   @bind-value:event="oninput"
+                                   class="form-control"
+                                   min="0.01"
+                                   step="any"
+                                   type="number"
+                                   placeholder="e.g. 30" />
+
+                            @if (this._ingredient.MeasurementModel is not null)
                             {
-                                <span class="badge bg-primary">@this._ingredient.Amount.Input @(this._ingredient.MeasurementModel?.Name ?? "")</span>
+                                <span class="input-group-text">@this._ingredient.MeasurementModel.Name</span>
                             }
                         </div>
 
-                    </button>
-                </h2>
-                <div class="accordion-collapse collapse @(this._activeSection == AccordionSection.Amount ? "show" : "")"
-                     aria-labelledby="@this._headingAmountId">
-
-                    <div class="accordion-body">
-                        <div class="py-2">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    Amount @(this._ingredient.MeasurementModel is not null ? $"({this._ingredient.MeasurementModel.Name})" : "")
-                                </label>
-
-                                <div class="input-group input-group-lg">
-                                    <input @bind-value="this._ingredient.Amount.Input"
-                                           @bind-value:event="oninput"
-                                           class="form-control"
-                                           min="0.01"
-                                           step="any"
-                                           type="number"
-                                           placeholder="e.g. 30" />
-
-                                    @if (this._ingredient.MeasurementModel is not null)
-                                    {
-                                        <span class="input-group-text">@this._ingredient.MeasurementModel.Name</span>
-                                    }
-                                </div>
-
-                                <div class="form-text mt-2 text-muted">
-                                    Enter the amount of @(string.IsNullOrWhiteSpace(this._ingredient.Name.Input) ? "ingredient" : this._ingredient.Name.Input) to add to the recipe.
-                                </div>
-                            </div>
+                        <div class="form-text mt-2 text-muted">
+                            Enter the amount of @(string.IsNullOrWhiteSpace(this._ingredient.Name.Input) ? "ingredient" : this._ingredient.Name.Input) to add to the recipe.
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+
+            </AccordionItem>
+        </Accordion>
 
         @* Ingredient Preview *@
         <div class="mt-3">
@@ -207,36 +159,26 @@
 </Modal>
 
 @code {
-    private enum AccordionSection
-    {
-        Ingredient,
-        Measurement,
-        Amount
-    }
-
-    // ARIA labels
-    private readonly string _headingIngredientId = $"head_ing_{Guid.NewGuid():N}";
-    private readonly string _headingMeasurementId = $"head_meas_{Guid.NewGuid():N}";
-    private readonly string _headingAmountId = $"head_amt_{Guid.NewGuid():N}";
-
-    private AccordionSection _activeSection = AccordionSection.Ingredient;
-    private Modal _modal = default!;
-    private ListInput<IngredientViewModel> _ingredientList = default!;
-    private ListInput<MeasurementViewModel> _measurementList = default!;
+    private AccordionItem _amountSection = default!;
     private RecipeFormModelIngredient _ingredient = new();
-    private string _ingredientSearchString = string.Empty;
+    private ListInput<IngredientViewModel> _ingredientList = default!;
     private List<IngredientViewModel> _ingredientSearchResults = [];
-    private string _measurementSearchString = string.Empty;
+    private string _ingredientSearchString = string.Empty;
+    private AccordionItem _ingredientSection = default!;
+    private ListInput<MeasurementViewModel> _measurementList = default!;
     private List<MeasurementViewModel> _measurementSearchResults = [];
+    private string _measurementSearchString = string.Empty;
+    private AccordionItem _measurementSection = default!;
+    private Modal _modal = default!;
     private RecipeFormModelIngredient? _targetIngredient;
-
-    [MemberNotNullWhen(true, nameof(_targetIngredient))]
-    private bool IsEditingExisting => this._targetIngredient is not null;
 
     private string CreateIngredientButtonText =>
         string.IsNullOrWhiteSpace(this._ingredientSearchString)
             ? "Create new ingredient..."
             : $"Create new ingredient: \"{this._ingredientSearchString}\"";
+
+    [MemberNotNullWhen(true, nameof(_targetIngredient))]
+    private bool IsEditingExisting => this._targetIngredient is not null;
 
     [Parameter]
     public EventCallback<RecipeFormModelIngredient> OnIngredientUpdated { get; set; }
@@ -257,7 +199,7 @@
 
     private void InitializeWorkingCopy()
     {
-        this._activeSection = AccordionSection.Ingredient;
+        this._ingredientSection?.Open();
 
         this._ingredient = new RecipeFormModelIngredient();
         if (this._targetIngredient is not null)
@@ -285,17 +227,6 @@
             this._measurementList?.ClearSelection();
     }
 
-    private void ToggleSection(AccordionSection section)
-    {
-        if (section == AccordionSection.Measurement && !this._ingredient.Name.IsValid())
-            return;
-
-        if (section == AccordionSection.Amount && this._ingredient.MeasurementModel is null)
-            return;
-
-        this._activeSection = section;
-    }
-
     private void SelectExistingIngredient(IngredientViewModel ingredient)
     {
         this._ingredient.UsingExistingIngredient = true;
@@ -313,7 +244,7 @@
             this.SelectMeasurement(_SingleMeasurement);
         }
         else
-            this._activeSection = AccordionSection.Measurement;
+            this._measurementSection.Open();
     }
 
     private void EnableCreateNewIngredient()
@@ -332,7 +263,7 @@
     {
         this._ingredient.MeasurementModel = measurement;
         this._ingredient.Measurement.Input = measurement.MeasurementId;
-        this._activeSection = AccordionSection.Amount;
+        this._amountSection.Open();
     }
 
     private void SetIngredientSearchValue(string value)
