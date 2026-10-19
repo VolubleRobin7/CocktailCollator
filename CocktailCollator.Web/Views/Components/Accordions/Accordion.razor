@@ -11,9 +11,8 @@
 </CascadingValue>
 
 @code {
-    internal event Action? OnStateChanged;
-
     private AccordionItem? _activeItem;
+    private readonly List<AccordionItem> _items = [];
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object>? AdditionalAttributes { get; set; }
@@ -29,8 +28,8 @@
         if (!this.AllowAllClosed || this._activeItem != item)
             return;
 
+        this._activeItem?.Collapse();
         this._activeItem = null;
-        this.OnStateChanged?.Invoke();
     }
 
     public void CloseAll()
@@ -38,8 +37,8 @@
         if (!this.AllowAllClosed || this._activeItem is null)
             return;
 
+        this._activeItem.Collapse();
         this._activeItem = null;
-        this.OnStateChanged?.Invoke();
     }
 
     public bool IsActive(AccordionItem item) 
@@ -50,20 +49,30 @@
         if (this._activeItem == item)
             return;
 
+        this._activeItem?.Collapse();
         this._activeItem = item;
-        this.OnStateChanged?.Invoke();
+        this._activeItem.Expand();
+    }
+
+    internal void Register(AccordionItem item)
+    {
+        if (!this._items.Contains(item))
+        {
+            this._items.Add(item);
+
+            if (this._activeItem is null && !this.AllowAllClosed && !item.Disabled)
+                this.Open(item);
+        }
     }
 
     public void Toggle(AccordionItem item)
     {
         if (this.IsActive(item))
-        {
-            if (this.AllowAllClosed)
-                this.Close(item);
-        }
+            this.Close(item);
         else
-        {
             this.Open(item);
-        }
     }
+
+    internal void Unregister(AccordionItem item) 
+        => this._items.Remove(item);
 }

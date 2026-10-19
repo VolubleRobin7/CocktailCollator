@@ -53,7 +53,7 @@
     [Parameter]
     public bool Disabled { get; set; }
 
-    public bool IsOpen => this.Parent?.IsActive(this) ?? false;
+    public bool IsOpen { get; private set; }
 
     [CascadingParameter]
     private Accordion? Parent { get; set; }
@@ -61,14 +61,28 @@
     [EditorRequired, Parameter]
     public string Title { get; set; } = default!;
 
-    public void Close() => this.Parent?.Close(this);
+    public void Close() 
+        => this.Parent?.Close(this);
 
-    public void Dispose()
+    internal void Collapse()
     {
-        if (this.Parent is not null)
-        {
-            this.Parent.OnStateChanged -= this.StateHasChanged;
-        }
+        if (!this.IsOpen)
+            return;
+
+        this.IsOpen = false;
+        this.StateHasChanged();
+    }
+
+    public void Dispose() 
+        => this.Parent?.Unregister(this);
+
+    internal void Expand()
+    {
+        if (this.IsOpen)
+            return;
+
+        this.IsOpen = true;
+        this.StateHasChanged();
     }
 
     private void OnClickHeader()
@@ -87,7 +101,7 @@
                 $"{nameof(AccordionItem)} must be contained within an {nameof(Accordion)} component.");
         }
 
-        this.Parent.OnStateChanged += this.StateHasChanged;
+        this.Parent.Register(this);
 
         if (this.DefaultOpen)
         {
@@ -95,7 +109,9 @@
         }
     }
 
-    public void Open() => this.Parent?.Open(this);
+    public void Open() 
+        => this.Parent?.Open(this);
 
-    public void Toggle() => this.Parent?.Toggle(this);
+    public void Toggle() 
+        => this.Parent?.Toggle(this);
 }

@@ -18,7 +18,6 @@
         <Accordion>
             @* Accordion Section 1: Ingredient *@
             <AccordionItem @ref="this._ingredientSection"
-                           DefaultOpen="true"
                            Title="1. Ingredient"
                            Badge="@(!string.IsNullOrWhiteSpace(this._ingredient.Name.Input) ? this._ingredient.Name.Input : null)">
 
