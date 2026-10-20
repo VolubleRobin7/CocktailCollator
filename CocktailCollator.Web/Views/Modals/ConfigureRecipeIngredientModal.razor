@@ -77,7 +77,7 @@
             @* Accordion Section 3: Amount *@
             <AccordionItem @ref="this._amountSection"
                            Title="3. Amount"
-                           Badge="@(this._ingredient.Amount.Input > 0 ? $"{this._ingredient.Amount.Input} {this._ingredient.MeasurementModel?.Name}".Trim() : null)"
+                           Badge="@(this._ingredient.Amount.Input > 0 ? this._ingredient.Amount.Input.ToString() : null)"
                            Disabled="@(this._ingredient.MeasurementModel is null)">
 
                     <div class="mb-3">
