@@ -20,7 +20,7 @@
 
         @if (!this.Values.Any())
         {
-            <div class="p-3 text-center text-muted small">
+            <div class="list-group-item text-body-secondary text-center fst-italic">
                 @this.EmptyText
             </div>
         }
@@ -28,7 +28,7 @@
         @if (this.AllowCreate)
         {
             <button @onclick="this.OnCreateClickAsync" 
-                    class="list-group-item list-group-item-action list-group-item-light border-top @(this.IsCreateSelected ? "active" : "")"
+                    class="list-group-item list-group-item-action list-group-item-light @(this.IsCreateSelected ? "active" : "")"
                     type="button">
 
                 <div class="d-flex align-items-center">

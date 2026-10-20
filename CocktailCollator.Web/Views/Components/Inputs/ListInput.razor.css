@@ -9,4 +9,11 @@ div:has(> .list-input) {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    --bs-list-group-action-color: var(--bs-heading-color);
+    --bs-list-group-action-hover-color: var(--bs-heading-color);
+    --bs-list-group-action-active-color: var(--bs-heading-color);
+    --bs-list-group-action-hover-bg: #f4f0e6;
+    --bs-list-group-action-active-bg: #eaddc4;
+    --bs-list-group-active-bg: var(--bs-primary);
+    --bs-list-group-active-border-color: var(--bs-primary);
 }
