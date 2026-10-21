@@ -36,7 +36,7 @@
                                EmptyText="No matching ingredients found."
                                ItemText="ingredient => ingredient.Name ?? string.Empty"
                                OnCreateActivated="this.EnableCreateNewIngredient"
-                               OnValueSelected="this.SelectExistingIngredient"
+                               OnValueSelected="this.SelectExistingIngredientAsync"
                                class="selector-scroll-list mb-3" />
 
                     @if (!this._ingredient.UsingExistingIngredient)
@@ -68,7 +68,7 @@
                                Values="this._measurementSearchResults"
                                EmptyText="No matching measurements found."
                                ItemText="measurement => measurement.Name ?? string.Empty"
-                               OnValueSelected="this.SelectMeasurement"
+                               OnValueSelected="this.SelectMeasurementAsync"
                                class="selector-scroll-list mb-3" />
                 </div>
 
@@ -190,13 +190,14 @@
         if (!this.MeasurementsViewModel.Measurements.Any())
             await this.MeasurementsViewModel.GetCommand.ExecuteAsync(default);
 
-        this.InitializeWorkingCopy();
+        await this.InitializeWorkingCopyAsync();
         await this._modal.OpenModalAsync();
     }
 
-    private void InitializeWorkingCopy()
+    private async Task InitializeWorkingCopyAsync()
     {
-        this._ingredientSection?.Open();
+        if (this._ingredientSection is not null)
+            await this._ingredientSection.OpenAsync();
 
         this._ingredient = new RecipeFormModelIngredient();
         if (this._targetIngredient is not null)
@@ -224,7 +225,7 @@
             this._measurementList?.ClearSelection();
     }
 
-    private void SelectExistingIngredient(IngredientViewModel ingredient)
+    private async Task SelectExistingIngredientAsync(IngredientViewModel ingredient)
     {
         this._ingredient.UsingExistingIngredient = true;
         this._ingredient.ExistingIngredientId = ingredient.IngredientId;
@@ -238,10 +239,10 @@
         {
             var _SingleMeasurement = ingredient.Measurements.First();
             this._measurementList?.Select(_SingleMeasurement);
-            this.SelectMeasurement(_SingleMeasurement);
+            await this.SelectMeasurementAsync(_SingleMeasurement);
         }
         else
-            this._measurementSection.Open();
+            await this._measurementSection.OpenAsync();
     }
 
     private void EnableCreateNewIngredient()
@@ -256,11 +257,11 @@
         this._measurementList?.ClearSelection();
     }
 
-    private void SelectMeasurement(MeasurementViewModel measurement)
+    private async Task SelectMeasurementAsync(MeasurementViewModel measurement)
     {
         this._ingredient.MeasurementModel = measurement;
         this._ingredient.Measurement.Input = measurement.MeasurementId;
-        this._amountSection.Open();
+        await this._amountSection.OpenAsync();
     }
 
     private void SetIngredientSearchValue(string value)

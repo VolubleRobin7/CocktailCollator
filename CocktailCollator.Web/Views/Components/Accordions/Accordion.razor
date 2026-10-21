@@ -23,12 +23,12 @@
     [EditorRequired, Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    public void CloseAll()
+    public async Task CloseAllAsync()
     {
         if (!this.AllowAllClosed || this._activeItem is null)
             return;
 
-        this._activeItem.Close();
+        await this._activeItem.CloseAsync();
     }
 
     public bool IsActive(AccordionItem item) 
@@ -40,13 +40,13 @@
             this._activeItem = null;
     }
 
-    internal void OnItemOpened(AccordionItem item)
+    internal async Task OnItemOpenedAsync(AccordionItem item)
     {
         if (this._activeItem != null && this._activeItem != item)
         {
             var previous = this._activeItem;
             this._activeItem = item;
-            previous.Close();
+            await previous.CloseAsync();
         }
         else
         {
@@ -61,7 +61,10 @@
             this._items.Add(item);
 
             if (this._activeItem is null && !this.AllowAllClosed && !item.Disabled)
-                item.Open();
+            {
+                this._activeItem = item;
+                _ = item.OpenAsync();
+            }
         }
     }
 

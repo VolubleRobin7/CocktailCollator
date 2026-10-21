@@ -1,12 +1,15 @@
 @implements IDisposable
 
+@inject IJSRuntime JsRuntime
+
 <div @attributes="this.AdditionalAttributes" 
      class="accordion-item">
 
     <h2 class="accordion-header" 
         id="@this._headerId">
 
-        <button @onclick="this.OnClickHeader" 
+        <button @onclick="this.OnClickHeaderAsync" 
+                aria-expanded="@(this.IsOpen ? "true" : "false")"
                 class="accordion-button @(this.IsOpen ? "" : "collapsed")"
                 disabled="@this.Disabled"
                 type="button">
@@ -24,7 +27,8 @@
 
     </h2>
 
-    <div class="accordion-collapse collapse @(this.IsOpen ? "show" : "")"
+    <div class="accordion-collapse collapse"
+         id="@this._sectionId"
          aria-labelledby="@this._headerId">
 
         <div class="accordion-body">
@@ -37,6 +41,8 @@
 
 @code {
     private readonly string _headerId = $"accordion_head_{Guid.NewGuid():N}";
+    private IJSObjectReference _jsModule = default!;
+    private readonly string _sectionId = $"section_{Guid.NewGuid():N}";
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object>? AdditionalAttributes { get; set; }
@@ -61,28 +67,17 @@
     [EditorRequired, Parameter]
     public string Title { get; set; }
 
-    public void Close()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!this.IsOpen)
-            return;
+        await base.OnAfterRenderAsync(firstRender);
 
-        if (!this.Parent.AllowAllClosed && this.Parent.IsActive(this))
-            return;
+        if (firstRender)
+        {
+            this._jsModule = await this.JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Views/Components/Accordions/AccordionItem.razor.js");
 
-        this.IsOpen = false;
-        this.StateHasChanged();
-        this.Parent.OnItemClosed(this);
-    }
-
-    public void Dispose() 
-        => this.Parent.Unregister(this);
-
-    private void OnClickHeader()
-    {
-        if (this.Disabled)
-            return;
-
-        this.Toggle();
+            if (this.IsOpen)
+                await this._jsModule.InvokeVoidAsync("showAccordionSection", this._sectionId, false);
+        }
     }
 
     protected override void OnInitialized()
@@ -96,26 +91,55 @@
         this.Parent.Register(this);
 
         if (this.DefaultOpen)
-        {
-            this.Open();
-        }
+            this.IsOpen = true;
     }
 
-    public void Open()
+    public async Task CloseAsync()
+    {
+        if (!this.IsOpen)
+            return;
+
+        if (!this.Parent.AllowAllClosed && this.Parent.IsActive(this))
+            return;
+
+        this.IsOpen = false;
+        this.StateHasChanged();
+
+        if (this._jsModule is not null)
+            await this._jsModule.InvokeVoidAsync("hideAccordionSection", this._sectionId);
+
+        this.Parent.OnItemClosed(this);
+    }
+
+    public void Dispose() 
+        => this.Parent.Unregister(this);
+
+    private async Task OnClickHeaderAsync()
+    {
+        if (this.Disabled)
+            return;
+
+        await this.ToggleAsync();
+    }
+
+    public async Task OpenAsync()
     {
         if (this.IsOpen)
             return;
 
         this.IsOpen = true;
         this.StateHasChanged();
-        this.Parent.OnItemOpened(this);
+        await this.Parent.OnItemOpenedAsync(this);
+
+        if (this._jsModule is not null)
+            await this._jsModule.InvokeVoidAsync("showAccordionSection", this._sectionId);
     }
 
-    public void Toggle()
+    public async Task ToggleAsync()
     {
         if (this.IsOpen)
-            this.Close();
+            await this.CloseAsync();
         else
-            this.Open();
+            await this.OpenAsync();
     }
 }
