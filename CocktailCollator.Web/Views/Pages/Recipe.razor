@@ -401,6 +401,7 @@
 </div>
 
 <ConfigureRecipeIngredientModal @ref="this._ingredientModal"
+                                ExistingIngredients="this.UpdateRecipeFormModel.Ingredients"
                                 OnIngredientUpdated="this.UpdateIngredient" />
 
 @code {

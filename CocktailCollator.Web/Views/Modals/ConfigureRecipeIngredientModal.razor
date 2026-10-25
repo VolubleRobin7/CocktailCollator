@@ -1,4 +1,5 @@
 @using System.Diagnostics.CodeAnalysis
+@using CocktailCollator.Web.Common.Inputs
 @using CocktailCollator.Web.FormModels.Recipes
 @using CocktailCollator.Web.ViewModels.Ingredients
 @using CocktailCollator.Web.ViewModels.Measurements
@@ -19,7 +20,7 @@
             @* Accordion Section 1: Ingredient *@
             <AccordionItem @ref="this._ingredientSection"
                            Title="1. Ingredient"
-                           Badge="@(!string.IsNullOrWhiteSpace(this._ingredient.Name.Input) ? this._ingredient.Name.Input : null)">
+                           Badge="@(this._ingredient.Name.IsValid() ? this._ingredient.Name.Input : null)">
 
                 <div class="accordion-step-body">
                     <SearchField class="mb-3"
@@ -77,7 +78,7 @@
             @* Accordion Section 3: Amount *@
             <AccordionItem @ref="this._amountSection"
                            Title="3. Amount"
-                           Badge="@(this._ingredient.Amount.Input > 0 ? this._ingredient.Amount.Input.ToString() : null)"
+                           Badge="@(this._ingredient.Amount.IsValid() ? this._ingredient.Amount.Input.ToString() : null)"
                            Disabled="@(this._ingredient.MeasurementModel is null)">
 
                     <div class="mb-3">
@@ -85,11 +86,11 @@
                             Amount @(this._ingredient.MeasurementModel is not null ? $"({this._ingredient.MeasurementModel.Name})" : "")
                         </label>
 
-                        <div class="input-group input-group-lg">
+                        <div class="input-group input-group-lg has-validation">
                             <input @bind-value="this._ingredient.Amount.Input"
                                    @bind-value:event="oninput"
-                                   class="form-control"
-                                   min="0.01"
+                                   class="form-control @(this._ingredient.Amount.IsValid() ? "is-valid" : "is-invalid")"
+                                   min="0.0001"
                                    step="any"
                                    type="number"
                                    placeholder="e.g. 30" />
@@ -98,6 +99,10 @@
                             {
                                 <span class="input-group-text">@this._ingredient.MeasurementModel.Name</span>
                             }
+
+                            <div class="invalid-feedback">
+                                @this._ingredient.Amount.ErrorMessage
+                            </div>
                         </div>
 
                         <div class="form-text mt-2 text-muted">
@@ -119,7 +124,7 @@
                     </span>
 
                     <span class="text-secondary small">
-                        @if (!string.IsNullOrWhiteSpace(this._ingredient.Name.Input) && this._ingredient.MeasurementModel is not null && this._ingredient.Amount.Input > 0)
+                        @if (!string.IsNullOrWhiteSpace(this._ingredient.Name.Input) && this._ingredient.MeasurementModel is not null && this._ingredient.Amount.IsValid())
                         {
                             <span>@this._ingredient.Amount.Input @this._ingredient.MeasurementModel.Name</span>
                         }
@@ -178,6 +183,9 @@
     private bool IsEditingExisting => this._targetIngredient is not null;
 
     [Parameter]
+    public IEnumerable<RecipeFormModelIngredient> ExistingIngredients { get; set; } = [];
+
+    [Parameter]
     public EventCallback<RecipeFormModelIngredient> OnIngredientUpdated { get; set; }
 
     public async Task OpenModalAsync(RecipeFormModelIngredient? ingredient = null)
@@ -199,10 +207,11 @@
         if (this._ingredientSection is not null)
             await this._ingredientSection.OpenAsync();
 
-        this._ingredient = new RecipeFormModelIngredient();
+        this._ingredient = new RecipeFormModelIngredient(this.ValidateIngredientName);
         if (this._targetIngredient is not null)
             this._targetIngredient.CopyTo(this._ingredient);
 
+        this._ingredient.Amount.OnChange = this.StateHasChanged;
         this._ingredient.Name.OnChange = this.StateHasChanged;
 
         this.SetIngredientSearchValue(string.Empty);
@@ -252,6 +261,8 @@
 
         if (!string.IsNullOrWhiteSpace(this._ingredientSearchString))
             this._ingredient.Name.Input = this._ingredientSearchString.Trim();
+        else
+            this._ingredient.Name.ResetToDefault();
 
         this.SetMeasurementSearchValue(string.Empty);
         this._measurementList?.ClearSelection();
@@ -267,8 +278,15 @@
     private void SetIngredientSearchValue(string value)
     {
         this._ingredientSearchString = value ?? string.Empty;
+
+        var _RecipeIngredients = this.ExistingIngredients
+            .Where(i => i != this._targetIngredient);
+
         this._ingredientSearchResults = this.IngredientsViewModel.Ingredients
-            .Where(ingredient => ingredient.Name is not null && ingredient.Name.Contains(this._ingredientSearchString, StringComparison.OrdinalIgnoreCase))
+            .ExceptBy(_RecipeIngredients.Select(i => i.ExistingIngredientId), ingredient => ingredient.IngredientId)
+            .ExceptBy(_RecipeIngredients.Select(i => i.Name.Input.Trim()), ingredient => ingredient.Name?.Trim() ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            .Where(ingredient => ingredient.Name is not null
+                && ingredient.Name.Contains(this._ingredientSearchString, StringComparison.OrdinalIgnoreCase))
             .Take(15)
             .ToList();
     }
@@ -292,6 +310,22 @@
                 .Where(measurement => measurement.Name is not null && measurement.Name.Contains(this._measurementSearchString, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
+    }
+
+    private ValidationResult ValidateIngredientName(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return new(false, "Ingredient name is required.");
+
+        var _DuplicateInRecipe = this.ExistingIngredients.Any(i =>
+            i != this._targetIngredient
+            && i != this._ingredient
+            && string.Equals(i.Name.Input.Trim(), input.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (_DuplicateInRecipe)
+            return new(false, "Ingredient has already been added to the recipe.");
+
+        return new(true);
     }
 
     private bool IsAllCompleted()
