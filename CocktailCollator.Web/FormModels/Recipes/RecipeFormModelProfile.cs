@@ -10,15 +10,6 @@ public class RecipeFormModelProfile : Profile
     {
         _ = this.CreateMap<CreateRecipeFormModel, CreateRecipeInputPort>();
 
-        _ = this.CreateMap<RecipeFormModelIngredient, CreateRecipeInputPortRecipeIngredient>()
-            .ForMember(d => d.Ingredient, o => o.MapFrom(s => s.UsingExistingIngredient ? null : s))
-            .ForMember(d => d.IngredientId, o => o.MapFrom(s => s.UsingExistingIngredient ? s.ExistingIngredientId : Guid.Empty))
-            .ForMember(d => d.MeasurementId, o => o.MapFrom(s => s.Measurement));
-
-        _ = this.CreateMap<RecipeFormModelIngredient, CreateRecipeInputPortIngredient>();
-
-        _ = this.CreateMap<RecipeFormModelStep, CreateRecipeInputPortStep>();
-
         _ = this.CreateMap<UpdateRecipeFormModel, UpdateRecipeInputPort>()
             .ForMember(d => d.RecipeCategoryId, o => o.Ignore());
 

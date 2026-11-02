@@ -130,15 +130,11 @@
                         }
                         else if (!string.IsNullOrWhiteSpace(this._ingredient.Name.Input) && this._ingredient.MeasurementModel is not null)
                         {
-                            <span>@this._ingredient.Amount.Input @this._ingredient.MeasurementModel.Name</span>
+                            <span class="text-muted fst-italic">Enter a valid amount...</span>
                         }
                         else if (!string.IsNullOrWhiteSpace(this._ingredient.Name.Input))
                         {
                             <span class="text-muted fst-italic">Select measurement & amount...</span>
-                        }
-                        else
-                        {
-                            <span class="text-muted fst-italic">Click to configure</span>
                         }
                     </span>
                 </div>

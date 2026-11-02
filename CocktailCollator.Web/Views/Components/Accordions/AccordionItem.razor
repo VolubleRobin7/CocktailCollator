@@ -83,10 +83,7 @@
     protected override void OnInitialized()
     {
         if (this.Parent is null)
-        {
-            throw new InvalidOperationException(
-                $"{nameof(AccordionItem)} must be contained within an {nameof(Accordion)} component.");
-        }
+            throw new InvalidOperationException($"{nameof(AccordionItem)} must be contained within an {nameof(Accordion)} component.");
 
         this.Parent.Register(this);
 
