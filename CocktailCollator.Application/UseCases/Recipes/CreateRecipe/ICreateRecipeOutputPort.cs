@@ -5,5 +5,7 @@ namespace CocktailCollator.Application.UseCases.Recipes.CreateRecipe;
 
 public interface ICreateRecipeOutputPort : IAuthenticatableOutputPort, IAuthorisableOutputPort
 {
+    Task RuleViolation(string failureReason, CancellationToken cancellationToken);
+
     Task Success(Recipe recipe, CancellationToken cancellationToken);
 }
