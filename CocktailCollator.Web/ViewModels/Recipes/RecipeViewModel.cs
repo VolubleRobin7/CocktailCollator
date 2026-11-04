@@ -23,8 +23,9 @@ public class RecipeViewModel : IStoreableViewModel<RecipeViewModel>
         this.Note = source.Note;
         this.PersonalNote = source.PersonalNote;
 
-        if (source.Category is not null)
-            this.Category = store.UpdateOrRegister(source.Category.RecipeCategoryId, source.Category);
+        this.Category = source.Category is null
+            ? null
+            : store.UpdateOrRegister(source.Category.RecipeCategoryId, source.Category);
 
         if (source.Ingredients is not null)
             this.Ingredients = [.. source.Ingredients.Select(i => store.UpdateOrRegister(i.IngredientId, i))];

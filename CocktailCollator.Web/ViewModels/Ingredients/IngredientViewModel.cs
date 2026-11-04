@@ -17,8 +17,9 @@ public class IngredientViewModel : IStoreableViewModel<IngredientViewModel>
     {
         this.Name = source.Name;
 
-        if (source.Category is not null)
-            this.Category = store.UpdateOrRegister(source.Category.IngredientCategoryId, source.Category);
+        this.Category = source.Category is null
+            ? null
+            : store.UpdateOrRegister(source.Category.IngredientCategoryId, source.Category);
 
         if (source.Measurements is not null)
             this.Measurements = [.. source.Measurements.Select(m => store.UpdateOrRegister(m.MeasurementId, m))];
