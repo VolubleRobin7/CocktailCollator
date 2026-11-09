@@ -1,6 +1,7 @@
 using CocktailCollator.Application.Common.Interfaces;
 using CocktailCollator.Domain.Entities;
 using CocktailCollator.UseCasePipelines.Pipes;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CocktailCollator.Application.UseCases.Recipes.UpdateRecipe;
 
@@ -9,6 +10,12 @@ public class UpdateRecipeInteractor(ICocktailDbContext dbContext)
 {
     public async Task ExecuteAsync(UpdateRecipeInputPort inputPort, IUpdateRecipeOutputPort outputPort, CancellationToken cancellationToken)
     {
+        if (!this.PassesRules(inputPort, out var _FailureReason))
+        {
+            await outputPort.RuleViolation(_FailureReason, cancellationToken);
+            return;
+        }
+
         var _Recipe = dbContext.GetEntities<Recipe>().First(r => r.RecipeId == inputPort.RecipeId);
 
         if (inputPort.PipelineContext.HasAllPermissions)
@@ -142,5 +149,63 @@ public class UpdateRecipeInteractor(ICocktailDbContext dbContext)
             await outputPort.Success(_Recipe, cancellationToken);
         else
             await outputPort.PersonalNoteUpdated(_Recipe, cancellationToken);
+    }
+
+    private bool PassesRules(UpdateRecipeInputPort inputPort, [NotNullWhen(false)] out string? failureReason)
+    {
+        if (inputPort.Ingredients.Any(i => i.Amount <= 0))
+        {
+            failureReason = "Ingredient amounts must be greater than zero.";
+            return false;
+        }
+
+        var _ExistingIngredientIds = inputPort.Ingredients
+            .Where(i => i.Ingredient is null)
+            .Select(i => i.IngredientId)
+            .ToList();
+
+        if (_ExistingIngredientIds.Count != _ExistingIngredientIds.Distinct().Count())
+        {
+            failureReason = "Cannot add the same ingredient more than once.";
+            return false;
+        }
+
+        var _ExistingIngredients = dbContext.GetEntities<Ingredient>()
+            .Where(i => _ExistingIngredientIds.Contains(i.IngredientId))
+            .Select(i => new
+            {
+                i.IngredientId,
+                i.Name,
+                MeasurementIds = i.Measurements != null
+                    ? i.Measurements.Select(m => m.MeasurementId).ToList()
+                    : new List<Guid>()
+            })
+            .ToDictionary(i => i.IngredientId);
+
+        foreach (var _RecipeIngredient in inputPort.Ingredients.Where(i => i.Ingredient is null))
+        {
+            if (!_ExistingIngredients.TryGetValue(_RecipeIngredient.IngredientId, out var _ExistingIngredient)
+                || !_ExistingIngredient.MeasurementIds.Contains(_RecipeIngredient.MeasurementId))
+            {
+                failureReason = "Selected measurement is not associated with the ingredient.";
+                return false;
+            }
+        }
+
+        var _AllIngredientNames = _ExistingIngredients.Values
+            .Select(i => i.Name.Trim())
+            .Concat(inputPort.Ingredients
+                .Where(i => i.Ingredient is not null)
+                .Select(i => i.Ingredient!.Name.Trim()))
+            .ToList();
+
+        if (_AllIngredientNames.Count != _AllIngredientNames.Distinct(StringComparer.OrdinalIgnoreCase).Count())
+        {
+            failureReason = "Cannot add the same ingredient more than once.";
+            return false;
+        }
+
+        failureReason = null;
+        return true;
     }
 }

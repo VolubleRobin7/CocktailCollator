@@ -1,10 +1,18 @@
 @using CocktailCollator.Application.Common.Authorisation
 @using CocktailCollator.Web.FormModels.Recipes
+@using CocktailCollator.Web.ViewModels.RecipeCategories
 @using CocktailCollator.Web.ViewModels.Recipes
 @using CocktailCollator.Web.Views.Components.Buttons
+@using CocktailCollator.Web.Views.Components.Helpers
+@using CocktailCollator.Web.Views.Components.Inputs
+@using CocktailCollator.Web.Views.Components.Modals
 @using CocktailCollator.Web.Views.Modals
+@using Microsoft.AspNetCore.Components.Authorization
 
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
 @inject NavigationManager NavigationManager
+@inject RecipeCategoriesViewModel RecipeCategoriesViewModel
 @inject UpdateRecipeFormModel UpdateRecipeFormModel
 @inject RecipesViewModel ViewModel
 
@@ -13,10 +21,27 @@
 <PageTitle>@(this._recipe?.Name ?? "Recipe Details")</PageTitle>
 
 <div class="container">
-    <div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <Button @onclick="this.GoBack" 
                 Text="← Back to Recipes" 
                 Theme="ButtonTheme.Secondary" />
+
+        @if (this._isEditing)
+        {
+            <span @onclick="this.OpenCategoryModalAsync"
+                  class="badge bg-secondary text-dark cursor-pointer">
+                @(this.UpdateRecipeFormModel.RecipeCategory.Input?.Name ?? "Uncategorised") ✎
+            </span>
+        }
+        else
+        {
+            @if (!string.IsNullOrWhiteSpace(this._recipe?.Category?.Name))
+            {
+                <span class="badge bg-secondary text-dark">
+                    @this._recipe.Category.Name
+                </span>
+            }
+        }
     </div>
 
     @if (this._recipe is null)
@@ -34,9 +59,20 @@
     {
         @* Mobile Title & Metadata *@
         <div class="d-md-none text-center mb-4">
-            <h2 class="display-5 fw-semibold mb-2">
-                @this._recipe.Name
-            </h2>
+            @if (this._isEditing)
+            {
+                <div class="text-start">
+                    <InputField Input="this.UpdateRecipeFormModel.Name"
+                                InvalidMessage="Name requires a value."
+                                Title="Recipe Name" />
+                </div>
+            }
+            else
+            {
+                <h2 class="display-5 fw-semibold mb-2">
+                    @this._recipe.Name
+                </h2>
+            }
 
             <div class="d-flex justify-content-center gap-3 text-secondary mt-2 small">
                 <span>★★★★☆ 4.5</span>
@@ -47,17 +83,41 @@
 
         <div class="row">
             <div class="col-md-5 mb-4">
-                <img alt="@this._recipe.Name"
-                     class="w-100 rounded-3 shadow-sm object-fit-cover"
-                     src="@(this._recipe.Images is not null && this._recipe.Images.Any() ? this._recipe.Images.First().Url : "/images/placeholder.jpg")" />
+                @if (this._isEditing)
+                {
+                    <DocumentUpload @ref="this._documentUpload"
+                                    Accept="image/*"
+                                    Documents="this.UpdateRecipeFormModel.Images"
+                                    Multiple
+                                    Title="Images"
+                                    class="mb-3" />
+                }
+                else
+                {
+                    <img alt="@this._recipe.Name"
+                         class="w-100 rounded-3 shadow-sm object-fit-cover"
+                         src="@(this._recipe.Images is not null && this._recipe.Images.Any() ? this._recipe.Images.First().Url : "/images/placeholder.jpg")" />
+                }
             </div>
 
             <div class="col-md-7 ps-md-4">
                 @* Desktop Title & Metadata *@
                 <div class="d-none d-md-block mb-4 pb-3 pt-2 text-center">
-                    <h2 class="display-4 fw-semibold mb-2">
-                        @this._recipe.Name
-                    </h2>
+                    @if (this._isEditing)
+                    {
+                        <div class="text-start">
+                            <InputField Input="this.UpdateRecipeFormModel.Name"
+                                        InvalidMessage="Name requires a value."
+                                        Title="Recipe Name" />
+                        </div>
+                    }
+                    else
+                    {
+                        <h2 class="display-4 fw-semibold mb-2">
+                            @this._recipe.Name
+                        </h2>
+
+                    }
 
                     <div class="text-primary d-flex justify-content-center gap-4 mt-3">
                         <span>★★★★☆ 4.5</span>
@@ -70,93 +130,200 @@
                     <div class="col-lg-5 mb-4 mb-lg-0 pe-lg-4">
                         <h4 class="mb-3 pb-2 border-bottom">Ingredients</h4>
                         
-                        <ul class="list-unstyled">
-                            @foreach (var ingredient in this._recipe.Ingredients ?? [])
-                            {
-                                <li class="mb-2 pb-2 border-bottom border-light d-flex justify-content-between align-items-center">
-                                    <span class="fw-medium">
-                                        @(ingredient.Ingredient?.Name ?? "")
-                                    </span>
+                        @if (this._isEditing)
+                        {
+                            <ul class="list-group">
+                                @foreach (var ingredient in this.UpdateRecipeFormModel.Ingredients)
+                                {
+                                    <li class="list-group-item">
+                                        <button @onclick="() => this.OpenEditIngredientModalAsync(ingredient)" 
+                                                class="btn btn-secondary w-100 d-flex justify-content-between align-items-center text-start py-2 px-3" 
+                                                type="button">
 
-                                    <span class="text-secondary small">
-                                        @ingredient.Amount @(ingredient.Measurement?.Name ?? "")
-                                    </span>
-                                </li>
-                            }
-                        </ul>
+                                            <span class="fw-medium">
+                                                @ingredient.Name.Input
+                                            </span>
+
+                                            <span class="text-secondary small">
+                                                <span>@ingredient.Amount.Input @(ingredient.MeasurementModel?.Name ?? "")</span>
+                                            </span>
+
+                                        </button>
+
+                                        <Button @onclick="() => this.UpdateRecipeFormModel.Ingredients.Remove(ingredient)"
+                                                Size="ButtonSize.Small"
+                                                Text="Remove"
+                                                Theme="ButtonTheme.Danger"
+                                                class="mt-2" />
+                                    </li>
+                                }
+                            </ul>
+
+                            <Button @onclick="() => this.OpenEditIngredientModalAsync(null)"
+                                    Size="ButtonSize.Small"
+                                    Text="Add Ingredient"
+                                    Theme="ButtonTheme.Primary"
+                                    class="mt-3" />
+                        }
+                        else
+                        {
+                            <ul class="list-unstyled">
+                                @foreach (var ingredient in this._recipe.Ingredients ?? [])
+                                {
+                                    <li class="mb-2 pb-2 border-bottom border-light d-flex justify-content-between align-items-center">
+                                        <span class="fw-medium">
+                                            @(ingredient.Ingredient?.Name ?? "")
+                                        </span>
+
+                                        <span class="text-secondary small">
+                                            @ingredient.Amount @(ingredient.Measurement?.Name ?? "")
+                                        </span>
+                                    </li>
+                                }
+                            </ul>
+                        }
                     </div>
                     
                     <div class="col-lg-7">
                         <h4 class="mb-3 pb-2 border-bottom">Instructions</h4>
                         
-                        <ol class="list-unstyled">
-                            @foreach (var step in this._recipe.Steps?.OrderBy(step => step.Order).ToList() ?? [])
-                            {
-                                <li class="mb-4 d-flex">
-                                    <div class="me-3 mt-1">
-                                        <span class="step-number d-flex align-items-center justify-content-center rounded-circle bg-primary text-white">
-                                            @(step.Order + 1)
-                                        </span>
-                                    </div>
+                        @if (this._isEditing)
+                        {
+                            <ul class="list-group">
+                                @foreach (var step in this.UpdateRecipeFormModel.Steps)
+                                {
+                                    <li class="d-flex align-items-start list-group-item">
+                                        <div class="me-3 mt-1">
+                                            <span class="step-number d-flex align-items-center justify-content-center rounded-circle bg-primary text-white">
+                                                @(step.Order.Input + 1)
+                                            </span>
+                                        </div>
 
-                                    <div>
-                                        <p class="mb-0">
-                                            @step.Instruction
-                                        </p>
-                                    </div>
-                                </li>
-                            }
-                        </ol>
+                                        <div class="flex-grow-1">
+                                            <InputField Input="step.Instruction"
+                                                        InvalidMessage="Instruction requires a value." />
+
+                                            <div class="d-flex gap-2 mt-2">
+                                                <div class="btn-group">
+                                                    <Button @onclick="() => this.MoveStepUp(step)"
+                                                            Size="ButtonSize.Small"
+                                                            Text="▲"
+                                                            Theme="ButtonTheme.Secondary"
+                                                            disabled="@(step.Order.Input <= 0)" />
+
+                                                    <Button @onclick="() => this.MoveStepDown(step)"
+                                                            Size="ButtonSize.Small"
+                                                            Text="▼"
+                                                            Theme="ButtonTheme.Secondary"
+                                                            disabled="@(step.Order.Input >= this.UpdateRecipeFormModel.Steps.Count - 1)" />
+                                                </div>
+
+                                                <Button @onclick="() => this.RemoveStep(step)"
+                                                        Size="ButtonSize.Small"
+                                                        Text="Remove"
+                                                        Theme="ButtonTheme.Danger" />
+                                            </div>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+
+                            <Button @onclick="this.AddStep"
+                                    Size="ButtonSize.Small"
+                                    Text="Add Step"
+                                    Theme="ButtonTheme.Primary"
+                                    class="mt-3" />
+                        }
+                        else
+                        {
+                            <ol class="list-unstyled">
+                                @foreach (var step in this._recipe.Steps?.OrderBy(step => step.Order).ToList() ?? [])
+                                {
+                                    <li class="mb-4 d-flex">
+                                        <div class="me-3 mt-1">
+                                            <span class="step-number d-flex align-items-center justify-content-center rounded-circle bg-primary text-white">
+                                                @(step.Order + 1)
+                                            </span>
+                                        </div>
+
+                                        <div>
+                                            <p class="mb-0">
+                                                @step.Instruction
+                                            </p>
+                                        </div>
+                                    </li>
+                                }
+                            </ol>
+                        }
                     </div>
                 </div>
 
                 <div class="mt-4 pt-3">
                     <h4 class="mb-3 pb-2 border-bottom">Recipe Notes</h4>
 
-                    @if (!string.IsNullOrWhiteSpace(this._recipe.Note))
+                    @if (this._isEditing)
                     {
-                        <p class="mb-0 note-text">@this._recipe.Note</p>
+                        <div class="mb-3">
+                            <textarea @bind="this.UpdateRecipeFormModel.Note.Input"
+                                      class="form-control"
+                                      placeholder="Add recipe notes..."
+                                      rows="5"></textarea>
+                        </div>
                     }
                     else
                     {
-                        <p class="mb-0 text-secondary fst-italic">No recipe notes.</p>
+                        @if (!string.IsNullOrWhiteSpace(this._recipe.Note))
+                        {
+                            <p class="mb-0 note-text">@this._recipe.Note</p>
+                        }
+                        else
+                        {
+                            <p class="mb-0 text-secondary fst-italic">No recipe notes.</p>
+                        }
                     }
                 </div>
 
-                <AuthorizeView>
+                <AuthorizeView Context="authContext">
                     <Authorized>
                         <div class="mt-4 pt-3 border-top">
                             <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                                 <h4 class="mb-0">Personal Notes</h4>
-                                @if (!this._isEditingPersonalNote)
-                                {
-                                    <Button @onclick="this.EnterPersonalNoteEditMode"
-                                            Size="ButtonSize.Small"
-                                            Text="Edit"
-                                            Theme="ButtonTheme.Secondary" />
-                                }
+                                <AuthorizeView Context="manageRecipesContext" Policy="@Policies.ManageRecipes">
+                                    <NotAuthorized>
+                                        @if (!this._isEditingPersonalNote)
+                                        {
+                                            <Button @onclick="this.EnterPersonalNoteEditMode"
+                                                    Size="ButtonSize.Small"
+                                                    Text="Edit"
+                                                    Theme="ButtonTheme.Secondary" />
+                                        }
+                                    </NotAuthorized>
+                                </AuthorizeView>
                             </div>
 
-                            @if (this._isEditingPersonalNote)
+                            @if (this._isEditing || this._isEditingPersonalNote)
                             {
                                 <div class="mb-3">
-                                    <textarea @bind="this._personalNoteInput"
+                                    <textarea @bind="this.UpdateRecipeFormModel.PersonalNote.Input"
                                               class="form-control"
                                               placeholder="Add a personal note..."
                                               rows="5"></textarea>
                                 </div>
 
-                                <div class="d-flex gap-2">
-                                    <Button @onclick="this.SavePersonalNoteAsync"
-                                            Size="ButtonSize.Small"
-                                            Text="Save"
-                                            Theme="ButtonTheme.Success" />
+                                @if (this._isEditingPersonalNote && !this._isEditing)
+                                {
+                                    <div class="d-flex gap-2">
+                                        <Button @onclick="this.SavePersonalNoteAsync"
+                                                Size="ButtonSize.Small"
+                                                Text="Save"
+                                                Theme="ButtonTheme.Success" />
 
-                                    <Button @onclick="this.CancelPersonalNoteEdit"
-                                            Size="ButtonSize.Small"
-                                            Text="Cancel"
-                                            Theme="ButtonTheme.Secondary" />
-                                </div>
+                                        <Button @onclick="this.CancelPersonalNoteEdit"
+                                                Size="ButtonSize.Small"
+                                                Text="Cancel"
+                                                Theme="ButtonTheme.Secondary" />
+                                    </div>
+                                }
                             }
                             else
                             {
@@ -177,46 +344,131 @@
 
         <div class="mt-5 py-3 border-top d-flex justify-content-between align-items-center">
             <AuthorizeView Policy="@Policies.ManageRecipes">
-                <Button @onclick="() => this.OpenUpdateRecipeModal(this._recipe)"
-                        Text="Edit"
-                        Theme="ButtonTheme.Secondary" />
+                @if (this._isEditing)
+                {
+                    <div class="d-flex gap-2">
+                        <FormChangeWrapper FormModel="this.UpdateRecipeFormModel">
+                            <Button @onclick="this.SaveRecipeAsync"
+                                    Text="Save Recipe"
+                                    Theme="ButtonTheme.Success"
+                                    disabled="@(!this.UpdateRecipeFormModel.IsValid())" />
+                        </FormChangeWrapper>
 
-                <Button @onclick="this.DeleteRecipe"
-                        Text="Delete Recipe"
-                        Theme="ButtonTheme.Danger" />
+                        <Button @onclick="this.CancelEditing"
+                                Text="Cancel"
+                                Theme="ButtonTheme.Secondary" />
+                    </div>
+                }
+                else
+                {
+                    <Button @onclick="this.StartEditing"
+                            Text="Edit"
+                            Theme="ButtonTheme.Secondary" />
+
+                    <Button @onclick="this.DeleteRecipe"
+                            Text="Delete Recipe"
+                            Theme="ButtonTheme.Danger" />
+                }
             </AuthorizeView>
         </div>
     }
 </div>
 
-<UpdateRecipeModal @ref="this._updateRecipeModal"
-                   OnAfterUpdate="this.StateHasChanged" />
+<ConfigureRecipeIngredientModal @ref="this._ingredientModal"
+                                ExistingIngredients="this.UpdateRecipeFormModel.Ingredients"
+                                OnIngredientUpdated="this.UpdateIngredient" />
+
+<Modal @ref="this._categoryModal"
+       Title="Select Category">
+
+    <Body>
+        <SearchField class="mb-3"
+                     Label="Search categories"
+                     Placeholder="Type to search categories..."
+                     Value="@this._categorySearchString"
+                     ValueChanged="this.SetCategorySearchValue" />
+
+        <ListInput @ref="this._categoryList"
+                   TItem="RecipeCategoryViewModel"
+                   Values="this._categorySearchResults"
+                   EmptyText="No matching categories found."
+                   ItemText="category => category.Name"
+                   OnValueSelected="this.SelectCategoryAsync" />
+    </Body>
+
+    <Footer>
+        <Button @onclick="this.ClearCategoryAsync"
+                Text="Clear"
+                Theme="ButtonTheme.Danger"
+                data-bs-dismiss="modal"
+                disabled="@(this.UpdateRecipeFormModel.RecipeCategory.Input is null)" />
+
+        <Button Text="Cancel"
+                Theme="ButtonTheme.Secondary"
+                data-bs-dismiss="modal" />
+    </Footer>
+
+</Modal>
 
 @code {
+    private ListInput<RecipeCategoryViewModel> _categoryList = default!;
+    private Modal _categoryModal = default!;
+    private List<RecipeCategoryViewModel> _categorySearchResults = [];
+    private string _categorySearchString = "";
+    private DocumentUpload? _documentUpload;
+    private ConfigureRecipeIngredientModal _ingredientModal = default!;
     private bool _isLoading = true;
+    private bool _isEditing = false;
     private bool _isEditingPersonalNote = false;
-    private string _personalNoteInput = "";
     private RecipeViewModel? _recipe;
-    private UpdateRecipeModal _updateRecipeModal = default!;
-
-    // When this page is converted to be editable all over, `_personalNoteInput` can removed (using the InputProperty instead),
-    // and every time edit mode is entered, the form model can be re-populated from the view model.
-    // This allows a cancel operation to work without having to store the original values.
 
     [Parameter]
     public Guid RecipeId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "edit")]
+    public bool StartInEditMode { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         if (!this.ViewModel.Recipes.Any())
             await this.ViewModel.GetCommand.ExecuteAsync(null);
-        
+
         this._recipe = this.ViewModel.Recipes.FirstOrDefault(r => r.RecipeId == this.RecipeId);
         this._isLoading = false;
+
+        if (this.StartInEditMode)
+            await this.StartEditing();
     }
 
-    private void GoBack()
-        => this.NavigationManager.NavigateTo("/");
+    private void AddStep()
+    {
+        var step = new RecipeFormModelStep();
+        step.Order.Input = this.UpdateRecipeFormModel.Steps.Count;
+        this.UpdateRecipeFormModel.Steps.Add(step);
+    }
+
+    private void CancelEditing()
+    {
+        this._documentUpload?.Reset();
+        this.UpdateRecipeFormModel.ResetToDefault();
+        this._isEditing = false;
+        this._isEditingPersonalNote = false;
+        this.NavigationManager.NavigateTo($"/recipe/{this.RecipeId}", replace: true);
+        this.StateHasChanged();
+    }
+
+    private void CancelPersonalNoteEdit()
+    {
+        this.UpdateRecipeFormModel.ResetToDefault();
+        this._isEditingPersonalNote = false;
+    }
+
+    private async Task ClearCategoryAsync()
+    {
+        this.UpdateRecipeFormModel.RecipeCategory.Input = null;
+        this._categoryList.ClearSelection();
+        await this._categoryModal.CloseModalAsync();
+    }
 
     private async Task DeleteRecipe()
     {
@@ -224,22 +476,69 @@
         this.NavigationManager.NavigateTo("/");
     }
 
-    private async Task OpenUpdateRecipeModal(RecipeViewModel recipe)
-    {
-        await this._updateRecipeModal.OpenModalAsync(recipe);
-    }
-
     private void EnterPersonalNoteEditMode()
     {
-        this._isEditingPersonalNote = !this._isEditingPersonalNote;
-        if (this._isEditingPersonalNote)
-            this._personalNoteInput = this._recipe?.PersonalNote ?? string.Empty;
+        if (this._recipe is null)
+            return;
+
+        this.UpdateRecipeFormModel.PopulateFrom(this._recipe);
+        this._isEditingPersonalNote = true;
     }
 
-    private void CancelPersonalNoteEdit()
+    private void GoBack()
+        => this.NavigationManager.NavigateTo("/");
+
+    private void MoveStepDown(RecipeFormModelStep step)
     {
-        this._isEditingPersonalNote = false;
-        this._personalNoteInput = this._recipe?.PersonalNote ?? string.Empty;
+        if (step.Order.Input >= this.UpdateRecipeFormModel.Steps.Count - 1)
+            return;
+
+        this.UpdateRecipeFormModel.Steps.Move(step, 1);
+        this.RecalculateSteps();
+    }
+
+    private void MoveStepUp(RecipeFormModelStep step)
+    {
+        if (step.Order.Input <= 0)
+            return;
+
+        this.UpdateRecipeFormModel.Steps.Move(step, -1);
+        this.RecalculateSteps();
+    }
+
+    private async Task OpenCategoryModalAsync()
+    {
+        if (!this.RecipeCategoriesViewModel.RecipeCategories.Any())
+            await this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync(null);
+
+        this.SetCategorySearchValue("");
+
+        var _SelectedCategory = this.UpdateRecipeFormModel.RecipeCategory.Input is not null
+            ? this.RecipeCategoriesViewModel.RecipeCategories.FirstOrDefault(c => c.RecipeCategoryId == this.UpdateRecipeFormModel.RecipeCategory.Input.RecipeCategoryId)
+                ?? this.UpdateRecipeFormModel.RecipeCategory.Input
+            : null;
+
+        if (_SelectedCategory is not null)
+            this._categoryList.Select(_SelectedCategory);
+        else
+            this._categoryList.ClearSelection();
+
+        await this._categoryModal.OpenModalAsync();
+    }
+
+    private async Task OpenEditIngredientModalAsync(RecipeFormModelIngredient? ingredient)
+        => await this._ingredientModal.OpenModalAsync(ingredient);
+
+    private void RecalculateSteps()
+    {
+        for (int i = 0; i < this.UpdateRecipeFormModel.Steps.Count; i++)
+            this.UpdateRecipeFormModel.Steps[i].Order.Input = i;
+    }
+
+    private void RemoveStep(RecipeFormModelStep stepIndex)
+    {
+        _ = this.UpdateRecipeFormModel.Steps.Remove(stepIndex);
+        this.RecalculateSteps();
     }
 
     private async Task SavePersonalNoteAsync()
@@ -247,13 +546,69 @@
         if (this._recipe is null)
             return;
 
-        this.UpdateRecipeFormModel.PopulateFrom(this._recipe);
-        this.UpdateRecipeFormModel.PersonalNote.Input = this._personalNoteInput;
-
         await this.ViewModel.UpdateCommand.ExecuteAsync(this.UpdateRecipeFormModel.ExtractToInputPort());
 
         this.UpdateRecipeFormModel.ResetToDefault();
         this._isEditingPersonalNote = false;
+        this._recipe = this.ViewModel.Recipes.FirstOrDefault(r => r.RecipeId == this.RecipeId);
+        this.StateHasChanged();
+    }
+
+    private async Task SaveRecipeAsync()
+    {
+        if (this._recipe is null || !this.UpdateRecipeFormModel.IsValid())
+            return;
+
+        await this.ViewModel.UpdateCommand.ExecuteAsync(this.UpdateRecipeFormModel.ExtractToInputPort());
+
+        this._documentUpload?.Reset();
+        this.UpdateRecipeFormModel.ResetToDefault();
+        this._isEditing = false;
+        this._isEditingPersonalNote = false;
+        this.NavigationManager.NavigateTo($"/recipe/{this.RecipeId}", replace: true);
+        this.StateHasChanged();
+    }
+
+    private async Task SelectCategoryAsync(RecipeCategoryViewModel category)
+    {
+        this.UpdateRecipeFormModel.RecipeCategory.Input = category;
+        await this._categoryModal.CloseModalAsync();
+    }
+
+    private void SetCategorySearchValue(string? value)
+    {
+        this._categorySearchString = value ?? "";
+        this._categorySearchResults = this.RecipeCategoriesViewModel.RecipeCategories
+            .Where(category => category.Name is not null && category.Name.Contains(this._categorySearchString, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private async Task StartEditing()
+    {
+        if (this._recipe is null)
+            return;
+
+        var _AuthState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var _AuthResult = await this.AuthorizationService.AuthorizeAsync(_AuthState.User, Policies.ManageRecipes);
+        if (!_AuthResult.Succeeded)
+            return;
+
+        this.UpdateRecipeFormModel.PopulateFrom(this._recipe);
+        await this.RecipeCategoriesViewModel.GetCommand.ExecuteAsync(default);
+        this.SetCategorySearchValue("");
+        this._isEditingPersonalNote = false;
+        this._isEditing = true;
+        this.NavigationManager.NavigateTo($"/recipe/{this.RecipeId}?edit=true", replace: true);
+    }
+
+    private void UpdateIngredient(RecipeFormModelIngredient ingredient)
+    {
+        var _ExistingIndex = this.UpdateRecipeFormModel.Ingredients.IndexOf(ingredient);
+        if (_ExistingIndex >= 0)
+            this.UpdateRecipeFormModel.Ingredients[_ExistingIndex] = ingredient;
+        else
+            this.UpdateRecipeFormModel.Ingredients.Add(ingredient);
+
         this.StateHasChanged();
     }
 }

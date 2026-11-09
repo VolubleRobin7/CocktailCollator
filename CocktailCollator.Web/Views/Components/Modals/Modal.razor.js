@@ -1,11 +1,11 @@
-﻿export function openModal(modalId) {
+export function openModal(modalId) {
     const modalElement = document.getElementById(modalId);
-    const modal = new window.bootstrap.Modal(modalElement);
+    const modal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
     modal.show();
 }
 
 export function closeModal(modalId) {
     const modalElement = document.getElementById(modalId);
-    const modal = new window.bootstrap.Modal(modalElement);
+    const modal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
     modal.hide();
 }

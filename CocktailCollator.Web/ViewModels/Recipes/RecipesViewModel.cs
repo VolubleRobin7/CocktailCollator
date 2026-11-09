@@ -59,6 +59,12 @@ public class RecipesViewModel
     private class CreateRecipePresenter(IMapper mapper, IViewModelStore store, ToastService toastService, RecipesViewModel viewModel)
         : BasePresenter(toastService, "create recipes"), ICreateRecipeOutputPort
     {
+        Task ICreateRecipeOutputPort.RuleViolation(string failureReason, CancellationToken cancellationToken)
+        {
+            this.ToastService.ShowToast(ToastType.Danger, "Failed to Create", failureReason);
+            return Task.CompletedTask;
+        }
+
         Task ICreateRecipeOutputPort.Success(Recipe recipe, CancellationToken cancellationToken)
         {
             var _Recipe = mapper.Map<RecipeViewModel>(recipe);
@@ -104,6 +110,12 @@ public class RecipesViewModel
             var _Recipe = mapper.Map<RecipeViewModel>(recipe);
             _ = store.UpdateOrRegister(_Recipe.RecipeId, _Recipe);
             this.ToastService.ShowToast(ToastType.Success, "Recipe Note Updated", $"Personal note for {recipe.Name} updated successfully");
+            return Task.CompletedTask;
+        }
+
+        Task IUpdateRecipeOutputPort.RuleViolation(string failureReason, CancellationToken cancellationToken)
+        {
+            this.ToastService.ShowToast(ToastType.Danger, "Failed to Update", failureReason);
             return Task.CompletedTask;
         }
 
