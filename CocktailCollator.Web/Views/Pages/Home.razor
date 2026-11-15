@@ -27,7 +27,7 @@
                         <div class="d-flex align-items-center mb-4">
                             <img alt="@recipe.Name"
                                  class="recipe-thumb object-fit-cover me-3 shadow-sm"
-                                 src="/images/placeholder.jpg" />
+                                 src="@(recipe.Images?.FirstOrDefault()?.Url ?? "/images/placeholder.jpg")" />
 
                             <div class="flex-grow-1 d-flex flex-column">
                                 <a href="/recipe/@recipe.RecipeId"
