@@ -96,7 +96,7 @@
                 {
                     <img alt="@this._recipe.Name"
                          class="w-100 rounded-3 shadow-sm object-fit-cover"
-                         src="@(this._recipe.Images is not null && this._recipe.Images.Any() ? this._recipe.Images.First().Url : "/images/placeholder.jpg")" />
+                         src="@(this._recipe.Images?.FirstOrDefault()?.Url ?? "/images/placeholder.jpg")" />
                 }
             </div>
 

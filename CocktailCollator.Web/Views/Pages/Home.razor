@@ -18,16 +18,16 @@
         <div class="col-md-8 pe-md-5">
             @if (this.ViewModel.Recipes.Any())
             {
-                foreach (var group in this.ViewModel.Recipes.GroupBy(r => r.Category?.Name ?? "Uncategorized"))
+                foreach (var group in this.ViewModel.Recipes.GroupBy(r => r.Category?.Name ?? "Uncategorised"))
                 {
-                    <h2 class="fs-2 mt-4 mb-4 border-bottom pb-2">@group.Key</h2>
+                    <h2 class="recipe-section-header fs-2 border-bottom pb-2">@group.Key</h2>
                     
                     @foreach (var recipe in group)
                     {
                         <div class="d-flex align-items-center mb-4">
                             <img alt="@recipe.Name"
                                  class="recipe-thumb object-fit-cover me-3 shadow-sm"
-                                 src="/images/placeholder.jpg" />
+                                 src="@(recipe.Images?.FirstOrDefault()?.Url ?? "/images/placeholder.jpg")" />
 
                             <div class="flex-grow-1 d-flex flex-column">
                                 <a href="/recipe/@recipe.RecipeId"

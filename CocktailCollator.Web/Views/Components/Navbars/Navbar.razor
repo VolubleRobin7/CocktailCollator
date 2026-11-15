@@ -3,7 +3,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
-<header class="text-center pt-3 pb-3 position-relative container">
+<header class="text-center pt-3 pb-3 pb-md-1 position-relative container">
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
             <button @onclick="ToggleNavMenu"
@@ -80,10 +80,9 @@
     </div>
 
     <h1 class="display-4 fw-bold mb-1">Cocktail Collator</h1>
-    <div class="menu-subtitle small text-uppercase text-secondary">add a phrase here</div>
 
     <div class="text-center">
-        <div class="collapse d-md-block mt-4 @(this._isNavMenuCollapsed ? "" : "show")"
+        <div class="collapse d-md-block mt-md-3 @(this._isNavMenuCollapsed ? "" : "show")"
              id="menuLinks">
 
             <ul class="d-flex flex-column flex-md-row justify-content-center gap-3 gap-md-4 mb-4 mb-md-5 pt-3 pt-md-0 list-unstyled px-0">
