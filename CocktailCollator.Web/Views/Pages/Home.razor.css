@@ -12,3 +12,11 @@
 .recipe-link-wrapper:hover .serif-heading {
     color: var(--bs-link-color) !important;
 }
+
+.recipe-section-header {
+    margin: 1.5rem 0 1.5rem 0;
+}
+
+.recipe-section-header:first-child {
+    margin-top: 0.25rem;
+}

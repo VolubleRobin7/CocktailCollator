@@ -18,9 +18,9 @@
         <div class="col-md-8 pe-md-5">
             @if (this.ViewModel.Recipes.Any())
             {
-                foreach (var group in this.ViewModel.Recipes.GroupBy(r => r.Category?.Name ?? "Uncategorized"))
+                foreach (var group in this.ViewModel.Recipes.GroupBy(r => r.Category?.Name ?? "Uncategorised"))
                 {
-                    <h2 class="fs-2 mt-4 mb-4 border-bottom pb-2">@group.Key</h2>
+                    <h2 class="recipe-section-header fs-2 border-bottom pb-2">@group.Key</h2>
                     
                     @foreach (var recipe in group)
                     {
